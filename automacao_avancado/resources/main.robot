@@ -16,7 +16,7 @@ Resource  ./keywords_common/teardown.robot
 Resource  ./environments/url_variables.resource
 
 # Importando os arquivos de pages objects
-Resource  ./page_objects/PO_lista_tarefas.resource
+Resource  ./page_objects/PO_sistema_bancario.resource
 
 # Importando os arquivos de keywords
-Resource  ./keywords/kws_lista_tarefas.resource
+Resource  ./keywords/kws_sistema_bancario.resource
