@@ -1,0 +1,1720 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.3.2 (Python 3.13.2 on win32)" generated="2025-07-24T17:34:45.064195" rpa="false" schemaversion="5">
+<suite id="s1" name="Tests" source="C:\workspace\testes_automatizados_web\automacao_intermediario\tests">
+<suite id="s1-s1" name="Sistema Vendas" source="C:\workspace\testes_automatizados_web\automacao_intermediario\tests\sistema_vendas.robot">
+<kw name="Abrir o navegador" owner="setup" type="SETUP">
+<if>
+<branch type="IF" condition="'${HEADLESS}' == 'True' or '${HEADLESS}' == 'true'">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<arg>about:blank</arg>
+<arg>${BROWSER}</arg>
+<arg>options=add_argument("--headless=new")</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="NOT RUN" start="2025-07-24T17:34:49.301303" elapsed="0.000191"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:34:49.296376" elapsed="0.005444"/>
+</branch>
+<branch type="ELSE">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:34:49.304479" level="INFO">Opening browser 'chrome' to base url 'about:blank'.</msg>
+<arg>about:blank</arg>
+<arg>${BROWSER}</arg>
+<arg>options=add_argument("--incognito")</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2025-07-24T17:34:49.302731" elapsed="2.974483"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:34:49.302018" elapsed="2.975640"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:34:49.296270" elapsed="2.981634"/>
+</if>
+<kw name="Maximize Browser Window" owner="SeleniumLibrary">
+<doc>Maximizes current browser window.</doc>
+<status status="PASS" start="2025-07-24T17:34:52.278629" elapsed="0.147759"/>
+</kw>
+<doc>Abre o navegador (Browser) com as opções definidas</doc>
+<status status="PASS" start="2025-07-24T17:34:49.295582" elapsed="3.131399"/>
+</kw>
+<test id="s1-s1-t1" name="Cenario 1: Login, adição, remoção de produtos e, finalização de pedido" line="8">
+<kw name="Run Keywords" owner="BuiltIn" type="SETUP">
+<kw name="Acessar página home do site" owner="kws_sistema_vendas">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:34:52.438248" level="INFO">Opening url 'https://www.saucedemo.com/'</msg>
+<arg>${URL_HOME}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2025-07-24T17:34:52.436986" elapsed="2.985374"/>
+</kw>
+<kw name="Title Should Be" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:34:55.561476" level="INFO">Page title is 'Swag Labs'.</msg>
+<arg>${LOGIN_TITLE}</arg>
+<doc>Verifies that the current page title equals ``title``.</doc>
+<status status="PASS" start="2025-07-24T17:34:55.423206" elapsed="0.138571"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:34:55.859455" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-1.png"&gt;&lt;img src="selenium-screenshot-1.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:34:55.562583" elapsed="0.297229"/>
+</kw>
+<arg>${SAUCE_DEMO_URL}</arg>
+<doc>Acessa a página inicial do site de testes (https://www.saucedemo.com/)</doc>
+<status status="PASS" start="2025-07-24T17:34:52.432300" elapsed="3.427948"/>
+</kw>
+<kw name="Login com usuário" owner="kws_sistema_vendas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:34:55.864575" level="INFO">Typing text 'standard_user' into text field 'id=user-name'.</msg>
+<arg>${LOGIN_FIELD_USER}</arg>
+<arg>${username}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:34:55.863011" elapsed="0.692840"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:34:56.557490" level="INFO">Typing text 'secret_sauce' into text field 'id=password'.</msg>
+<arg>${LOGIN_FIELD_PASSWORD}</arg>
+<arg>${password}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:34:56.556571" elapsed="0.265237"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:34:57.022744" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-2.png"&gt;&lt;img src="selenium-screenshot-2.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:34:56.822545" elapsed="0.200556"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:34:57.024700" level="INFO">Clicking button 'id=login-button'.</msg>
+<arg>${LOGIN_BUTTON}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:34:57.023827" elapsed="0.680216"/>
+</kw>
+<arg>standard_user</arg>
+<doc>Realiza o login no sistema com o usuário e senha fornecidos pelos argumentos.</doc>
+<status status="PASS" start="2025-07-24T17:34:55.861279" elapsed="1.843822"/>
+</kw>
+<arg>Acessar página home do site</arg>
+<arg>${SAUCE_DEMO_URL}</arg>
+<arg>AND</arg>
+<arg>Login com usuário</arg>
+<arg>standard_user</arg>
+<doc>Executes all the given keywords in a sequence.</doc>
+<status status="PASS" start="2025-07-24T17:34:52.429893" elapsed="5.275772"/>
+</kw>
+<kw name="Adicionar &quot;segundo&quot; produto ao carrinho" owner="kws_sistema_vendas" source_name="Adicionar &quot;${POSICAO}&quot; produto ao carrinho">
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:34:58.124601" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-3.png"&gt;&lt;img src="selenium-screenshot-3.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:34:57.713701" elapsed="0.411317"/>
+</kw>
+<kw name="Converter posição escrita para numero" owner="kws_sistema_vendas">
+<if>
+<branch type="IF" condition="'${POSICAO}' in ['outro', &quot;OUTRO&quot;]">
+<kw name="Evaluate" owner="BuiltIn">
+<var>${NOVA_POSICAO}</var>
+<arg>random.choice(['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto'])</arg>
+<arg>modules=random</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="NOT RUN" start="2025-07-24T17:34:58.128779" elapsed="0.000139"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<arg>A nova posição escolhida foi: ${NOVA_POSICAO}. E será verificada se já foi adicionada anteriormente.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2025-07-24T17:34:58.129520" elapsed="0.000114"/>
+</kw>
+<while condition="'${NOVA_POSICAO}' in @{LIST_POSICAO_PRODUTOS_ADICIONADOS}">
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<var>${NOVA_POSICAO}</var>
+<arg>random.choice(['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto'])</arg>
+<arg>modules=random</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="NOT RUN" start="2025-07-24T17:34:58.131652" elapsed="0.000589"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<arg>A nova posição escolhida foi: ${NOVA_POSICAO}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2025-07-24T17:34:58.133460" elapsed="0.000312"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:34:58.129930" elapsed="0.004464"/>
+</iter>
+<status status="NOT RUN" start="2025-07-24T17:34:58.129923" elapsed="0.005197"/>
+</while>
+<kw name="Set Variable" owner="BuiltIn">
+<var>${POSICAO}</var>
+<arg>${NOVA_POSICAO}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" start="2025-07-24T17:34:58.136218" elapsed="0.000229"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:34:58.127696" elapsed="0.009083"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:34:58.127589" elapsed="0.009792"/>
+</if>
+<kw name="Get From Dictionary" owner="Collections">
+<msg time="2025-07-24T17:34:58.139040" level="INFO">${VALOR_POSICAO} = 2</msg>
+<var>${VALOR_POSICAO}</var>
+<arg>${DIC_POSICOES}</arg>
+<arg>${POSICAO}</arg>
+<doc>Returns a value from the given ``dictionary`` based on the given ``key``.</doc>
+<status status="PASS" start="2025-07-24T17:34:58.138025" elapsed="0.001196"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:34:58.140890" level="INFO">A posição 'segundo' especificada no argumento de entrada, corresponde ao número: 2.</msg>
+<arg>A posição '${POSICAO}' especificada no argumento de entrada, corresponde ao número: ${VALOR_POSICAO}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:34:58.140095" elapsed="0.001008"/>
+</kw>
+<kw name="Capturar os indices dos produtos adicionados" owner="kws_sistema_vendas">
+<if>
+<branch type="IF" condition="'${INDEX_POSICAO}' != '${EMPTY}'">
+<for flavor="IN">
+<iter>
+<if>
+<branch type="IF" condition="'${value}' == ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${INDEX_POSICAO}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="PASS" start="2025-07-24T17:34:58.151243" elapsed="0.001355"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:34:58.154180" level="INFO">A posição do produto adicionado foi atualizada: {'primeiro': '2', 'segundo': '', 'terceiro': '', 'quarto': '', 'quinto': '', 'sexto': ''}.</msg>
+<arg>A posição do produto adicionado foi atualizada: ${DIC_POSICOES_PRODUTOS_ADICIONADOS}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:34:58.153418" elapsed="0.001046"/>
+</kw>
+<kw name="Exit For Loop" owner="BuiltIn">
+<msg time="2025-07-24T17:34:58.155781" level="INFO">Exiting for loop altogether.</msg>
+<doc>Stops executing the enclosing FOR loop.</doc>
+<status status="PASS" start="2025-07-24T17:34:58.155261" elapsed="0.000876"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:34:58.146900" elapsed="0.009555"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:34:58.146834" elapsed="0.009861"/>
+</if>
+<var name="${key}">primeiro</var>
+<var name="${value}"/>
+<status status="PASS" start="2025-07-24T17:34:58.146589" elapsed="0.010298"/>
+</iter>
+<var>${key}</var>
+<var>${value}</var>
+<value>&amp;{DIC_POSICOES_PRODUTOS_ADICIONADOS}</value>
+<status status="PASS" start="2025-07-24T17:34:58.145531" elapsed="0.011689"/>
+</for>
+<status status="PASS" start="2025-07-24T17:34:58.143381" elapsed="0.014171"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:34:58.143305" elapsed="0.014468"/>
+</if>
+<kw name="Append To List" owner="Collections">
+<arg>${LIST_POSICAO_PRODUTOS_ADICIONADOS}</arg>
+<arg>${POSICAO}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-07-24T17:34:58.158412" elapsed="0.000872"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:34:58.160702" level="INFO">O índice do produto adicionado foi na lista ['segundo'].</msg>
+<arg>O índice do produto adicionado foi na lista ${LIST_POSICAO_PRODUTOS_ADICIONADOS}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:34:58.159961" elapsed="0.001028"/>
+</kw>
+<arg>${POSICAO}</arg>
+<arg>${VALOR_POSICAO}</arg>
+<doc>Captura os índices dos produtos adicionados ao carrinho e armazena em uma lista global.</doc>
+<status status="PASS" start="2025-07-24T17:34:58.142202" elapsed="0.019204"/>
+</kw>
+<return>
+<value>${VALOR_POSICAO}</value>
+<status status="PASS" start="2025-07-24T17:34:58.161689" elapsed="0.000236"/>
+</return>
+<msg time="2025-07-24T17:34:58.162574" level="INFO">${INDICE_POSICAO} = 2</msg>
+<var>${INDICE_POSICAO}</var>
+<arg>${POSICAO}</arg>
+<doc>Converte a posição escrita do produto para o número correspondente.</doc>
+<status status="PASS" start="2025-07-24T17:34:58.126524" elapsed="0.036191"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-07-24T17:34:58.169790" level="INFO">${BTN_ADICIONAR_CARRINHO} = (//div[@data-test="inventory-item"]//button[contains(text(), 'Add to cart')])[2]</msg>
+<var>${BTN_ADICIONAR_CARRINHO}</var>
+<arg>(${INVENTORY_BTN_ADICIONAR_CARRINHO})[${INDICE_POSICAO}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-07-24T17:34:58.167499" elapsed="0.002629"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:34:58.172592" level="INFO">Clicking button '(//div[@data-test="inventory-item"]//button[contains(text(), 'Add to cart')])[2]'.</msg>
+<arg>${BTN_ADICIONAR_CARRINHO}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:34:58.171333" elapsed="2.834146"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:01.495607" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-4.png"&gt;&lt;img src="selenium-screenshot-4.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:01.006324" elapsed="0.489624"/>
+</kw>
+<doc>Adiciona o produto especificado ao carrinho.</doc>
+<status status="PASS" start="2025-07-24T17:34:57.711404" elapsed="3.784987"/>
+</kw>
+<kw name="Adicionar &quot;outro&quot; produto ao carrinho" owner="kws_sistema_vendas" source_name="Adicionar &quot;${POSICAO}&quot; produto ao carrinho">
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:02.162259" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-5.png"&gt;&lt;img src="selenium-screenshot-5.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:01.526731" elapsed="0.635882"/>
+</kw>
+<kw name="Converter posição escrita para numero" owner="kws_sistema_vendas">
+<if>
+<branch type="IF" condition="'${POSICAO}' in ['outro', &quot;OUTRO&quot;]">
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-07-24T17:35:02.168313" level="INFO">${NOVA_POSICAO} = quinto</msg>
+<var>${NOVA_POSICAO}</var>
+<arg>random.choice(['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto'])</arg>
+<arg>modules=random</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.166852" elapsed="0.001654"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:02.170027" level="INFO">A nova posição escolhida foi: quinto. E será verificada se já foi adicionada anteriormente.</msg>
+<arg>A nova posição escolhida foi: ${NOVA_POSICAO}. E será verificada se já foi adicionada anteriormente.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.169286" elapsed="0.000998"/>
+</kw>
+<while condition="'${NOVA_POSICAO}' in @{LIST_POSICAO_PRODUTOS_ADICIONADOS}">
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<var>${NOVA_POSICAO}</var>
+<arg>random.choice(['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto'])</arg>
+<arg>modules=random</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:02.172143" elapsed="0.000186"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<arg>A nova posição escolhida foi: ${NOVA_POSICAO}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:02.173099" elapsed="0.000202"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:02.170650" elapsed="0.002923"/>
+</iter>
+<status status="NOT RUN" start="2025-07-24T17:35:02.170640" elapsed="0.003139"/>
+</while>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-07-24T17:35:02.175787" level="INFO">${POSICAO} = quinto</msg>
+<var>${POSICAO}</var>
+<arg>${NOVA_POSICAO}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.174884" elapsed="0.001070"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:35:02.165663" elapsed="0.010577"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:02.165456" elapsed="0.011000"/>
+</if>
+<kw name="Get From Dictionary" owner="Collections">
+<msg time="2025-07-24T17:35:02.178001" level="INFO">${VALOR_POSICAO} = 5</msg>
+<var>${VALOR_POSICAO}</var>
+<arg>${DIC_POSICOES}</arg>
+<arg>${POSICAO}</arg>
+<doc>Returns a value from the given ``dictionary`` based on the given ``key``.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.177081" elapsed="0.001082"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:02.179739" level="INFO">A posição 'quinto' especificada no argumento de entrada, corresponde ao número: 5.</msg>
+<arg>A posição '${POSICAO}' especificada no argumento de entrada, corresponde ao número: ${VALOR_POSICAO}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.178937" elapsed="0.001089"/>
+</kw>
+<kw name="Capturar os indices dos produtos adicionados" owner="kws_sistema_vendas">
+<if>
+<branch type="IF" condition="'${INDEX_POSICAO}' != '${EMPTY}'">
+<for flavor="IN">
+<iter>
+<if>
+<branch type="IF" condition="'${value}' == ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${INDEX_POSICAO}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:02.188099" elapsed="0.000201"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<arg>A posição do produto adicionado foi atualizada: ${DIC_POSICOES_PRODUTOS_ADICIONADOS}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:02.189076" elapsed="0.000170"/>
+</kw>
+<kw name="Exit For Loop" owner="BuiltIn">
+<doc>Stops executing the enclosing FOR loop.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:02.189952" elapsed="0.000219"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:02.187002" elapsed="0.003386"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:02.186922" elapsed="0.003667"/>
+</if>
+<var name="${key}">primeiro</var>
+<var name="${value}">2</var>
+<status status="PASS" start="2025-07-24T17:35:02.186659" elapsed="0.004040"/>
+</iter>
+<iter>
+<if>
+<branch type="IF" condition="'${value}' == ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${INDEX_POSICAO}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.192876" elapsed="0.000823"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:02.195186" level="INFO">A posição do produto adicionado foi atualizada: {'primeiro': '2', 'segundo': '5', 'terceiro': '', 'quarto': '', 'quinto': '', 'sexto': ''}.</msg>
+<arg>A posição do produto adicionado foi atualizada: ${DIC_POSICOES_PRODUTOS_ADICIONADOS}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.194441" elapsed="0.001015"/>
+</kw>
+<kw name="Exit For Loop" owner="BuiltIn">
+<msg time="2025-07-24T17:35:02.199208" level="INFO">Exiting for loop altogether.</msg>
+<doc>Stops executing the enclosing FOR loop.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.196208" elapsed="0.003482"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:35:02.191953" elapsed="0.008440"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:02.191842" elapsed="0.008840"/>
+</if>
+<var name="${key}">segundo</var>
+<var name="${value}"/>
+<status status="PASS" start="2025-07-24T17:35:02.191387" elapsed="0.009433"/>
+</iter>
+<var>${key}</var>
+<var>${value}</var>
+<value>&amp;{DIC_POSICOES_PRODUTOS_ADICIONADOS}</value>
+<status status="PASS" start="2025-07-24T17:35:02.185535" elapsed="0.015559"/>
+</for>
+<status status="PASS" start="2025-07-24T17:35:02.183286" elapsed="0.018104"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:02.183199" elapsed="0.018423"/>
+</if>
+<kw name="Append To List" owner="Collections">
+<arg>${LIST_POSICAO_PRODUTOS_ADICIONADOS}</arg>
+<arg>${POSICAO}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.202275" elapsed="0.000885"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:02.204664" level="INFO">O índice do produto adicionado foi na lista ['segundo', 'quinto'].</msg>
+<arg>O índice do produto adicionado foi na lista ${LIST_POSICAO_PRODUTOS_ADICIONADOS}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.203954" elapsed="0.000979"/>
+</kw>
+<arg>${POSICAO}</arg>
+<arg>${VALOR_POSICAO}</arg>
+<doc>Captura os índices dos produtos adicionados ao carrinho e armazena em uma lista global.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.181701" elapsed="0.023653"/>
+</kw>
+<return>
+<value>${VALOR_POSICAO}</value>
+<status status="PASS" start="2025-07-24T17:35:02.205729" elapsed="0.000220"/>
+</return>
+<msg time="2025-07-24T17:35:02.206563" level="INFO">${INDICE_POSICAO} = 5</msg>
+<var>${INDICE_POSICAO}</var>
+<arg>${POSICAO}</arg>
+<doc>Converte a posição escrita do produto para o número correspondente.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.164248" elapsed="0.042439"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-07-24T17:35:02.208630" level="INFO">${BTN_ADICIONAR_CARRINHO} = (//div[@data-test="inventory-item"]//button[contains(text(), 'Add to cart')])[5]</msg>
+<var>${BTN_ADICIONAR_CARRINHO}</var>
+<arg>(${INVENTORY_BTN_ADICIONAR_CARRINHO})[${INDICE_POSICAO}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.207363" elapsed="0.001439"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:02.210419" level="INFO">Clicking button '(//div[@data-test="inventory-item"]//button[contains(text(), 'Add to cart')])[5]'.</msg>
+<arg>${BTN_ADICIONAR_CARRINHO}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:02.209572" elapsed="1.177266"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:03.697185" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-6.png"&gt;&lt;img src="selenium-screenshot-6.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:03.387576" elapsed="0.309947"/>
+</kw>
+<doc>Adiciona o produto especificado ao carrinho.</doc>
+<status status="PASS" start="2025-07-24T17:35:01.525482" elapsed="2.172431"/>
+</kw>
+<kw name="Remover &quot;primeiro&quot; produto adicionado" owner="kws_sistema_vendas" source_name="Remover &quot;${POSICAO}&quot; produto adicionado">
+<for flavor="IN">
+<iter>
+<if>
+<branch type="IF" condition="'${key}' == '${POSICAO}'">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-07-24T17:35:03.704947" level="INFO">${INDICE_POSICAO} = 2</msg>
+<var>${INDICE_POSICAO}</var>
+<arg>${value}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-07-24T17:35:03.704116" elapsed="0.000977"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:03.706965" level="INFO">A posição do produto a ser removido é: 2.</msg>
+<arg>A posição do produto a ser removido é: ${INDICE_POSICAO}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:03.705799" elapsed="0.001596"/>
+</kw>
+<kw name="Exit For Loop" owner="BuiltIn">
+<msg time="2025-07-24T17:35:03.709389" level="INFO">Exiting for loop altogether.</msg>
+<doc>Stops executing the enclosing FOR loop.</doc>
+<status status="PASS" start="2025-07-24T17:35:03.708761" elapsed="0.000937"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:35:03.702927" elapsed="0.007079"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:03.702833" elapsed="0.007420"/>
+</if>
+<var name="${key}">primeiro</var>
+<var name="${value}">2</var>
+<status status="PASS" start="2025-07-24T17:35:03.702532" elapsed="0.007878"/>
+</iter>
+<var>${key}</var>
+<var>${value}</var>
+<value>&amp;{DIC_POSICOES_PRODUTOS_ADICIONADOS}</value>
+<status status="PASS" start="2025-07-24T17:35:03.701230" elapsed="0.009494"/>
+</for>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-07-24T17:35:03.712770" level="INFO">${BTN_REMOVER_CARRINHO} = (//div[@data-test="inventory-item"]//button[contains(text(), 'Remove')])[2]</msg>
+<var>${BTN_REMOVER_CARRINHO}</var>
+<arg>(${INVENTORY_BTN_REMOVER_CARRINHO})[${INDICE_POSICAO}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-07-24T17:35:03.711786" elapsed="0.001141"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:03.715020" level="INFO">Clicking button '(//div[@data-test="inventory-item"]//button[contains(text(), 'Remove')])[2]'.</msg>
+<arg>${BTN_REMOVER_CARRINHO}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:03.714173" elapsed="0.337813"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:04.437439" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-7.png"&gt;&lt;img src="selenium-screenshot-7.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.053039" elapsed="0.384751"/>
+</kw>
+<kw name="Limpar variaveis globais" owner="kws_sistema_vendas">
+<kw name="Set Global Variable" owner="BuiltIn">
+<msg time="2025-07-24T17:35:04.443161" level="INFO">@{LIST_POSICAO_PRODUTOS_ADICIONADOS} = [ ]</msg>
+<arg>@{LIST_POSICAO_PRODUTOS_ADICIONADOS}</arg>
+<arg>@{EMPTY}</arg>
+<doc>Makes a variable available globally in all tests and suites.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.440204" elapsed="0.003310"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:04.444898" level="INFO">A lista global de posições de produtos adicionados foi limpa.</msg>
+<arg>A lista global de posições de produtos adicionados foi limpa.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.444325" elapsed="0.000895"/>
+</kw>
+<for flavor="IN">
+<iter>
+<if>
+<branch type="IF" condition="'${value}' != ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${EMPTY}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.449075" elapsed="0.002753"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:35:04.447667" elapsed="0.004480"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:04.447569" elapsed="0.004823"/>
+</if>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:04.453563" level="INFO">O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</msg>
+<arg>O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.453010" elapsed="0.000837"/>
+</kw>
+<var name="${key}">primeiro</var>
+<var name="${value}">2</var>
+<status status="PASS" start="2025-07-24T17:35:04.447252" elapsed="0.006880"/>
+</iter>
+<iter>
+<if>
+<branch type="IF" condition="'${value}' != ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${EMPTY}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.456346" elapsed="0.002626"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:35:04.455278" elapsed="0.004102"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:04.455199" elapsed="0.004460"/>
+</if>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:04.460928" level="INFO">O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</msg>
+<arg>O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.460413" elapsed="0.000762"/>
+</kw>
+<var name="${key}">segundo</var>
+<var name="${value}">5</var>
+<status status="PASS" start="2025-07-24T17:35:04.454972" elapsed="0.006489"/>
+</iter>
+<iter>
+<if>
+<branch type="IF" condition="'${value}' != ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${EMPTY}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:04.464879" elapsed="0.000197"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:04.462622" elapsed="0.004756"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:04.462531" elapsed="0.005730"/>
+</if>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:04.471838" level="INFO">O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</msg>
+<arg>O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.469580" elapsed="0.002521"/>
+</kw>
+<var name="${key}">terceiro</var>
+<var name="${value}"/>
+<status status="PASS" start="2025-07-24T17:35:04.462244" elapsed="0.010123"/>
+</iter>
+<iter>
+<if>
+<branch type="IF" condition="'${value}' != ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${EMPTY}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:04.474680" elapsed="0.000201"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:04.473561" elapsed="0.001580"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:04.473467" elapsed="0.001919"/>
+</if>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:04.476690" level="INFO">O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</msg>
+<arg>O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.476122" elapsed="0.000831"/>
+</kw>
+<var name="${key}">quarto</var>
+<var name="${value}"/>
+<status status="PASS" start="2025-07-24T17:35:04.473076" elapsed="0.004142"/>
+</iter>
+<iter>
+<if>
+<branch type="IF" condition="'${value}' != ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${EMPTY}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:04.482718" elapsed="0.000421"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:04.478493" elapsed="0.005141"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:04.478396" elapsed="0.005477"/>
+</if>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:04.485363" level="INFO">O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</msg>
+<arg>O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.484829" elapsed="0.000799"/>
+</kw>
+<var name="${key}">quinto</var>
+<var name="${value}"/>
+<status status="PASS" start="2025-07-24T17:35:04.478111" elapsed="0.008260"/>
+</iter>
+<iter>
+<if>
+<branch type="IF" condition="'${value}' != ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${EMPTY}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:04.488635" elapsed="0.000206"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:04.487575" elapsed="0.001553"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:04.487483" elapsed="0.002045"/>
+</if>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:04.490614" level="INFO">O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</msg>
+<arg>O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.490128" elapsed="0.000711"/>
+</kw>
+<var name="${key}">sexto</var>
+<var name="${value}"/>
+<status status="PASS" start="2025-07-24T17:35:04.487205" elapsed="0.003865"/>
+</iter>
+<var>${key}</var>
+<var>${value}</var>
+<value>&amp;{DIC_POSICOES_PRODUTOS_ADICIONADOS}</value>
+<status status="PASS" start="2025-07-24T17:35:04.445608" elapsed="0.045713"/>
+</for>
+<doc>Limpa as variáveis globais utilizadas no teste.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.438931" elapsed="0.052777"/>
+</kw>
+<doc>Remove o produto especificado do carrinho.</doc>
+<status status="PASS" start="2025-07-24T17:35:03.700325" elapsed="0.791664"/>
+</kw>
+<kw name="Acessar carrinho e finalizar o pedido" owner="kws_sistema_vendas">
+<kw name="Click Link" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:04.504758" level="INFO">Clicking link '//a[@data-test="shopping-cart-link"]'.</msg>
+<arg>${INVENTORY_LINK_CARRINHO}</arg>
+<doc>Clicks a link identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.503917" elapsed="1.229286"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${CART_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-07-24T17:35:05.734653" elapsed="0.077663"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:05.994805" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-8.png"&gt;&lt;img src="selenium-screenshot-8.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:05.812990" elapsed="0.182167"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:05.996559" level="INFO">Clicking button 'id=checkout'.</msg>
+<arg>${CART_BTN_CHECKOUT}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:05.995856" elapsed="0.297477"/>
+</kw>
+<kw name="First Name" owner="FakerLibrary">
+<msg time="2025-07-24T17:35:06.295211" level="INFO">${FIRST_NAME} = João Pedro</msg>
+<var>${FIRST_NAME}</var>
+<status status="PASS" start="2025-07-24T17:35:06.294233" elapsed="0.001140"/>
+</kw>
+<kw name="Last Name" owner="FakerLibrary">
+<msg time="2025-07-24T17:35:06.297786" level="INFO">${LAST_NAME} = Caldeira</msg>
+<var>${LAST_NAME}</var>
+<status status="PASS" start="2025-07-24T17:35:06.296079" elapsed="0.001913"/>
+</kw>
+<kw name="Postcode" owner="FakerLibrary">
+<msg time="2025-07-24T17:35:06.300377" level="INFO">${POSTAL_CODE} = 25936-889</msg>
+<var>${POSTAL_CODE}</var>
+<doc>Randomly returns a postcode.
+:param formatted: True to allow formatted postcodes, else False (default True)
+:example formatted: '41224-212' '83992-291' '12324322'
+:example raw: '43920231' '34239530'</doc>
+<status status="PASS" start="2025-07-24T17:35:06.298622" elapsed="0.001968"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:06.302186" level="INFO">Typing text 'João Pedro' into text field 'id=first-name'.</msg>
+<arg>${CHECKOUT_FIELD_FIRST_NAME}</arg>
+<arg>${FIRST_NAME}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:06.301290" elapsed="0.322614"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:06.625706" level="INFO">Typing text 'Caldeira' into text field 'id=last-name'.</msg>
+<arg>${CHECKOUT_FIELD_LAST_NAME}</arg>
+<arg>${LAST_NAME}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:06.624750" elapsed="0.280196"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:06.907216" level="INFO">Typing text '25936-889' into text field 'id=postal-code'.</msg>
+<arg>${CHECKOUT_FIELD_POSTAL_CODE}</arg>
+<arg>${POSTAL_CODE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:06.905852" elapsed="0.411996"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:07.490463" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-9.png"&gt;&lt;img src="selenium-screenshot-9.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:07.318723" elapsed="0.172090"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:07.492216" level="INFO">Clicking button 'id=continue'.</msg>
+<arg>${CHECKOUT_BTN_CONTINUE}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:07.491501" elapsed="0.323230"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:08.058673" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-10.png"&gt;&lt;img src="selenium-screenshot-10.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:07.815971" elapsed="0.243227"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${SECOND_CHECKOUT_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-07-24T17:35:08.060053" elapsed="0.105624"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:08.167309" level="INFO">Clicking button 'id=finish'.</msg>
+<arg>${CHECKOUT_BTN_FINISH}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:08.166482" elapsed="4.221656"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${CHECKOUT_LBL_FINISH}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-07-24T17:35:12.388912" elapsed="0.485894"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${CHECKOUT_LBL_ORDER_COMPLETE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-07-24T17:35:12.875851" elapsed="0.302207"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:13.483681" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-11.png"&gt;&lt;img src="selenium-screenshot-11.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:13.178995" elapsed="0.305080"/>
+</kw>
+<doc>Acessa o carrinho de compras e finaliza o pedido.</doc>
+<status status="PASS" start="2025-07-24T17:35:04.502576" elapsed="8.982210"/>
+</kw>
+<doc>Realizar o login com o usuário standard_user, adicionar produtos ao carrinho, remover um produto e finalizar o pedido.</doc>
+<tag>CT01</tag>
+<tag>LOGIN_USER_STANDARD</tag>
+<status status="PASS" start="2025-07-24T17:34:52.427513" elapsed="21.077122"/>
+</test>
+<test id="s1-s1-t2" name="Cenario 2: Login, adição, remoção de produtos e, finalização de pedido" line="18">
+<kw name="Run Keywords" owner="BuiltIn" type="SETUP">
+<kw name="Acessar página home do site" owner="kws_sistema_vendas">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:13.773437" level="INFO">Opening url 'https://www.saucedemo.com/'</msg>
+<arg>${URL_HOME}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2025-07-24T17:35:13.772768" elapsed="0.502208"/>
+</kw>
+<kw name="Title Should Be" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:14.292268" level="INFO">Page title is 'Swag Labs'.</msg>
+<arg>${LOGIN_TITLE}</arg>
+<doc>Verifies that the current page title equals ``title``.</doc>
+<status status="PASS" start="2025-07-24T17:35:14.275965" elapsed="0.016592"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:14.955038" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-12.png"&gt;&lt;img src="selenium-screenshot-12.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:14.293318" elapsed="0.662169"/>
+</kw>
+<arg>${SAUCE_DEMO_URL}</arg>
+<doc>Acessa a página inicial do site de testes (https://www.saucedemo.com/)</doc>
+<status status="PASS" start="2025-07-24T17:35:13.758502" elapsed="1.197746"/>
+</kw>
+<kw name="Login com usuário" owner="kws_sistema_vendas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:14.960583" level="INFO">Typing text 'performance_glitch_user' into text field 'id=user-name'.</msg>
+<arg>${LOGIN_FIELD_USER}</arg>
+<arg>${username}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:14.959442" elapsed="1.609837"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:16.571245" level="INFO">Typing text 'secret_sauce' into text field 'id=password'.</msg>
+<arg>${LOGIN_FIELD_PASSWORD}</arg>
+<arg>${password}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:16.570083" elapsed="1.668988"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:18.456925" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-13.png"&gt;&lt;img src="selenium-screenshot-13.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:18.239980" elapsed="0.217302"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:18.458786" level="INFO">Clicking button 'id=login-button'.</msg>
+<arg>${LOGIN_BUTTON}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:18.458015" elapsed="5.810702"/>
+</kw>
+<arg>performance_glitch_user</arg>
+<doc>Realiza o login no sistema com o usuário e senha fornecidos pelos argumentos.</doc>
+<status status="PASS" start="2025-07-24T17:35:14.957909" elapsed="9.311377"/>
+</kw>
+<arg>Acessar página home do site</arg>
+<arg>${SAUCE_DEMO_URL}</arg>
+<arg>AND</arg>
+<arg>Login com usuário</arg>
+<arg>performance_glitch_user</arg>
+<doc>Executes all the given keywords in a sequence.</doc>
+<status status="PASS" start="2025-07-24T17:35:13.757143" elapsed="10.512629"/>
+</kw>
+<kw name="Adicionar &quot;segundo&quot; produto ao carrinho" owner="kws_sistema_vendas" source_name="Adicionar &quot;${POSICAO}&quot; produto ao carrinho">
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:25.024367" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-14.png"&gt;&lt;img src="selenium-screenshot-14.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:24.322536" elapsed="0.702148"/>
+</kw>
+<kw name="Converter posição escrita para numero" owner="kws_sistema_vendas">
+<if>
+<branch type="IF" condition="'${POSICAO}' in ['outro', &quot;OUTRO&quot;]">
+<kw name="Evaluate" owner="BuiltIn">
+<var>${NOVA_POSICAO}</var>
+<arg>random.choice(['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto'])</arg>
+<arg>modules=random</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:25.028525" elapsed="0.000190"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<arg>A nova posição escolhida foi: ${NOVA_POSICAO}. E será verificada se já foi adicionada anteriormente.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:25.029994" elapsed="0.001707"/>
+</kw>
+<while condition="'${NOVA_POSICAO}' in @{LIST_POSICAO_PRODUTOS_ADICIONADOS}">
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<var>${NOVA_POSICAO}</var>
+<arg>random.choice(['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto'])</arg>
+<arg>modules=random</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:25.033242" elapsed="0.000203"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<arg>A nova posição escolhida foi: ${NOVA_POSICAO}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:25.034308" elapsed="0.000185"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:25.032074" elapsed="0.002668"/>
+</iter>
+<status status="NOT RUN" start="2025-07-24T17:35:25.032065" elapsed="0.002895"/>
+</while>
+<kw name="Set Variable" owner="BuiltIn">
+<var>${POSICAO}</var>
+<arg>${NOVA_POSICAO}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:25.035684" elapsed="0.000185"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:25.027255" elapsed="0.008891"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:25.027136" elapsed="0.009232"/>
+</if>
+<kw name="Get From Dictionary" owner="Collections">
+<msg time="2025-07-24T17:35:25.038004" level="INFO">${VALOR_POSICAO} = 2</msg>
+<var>${VALOR_POSICAO}</var>
+<arg>${DIC_POSICOES}</arg>
+<arg>${POSICAO}</arg>
+<doc>Returns a value from the given ``dictionary`` based on the given ``key``.</doc>
+<status status="PASS" start="2025-07-24T17:35:25.037004" elapsed="0.001170"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:25.039766" level="INFO">A posição 'segundo' especificada no argumento de entrada, corresponde ao número: 2.</msg>
+<arg>A posição '${POSICAO}' especificada no argumento de entrada, corresponde ao número: ${VALOR_POSICAO}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:25.038973" elapsed="0.001085"/>
+</kw>
+<kw name="Capturar os indices dos produtos adicionados" owner="kws_sistema_vendas">
+<if>
+<branch type="IF" condition="'${INDEX_POSICAO}' != '${EMPTY}'">
+<for flavor="IN">
+<iter>
+<if>
+<branch type="IF" condition="'${value}' == ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${INDEX_POSICAO}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="PASS" start="2025-07-24T17:35:25.048334" elapsed="0.001183"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:25.051192" level="INFO">A posição do produto adicionado foi atualizada: {'primeiro': '2', 'segundo': '', 'terceiro': '', 'quarto': '', 'quinto': '', 'sexto': ''}.</msg>
+<arg>A posição do produto adicionado foi atualizada: ${DIC_POSICOES_PRODUTOS_ADICIONADOS}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:25.050507" elapsed="0.000929"/>
+</kw>
+<kw name="Exit For Loop" owner="BuiltIn">
+<msg time="2025-07-24T17:35:25.052648" level="INFO">Exiting for loop altogether.</msg>
+<doc>Stops executing the enclosing FOR loop.</doc>
+<status status="PASS" start="2025-07-24T17:35:25.052186" elapsed="0.000766"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:35:25.047205" elapsed="0.006022"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:25.047098" elapsed="0.006356"/>
+</if>
+<var name="${key}">primeiro</var>
+<var name="${value}"/>
+<status status="PASS" start="2025-07-24T17:35:25.046802" elapsed="0.006784"/>
+</iter>
+<var>${key}</var>
+<var>${value}</var>
+<value>&amp;{DIC_POSICOES_PRODUTOS_ADICIONADOS}</value>
+<status status="PASS" start="2025-07-24T17:35:25.045549" elapsed="0.008313"/>
+</for>
+<status status="PASS" start="2025-07-24T17:35:25.043331" elapsed="0.010832"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:25.043218" elapsed="0.011143"/>
+</if>
+<kw name="Append To List" owner="Collections">
+<arg>${LIST_POSICAO_PRODUTOS_ADICIONADOS}</arg>
+<arg>${POSICAO}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-07-24T17:35:25.054970" elapsed="0.000804"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:25.057162" level="INFO">O índice do produto adicionado foi na lista ['segundo'].</msg>
+<arg>O índice do produto adicionado foi na lista ${LIST_POSICAO_PRODUTOS_ADICIONADOS}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:25.056493" elapsed="0.000895"/>
+</kw>
+<arg>${POSICAO}</arg>
+<arg>${VALOR_POSICAO}</arg>
+<doc>Captura os índices dos produtos adicionados ao carrinho e armazena em uma lista global.</doc>
+<status status="PASS" start="2025-07-24T17:35:25.041328" elapsed="0.016411"/>
+</kw>
+<return>
+<value>${VALOR_POSICAO}</value>
+<status status="PASS" start="2025-07-24T17:35:25.058041" elapsed="0.000211"/>
+</return>
+<msg time="2025-07-24T17:35:25.058930" level="INFO">${INDICE_POSICAO} = 2</msg>
+<var>${INDICE_POSICAO}</var>
+<arg>${POSICAO}</arg>
+<doc>Converte a posição escrita do produto para o número correspondente.</doc>
+<status status="PASS" start="2025-07-24T17:35:25.026034" elapsed="0.033059"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-07-24T17:35:25.060786" level="INFO">${BTN_ADICIONAR_CARRINHO} = (//div[@data-test="inventory-item"]//button[contains(text(), 'Add to cart')])[2]</msg>
+<var>${BTN_ADICIONAR_CARRINHO}</var>
+<arg>(${INVENTORY_BTN_ADICIONAR_CARRINHO})[${INDICE_POSICAO}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-07-24T17:35:25.059824" elapsed="0.001139"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:25.062852" level="INFO">Clicking button '(//div[@data-test="inventory-item"]//button[contains(text(), 'Add to cart')])[2]'.</msg>
+<arg>${BTN_ADICIONAR_CARRINHO}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:25.061721" elapsed="3.240009"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:28.564492" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-15.png"&gt;&lt;img src="selenium-screenshot-15.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.302817" elapsed="0.262051"/>
+</kw>
+<doc>Adiciona o produto especificado ao carrinho.</doc>
+<status status="PASS" start="2025-07-24T17:35:24.321003" elapsed="4.244253"/>
+</kw>
+<kw name="Adicionar &quot;outro&quot; produto ao carrinho" owner="kws_sistema_vendas" source_name="Adicionar &quot;${POSICAO}&quot; produto ao carrinho">
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:28.861503" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-16.png"&gt;&lt;img src="selenium-screenshot-16.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.569225" elapsed="0.292635"/>
+</kw>
+<kw name="Converter posição escrita para numero" owner="kws_sistema_vendas">
+<if>
+<branch type="IF" condition="'${POSICAO}' in ['outro', &quot;OUTRO&quot;]">
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-07-24T17:35:28.869001" level="INFO">${NOVA_POSICAO} = segundo</msg>
+<var>${NOVA_POSICAO}</var>
+<arg>random.choice(['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto'])</arg>
+<arg>modules=random</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.868055" elapsed="0.001080"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:28.870541" level="INFO">A nova posição escolhida foi: segundo. E será verificada se já foi adicionada anteriormente.</msg>
+<arg>A nova posição escolhida foi: ${NOVA_POSICAO}. E será verificada se já foi adicionada anteriormente.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.869854" elapsed="0.000917"/>
+</kw>
+<while condition="'${NOVA_POSICAO}' in @{LIST_POSICAO_PRODUTOS_ADICIONADOS}">
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-07-24T17:35:28.873421" level="INFO">${NOVA_POSICAO} = primeiro</msg>
+<var>${NOVA_POSICAO}</var>
+<arg>random.choice(['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto'])</arg>
+<arg>modules=random</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.872289" elapsed="0.001295"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:28.875089" level="INFO">A nova posição escolhida foi: primeiro.</msg>
+<arg>A nova posição escolhida foi: ${NOVA_POSICAO}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.874401" elapsed="0.000973"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:35:28.871045" elapsed="0.004626"/>
+</iter>
+<status status="PASS" start="2025-07-24T17:35:28.871039" elapsed="0.005543"/>
+</while>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-07-24T17:35:28.878119" level="INFO">${POSICAO} = primeiro</msg>
+<var>${POSICAO}</var>
+<arg>${NOVA_POSICAO}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.877337" elapsed="0.000939"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:35:28.867149" elapsed="0.011394"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:28.867058" elapsed="0.011723"/>
+</if>
+<kw name="Get From Dictionary" owner="Collections">
+<msg time="2025-07-24T17:35:28.882101" level="INFO">${VALOR_POSICAO} = 1</msg>
+<var>${VALOR_POSICAO}</var>
+<arg>${DIC_POSICOES}</arg>
+<arg>${POSICAO}</arg>
+<doc>Returns a value from the given ``dictionary`` based on the given ``key``.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.880179" elapsed="0.002107"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:28.883853" level="INFO">A posição 'primeiro' especificada no argumento de entrada, corresponde ao número: 1.</msg>
+<arg>A posição '${POSICAO}' especificada no argumento de entrada, corresponde ao número: ${VALOR_POSICAO}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.883034" elapsed="0.001076"/>
+</kw>
+<kw name="Capturar os indices dos produtos adicionados" owner="kws_sistema_vendas">
+<if>
+<branch type="IF" condition="'${INDEX_POSICAO}' != '${EMPTY}'">
+<for flavor="IN">
+<iter>
+<if>
+<branch type="IF" condition="'${value}' == ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${INDEX_POSICAO}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:28.893177" elapsed="0.000187"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<arg>A posição do produto adicionado foi atualizada: ${DIC_POSICOES_PRODUTOS_ADICIONADOS}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:28.894082" elapsed="0.000164"/>
+</kw>
+<kw name="Exit For Loop" owner="BuiltIn">
+<doc>Stops executing the enclosing FOR loop.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:28.894912" elapsed="0.000162"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:28.892114" elapsed="0.003153"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:28.892010" elapsed="0.003440"/>
+</if>
+<var name="${key}">primeiro</var>
+<var name="${value}">2</var>
+<status status="PASS" start="2025-07-24T17:35:28.891698" elapsed="0.003869"/>
+</iter>
+<iter>
+<if>
+<branch type="IF" condition="'${value}' == ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${INDEX_POSICAO}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.898969" elapsed="0.000852"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:28.901080" level="INFO">A posição do produto adicionado foi atualizada: {'primeiro': '2', 'segundo': '1', 'terceiro': '', 'quarto': '', 'quinto': '', 'sexto': ''}.</msg>
+<arg>A posição do produto adicionado foi atualizada: ${DIC_POSICOES_PRODUTOS_ADICIONADOS}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.900484" elapsed="0.000804"/>
+</kw>
+<kw name="Exit For Loop" owner="BuiltIn">
+<msg time="2025-07-24T17:35:28.902301" level="INFO">Exiting for loop altogether.</msg>
+<doc>Stops executing the enclosing FOR loop.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.901933" elapsed="0.000611"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:35:28.898010" elapsed="0.004751"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:28.897910" elapsed="0.005036"/>
+</if>
+<var name="${key}">segundo</var>
+<var name="${value}"/>
+<status status="PASS" start="2025-07-24T17:35:28.897576" elapsed="0.005486"/>
+</iter>
+<var>${key}</var>
+<var>${value}</var>
+<value>&amp;{DIC_POSICOES_PRODUTOS_ADICIONADOS}</value>
+<status status="PASS" start="2025-07-24T17:35:28.890583" elapsed="0.012712"/>
+</for>
+<status status="PASS" start="2025-07-24T17:35:28.888027" elapsed="0.015504"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:28.887885" elapsed="0.015798"/>
+</if>
+<kw name="Append To List" owner="Collections">
+<arg>${LIST_POSICAO_PRODUTOS_ADICIONADOS}</arg>
+<arg>${POSICAO}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.904212" elapsed="0.000841"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:28.907645" level="INFO">O índice do produto adicionado foi na lista ['segundo', 'primeiro'].</msg>
+<arg>O índice do produto adicionado foi na lista ${LIST_POSICAO_PRODUTOS_ADICIONADOS}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.906175" elapsed="0.001816"/>
+</kw>
+<arg>${POSICAO}</arg>
+<arg>${VALOR_POSICAO}</arg>
+<doc>Captura os índices dos produtos adicionados ao carrinho e armazena em uma lista global.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.885574" elapsed="0.022959"/>
+</kw>
+<return>
+<value>${VALOR_POSICAO}</value>
+<status status="PASS" start="2025-07-24T17:35:28.908905" elapsed="0.000203"/>
+</return>
+<msg time="2025-07-24T17:35:28.909861" level="INFO">${INDICE_POSICAO} = 1</msg>
+<var>${INDICE_POSICAO}</var>
+<arg>${POSICAO}</arg>
+<doc>Converte a posição escrita do produto para o número correspondente.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.865994" elapsed="0.044036"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-07-24T17:35:28.915059" level="INFO">${BTN_ADICIONAR_CARRINHO} = (//div[@data-test="inventory-item"]//button[contains(text(), 'Add to cart')])[1]</msg>
+<var>${BTN_ADICIONAR_CARRINHO}</var>
+<arg>(${INVENTORY_BTN_ADICIONAR_CARRINHO})[${INDICE_POSICAO}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.911029" elapsed="0.004198"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:28.916864" level="INFO">Clicking button '(//div[@data-test="inventory-item"]//button[contains(text(), 'Add to cart')])[1]'.</msg>
+<arg>${BTN_ADICIONAR_CARRINHO}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.916015" elapsed="0.219449"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:29.402673" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-17.png"&gt;&lt;img src="selenium-screenshot-17.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.136293" elapsed="0.266734"/>
+</kw>
+<doc>Adiciona o produto especificado ao carrinho.</doc>
+<status status="PASS" start="2025-07-24T17:35:28.567756" elapsed="0.835616"/>
+</kw>
+<kw name="Remover &quot;primeiro&quot; produto adicionado" owner="kws_sistema_vendas" source_name="Remover &quot;${POSICAO}&quot; produto adicionado">
+<for flavor="IN">
+<iter>
+<if>
+<branch type="IF" condition="'${key}' == '${POSICAO}'">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-07-24T17:35:29.409582" level="INFO">${INDICE_POSICAO} = 2</msg>
+<var>${INDICE_POSICAO}</var>
+<arg>${value}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.408826" elapsed="0.000906"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:29.411000" level="INFO">A posição do produto a ser removido é: 2.</msg>
+<arg>A posição do produto a ser removido é: ${INDICE_POSICAO}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.410388" elapsed="0.000831"/>
+</kw>
+<kw name="Exit For Loop" owner="BuiltIn">
+<msg time="2025-07-24T17:35:29.412661" level="INFO">Exiting for loop altogether.</msg>
+<doc>Stops executing the enclosing FOR loop.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.411885" elapsed="0.001274"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:35:29.407791" elapsed="0.005614"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:29.407698" elapsed="0.005902"/>
+</if>
+<var name="${key}">primeiro</var>
+<var name="${value}">2</var>
+<status status="PASS" start="2025-07-24T17:35:29.407367" elapsed="0.006390"/>
+</iter>
+<var>${key}</var>
+<var>${value}</var>
+<value>&amp;{DIC_POSICOES_PRODUTOS_ADICIONADOS}</value>
+<status status="PASS" start="2025-07-24T17:35:29.406140" elapsed="0.007932"/>
+</for>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-07-24T17:35:29.415670" level="INFO">${BTN_REMOVER_CARRINHO} = (//div[@data-test="inventory-item"]//button[contains(text(), 'Remove')])[2]</msg>
+<var>${BTN_REMOVER_CARRINHO}</var>
+<arg>(${INVENTORY_BTN_REMOVER_CARRINHO})[${INDICE_POSICAO}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.414819" elapsed="0.001008"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:29.417469" level="INFO">Clicking button '(//div[@data-test="inventory-item"]//button[contains(text(), 'Remove')])[2]'.</msg>
+<arg>${BTN_REMOVER_CARRINHO}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.416735" elapsed="0.225898"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:29.882022" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-18.png"&gt;&lt;img src="selenium-screenshot-18.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.643396" elapsed="0.238935"/>
+</kw>
+<kw name="Limpar variaveis globais" owner="kws_sistema_vendas">
+<kw name="Set Global Variable" owner="BuiltIn">
+<msg time="2025-07-24T17:35:29.886721" level="INFO">@{LIST_POSICAO_PRODUTOS_ADICIONADOS} = [ ]</msg>
+<arg>@{LIST_POSICAO_PRODUTOS_ADICIONADOS}</arg>
+<arg>@{EMPTY}</arg>
+<doc>Makes a variable available globally in all tests and suites.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.884319" elapsed="0.002612"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:29.887924" level="INFO">A lista global de posições de produtos adicionados foi limpa.</msg>
+<arg>A lista global de posições de produtos adicionados foi limpa.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.887520" elapsed="0.000603"/>
+</kw>
+<for flavor="IN">
+<iter>
+<if>
+<branch type="IF" condition="'${value}' != ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${EMPTY}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.890422" elapsed="0.002113"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:35:29.889550" elapsed="0.003305"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:29.889487" elapsed="0.003545"/>
+</if>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:29.893975" level="INFO">O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</msg>
+<arg>O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.893549" elapsed="0.000621"/>
+</kw>
+<var name="${key}">primeiro</var>
+<var name="${value}">2</var>
+<status status="PASS" start="2025-07-24T17:35:29.889288" elapsed="0.005110"/>
+</iter>
+<iter>
+<if>
+<branch type="IF" condition="'${value}' != ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${EMPTY}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.896265" elapsed="0.002395"/>
+</kw>
+<status status="PASS" start="2025-07-24T17:35:29.895270" elapsed="0.003675"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:29.895204" elapsed="0.003910"/>
+</if>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:29.899978" level="INFO">O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</msg>
+<arg>O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.899598" elapsed="0.000570"/>
+</kw>
+<var name="${key}">segundo</var>
+<var name="${value}">1</var>
+<status status="PASS" start="2025-07-24T17:35:29.895037" elapsed="0.005330"/>
+</iter>
+<iter>
+<if>
+<branch type="IF" condition="'${value}' != ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${EMPTY}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:29.902051" elapsed="0.000123"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:29.901229" elapsed="0.001174"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:29.901164" elapsed="0.001398"/>
+</if>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:29.903376" level="INFO">O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</msg>
+<arg>O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.903011" elapsed="0.000550"/>
+</kw>
+<var name="${key}">terceiro</var>
+<var name="${value}"/>
+<status status="PASS" start="2025-07-24T17:35:29.900999" elapsed="0.002775"/>
+</iter>
+<iter>
+<if>
+<branch type="IF" condition="'${value}' != ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${EMPTY}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:29.905475" elapsed="0.000132"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:29.904607" elapsed="0.001260"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:29.904546" elapsed="0.001499"/>
+</if>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:29.907062" level="INFO">O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</msg>
+<arg>O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.906587" elapsed="0.000674"/>
+</kw>
+<var name="${key}">quarto</var>
+<var name="${value}"/>
+<status status="PASS" start="2025-07-24T17:35:29.904381" elapsed="0.003079"/>
+</iter>
+<iter>
+<if>
+<branch type="IF" condition="'${value}' != ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${EMPTY}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:29.909112" elapsed="0.000117"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:29.908327" elapsed="0.001128"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:29.908265" elapsed="0.001346"/>
+</if>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:29.910429" level="INFO">O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</msg>
+<arg>O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.910051" elapsed="0.000570"/>
+</kw>
+<var name="${key}">quinto</var>
+<var name="${value}"/>
+<status status="PASS" start="2025-07-24T17:35:29.908081" elapsed="0.002750"/>
+</iter>
+<iter>
+<if>
+<branch type="IF" condition="'${value}' != ''">
+<kw name="Set To Dictionary" owner="Collections">
+<arg>${DIC_POSICOES_PRODUTOS_ADICIONADOS}</arg>
+<arg>${key}</arg>
+<arg>${EMPTY}</arg>
+<doc>Adds the given ``key_value_pairs`` and/or ``items`` to the ``dictionary``.</doc>
+<status status="NOT RUN" start="2025-07-24T17:35:29.912597" elapsed="0.000240"/>
+</kw>
+<status status="NOT RUN" start="2025-07-24T17:35:29.911762" elapsed="0.001351"/>
+</branch>
+<status status="PASS" start="2025-07-24T17:35:29.911698" elapsed="0.001632"/>
+</if>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-07-24T17:35:29.914493" level="INFO">O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</msg>
+<arg>O dicionário global de posições de produtos por ordem de adicionados, foi limpo.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.913935" elapsed="0.000854"/>
+</kw>
+<var name="${key}">sexto</var>
+<var name="${value}"/>
+<status status="PASS" start="2025-07-24T17:35:29.911495" elapsed="0.003794"/>
+</iter>
+<var>${key}</var>
+<var>${value}</var>
+<value>&amp;{DIC_POSICOES_PRODUTOS_ADICIONADOS}</value>
+<status status="PASS" start="2025-07-24T17:35:29.888389" elapsed="0.027225"/>
+</for>
+<doc>Limpa as variáveis globais utilizadas no teste.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.883291" elapsed="0.032698"/>
+</kw>
+<doc>Remove o produto especificado do carrinho.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.405050" elapsed="0.511203"/>
+</kw>
+<kw name="Acessar carrinho e finalizar o pedido" owner="kws_sistema_vendas">
+<kw name="Click Link" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:29.920906" level="INFO">Clicking link '//a[@data-test="shopping-cart-link"]'.</msg>
+<arg>${INVENTORY_LINK_CARRINHO}</arg>
+<doc>Clicks a link identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.920147" elapsed="0.218100"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${CART_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-07-24T17:35:30.139071" elapsed="0.051349"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:30.371796" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-19.png"&gt;&lt;img src="selenium-screenshot-19.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:30.191131" elapsed="0.181051"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:30.373956" level="INFO">Clicking button 'id=checkout'.</msg>
+<arg>${CART_BTN_CHECKOUT}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:30.373052" elapsed="0.269495"/>
+</kw>
+<kw name="First Name" owner="FakerLibrary">
+<msg time="2025-07-24T17:35:30.644296" level="INFO">${FIRST_NAME} = Maya</msg>
+<var>${FIRST_NAME}</var>
+<status status="PASS" start="2025-07-24T17:35:30.643481" elapsed="0.000975"/>
+</kw>
+<kw name="Last Name" owner="FakerLibrary">
+<msg time="2025-07-24T17:35:30.646493" level="INFO">${LAST_NAME} = Marques</msg>
+<var>${LAST_NAME}</var>
+<status status="PASS" start="2025-07-24T17:35:30.645058" elapsed="0.001650"/>
+</kw>
+<kw name="Postcode" owner="FakerLibrary">
+<msg time="2025-07-24T17:35:30.648388" level="INFO">${POSTAL_CODE} = 86462791</msg>
+<var>${POSTAL_CODE}</var>
+<doc>Randomly returns a postcode.
+:param formatted: True to allow formatted postcodes, else False (default True)
+:example formatted: '41224-212' '83992-291' '12324322'
+:example raw: '43920231' '34239530'</doc>
+<status status="PASS" start="2025-07-24T17:35:30.647343" elapsed="0.001217"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:30.650399" level="INFO">Typing text 'Maya' into text field 'id=first-name'.</msg>
+<arg>${CHECKOUT_FIELD_FIRST_NAME}</arg>
+<arg>${FIRST_NAME}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:30.649387" elapsed="0.241819"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:30.893440" level="INFO">Typing text 'Marques' into text field 'id=last-name'.</msg>
+<arg>${CHECKOUT_FIELD_LAST_NAME}</arg>
+<arg>${LAST_NAME}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:30.892307" elapsed="0.235135"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:31.129371" level="INFO">Typing text '86462791' into text field 'id=postal-code'.</msg>
+<arg>${CHECKOUT_FIELD_POSTAL_CODE}</arg>
+<arg>${POSTAL_CODE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:31.128145" elapsed="0.238770"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:31.578532" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-20.png"&gt;&lt;img src="selenium-screenshot-20.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:31.367715" elapsed="0.211523"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:31.581296" level="INFO">Clicking button 'id=continue'.</msg>
+<arg>${CHECKOUT_BTN_CONTINUE}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:31.580175" elapsed="0.213424"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:31.985313" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-21.png"&gt;&lt;img src="selenium-screenshot-21.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:31.794360" elapsed="0.191316"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${SECOND_CHECKOUT_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-07-24T17:35:31.986487" elapsed="0.036603"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:32.024437" level="INFO">Clicking button 'id=finish'.</msg>
+<arg>${CHECKOUT_BTN_FINISH}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:32.023768" elapsed="0.212236"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${CHECKOUT_LBL_FINISH}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-07-24T17:35:32.236727" elapsed="0.051888"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${CHECKOUT_LBL_ORDER_COMPLETE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-07-24T17:35:32.289392" elapsed="0.034863"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:32.504344" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-22.png"&gt;&lt;img src="selenium-screenshot-22.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:32.324946" elapsed="0.179715"/>
+</kw>
+<doc>Acessa o carrinho de compras e finaliza o pedido.</doc>
+<status status="PASS" start="2025-07-24T17:35:29.917737" elapsed="2.587247"/>
+</kw>
+<doc>Realizar o login com o usuário performance_glitch_user, adicionar produtos ao carrinho, remover um produto e finalizar o pedido.</doc>
+<tag>CT02</tag>
+<tag>LOGIN_USER_PERFORMANCE_GLITCH</tag>
+<status status="PASS" start="2025-07-24T17:35:13.724470" elapsed="18.781800"/>
+</test>
+<test id="s1-s1-t3" name="Cenario 3: Login e tentativa de finalização de pedido sem produtos no carrinho" line="28">
+<kw name="Run Keywords" owner="BuiltIn" type="SETUP">
+<kw name="Acessar página home do site" owner="kws_sistema_vendas">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:32.517979" level="INFO">Opening url 'https://www.saucedemo.com/'</msg>
+<arg>${URL_HOME}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2025-07-24T17:35:32.517373" elapsed="0.193695"/>
+</kw>
+<kw name="Title Should Be" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:32.755096" level="INFO">Page title is 'Swag Labs'.</msg>
+<arg>${LOGIN_TITLE}</arg>
+<doc>Verifies that the current page title equals ``title``.</doc>
+<status status="PASS" start="2025-07-24T17:35:32.713525" elapsed="0.041973"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:32.964104" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-23.png"&gt;&lt;img src="selenium-screenshot-23.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:32.756693" elapsed="0.207759"/>
+</kw>
+<arg>${SAUCE_DEMO_URL}</arg>
+<doc>Acessa a página inicial do site de testes (https://www.saucedemo.com/)</doc>
+<status status="PASS" start="2025-07-24T17:35:32.515289" elapsed="0.449524"/>
+</kw>
+<kw name="Login com usuário" owner="kws_sistema_vendas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:32.968207" level="INFO">Typing text 'standard_user' into text field 'id=user-name'.</msg>
+<arg>${LOGIN_FIELD_USER}</arg>
+<arg>${username}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:32.967276" elapsed="1.112101"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:34.081813" level="INFO">Typing text 'secret_sauce' into text field 'id=password'.</msg>
+<arg>${LOGIN_FIELD_PASSWORD}</arg>
+<arg>${password}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:34.080544" elapsed="0.317850"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:34.607070" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-24.png"&gt;&lt;img src="selenium-screenshot-24.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:34.399185" elapsed="0.208361"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:34.609384" level="INFO">Clicking button 'id=login-button'.</msg>
+<arg>${LOGIN_BUTTON}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:34.608474" elapsed="0.242347"/>
+</kw>
+<arg>standard_user</arg>
+<doc>Realiza o login no sistema com o usuário e senha fornecidos pelos argumentos.</doc>
+<status status="PASS" start="2025-07-24T17:35:32.965661" elapsed="1.885656"/>
+</kw>
+<arg>Acessar página home do site</arg>
+<arg>${SAUCE_DEMO_URL}</arg>
+<arg>AND</arg>
+<arg>Login com usuário</arg>
+<arg>standard_user</arg>
+<doc>Executes all the given keywords in a sequence.</doc>
+<status status="PASS" start="2025-07-24T17:35:32.514106" elapsed="2.337614"/>
+</kw>
+<kw name="Acessar carrinho e tentar finalizar pedido" owner="kws_sistema_vendas">
+<kw name="Acessar carrinho e finalizar o pedido" owner="kws_sistema_vendas">
+<kw name="Click Link" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:34.857717" level="INFO">Clicking link '//a[@data-test="shopping-cart-link"]'.</msg>
+<arg>${INVENTORY_LINK_CARRINHO}</arg>
+<doc>Clicks a link identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:34.856779" elapsed="0.209284"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${CART_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-07-24T17:35:35.066750" elapsed="0.038401"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:35.287593" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-25.png"&gt;&lt;img src="selenium-screenshot-25.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:35.105997" elapsed="0.181936"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:35.289340" level="INFO">Clicking button 'id=checkout'.</msg>
+<arg>${CART_BTN_CHECKOUT}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:35.288639" elapsed="0.203152"/>
+</kw>
+<kw name="First Name" owner="FakerLibrary">
+<msg time="2025-07-24T17:35:35.492955" level="INFO">${FIRST_NAME} = Stella</msg>
+<var>${FIRST_NAME}</var>
+<status status="PASS" start="2025-07-24T17:35:35.492336" elapsed="0.000746"/>
+</kw>
+<kw name="Last Name" owner="FakerLibrary">
+<msg time="2025-07-24T17:35:35.494369" level="INFO">${LAST_NAME} = Aragão</msg>
+<var>${LAST_NAME}</var>
+<status status="PASS" start="2025-07-24T17:35:35.493609" elapsed="0.000907"/>
+</kw>
+<kw name="Postcode" owner="FakerLibrary">
+<msg time="2025-07-24T17:35:35.496783" level="INFO">${POSTAL_CODE} = 22359-899</msg>
+<var>${POSTAL_CODE}</var>
+<doc>Randomly returns a postcode.
+:param formatted: True to allow formatted postcodes, else False (default True)
+:example formatted: '41224-212' '83992-291' '12324322'
+:example raw: '43920231' '34239530'</doc>
+<status status="PASS" start="2025-07-24T17:35:35.495073" elapsed="0.001906"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:35.498927" level="INFO">Typing text 'Stella' into text field 'id=first-name'.</msg>
+<arg>${CHECKOUT_FIELD_FIRST_NAME}</arg>
+<arg>${FIRST_NAME}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:35.497819" elapsed="0.250625"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:35.750722" level="INFO">Typing text 'Aragão' into text field 'id=last-name'.</msg>
+<arg>${CHECKOUT_FIELD_LAST_NAME}</arg>
+<arg>${LAST_NAME}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:35.749448" elapsed="0.213601"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:35.964931" level="INFO">Typing text '22359-899' into text field 'id=postal-code'.</msg>
+<arg>${CHECKOUT_FIELD_POSTAL_CODE}</arg>
+<arg>${POSTAL_CODE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:35.964045" elapsed="0.247902"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:36.384847" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-26.png"&gt;&lt;img src="selenium-screenshot-26.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:36.213511" elapsed="0.171668"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:36.386618" level="INFO">Clicking button 'id=continue'.</msg>
+<arg>${CHECKOUT_BTN_CONTINUE}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:36.385886" elapsed="0.215888"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:36.806929" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-27.png"&gt;&lt;img src="selenium-screenshot-27.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:36.602505" elapsed="0.204928"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${SECOND_CHECKOUT_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-07-24T17:35:36.808460" elapsed="0.043829"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:36.853711" level="INFO">Clicking button 'id=finish'.</msg>
+<arg>${CHECKOUT_BTN_FINISH}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-07-24T17:35:36.852967" elapsed="0.205540"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${CHECKOUT_LBL_FINISH}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-07-24T17:35:37.059423" elapsed="0.035587"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${CHECKOUT_LBL_ORDER_COMPLETE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-07-24T17:35:37.095730" elapsed="0.031961"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-07-24T17:35:37.302208" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-28.png"&gt;&lt;img src="selenium-screenshot-28.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-07-24T17:35:37.128383" elapsed="0.174191"/>
+</kw>
+<doc>Acessa o carrinho de compras e finaliza o pedido.</doc>
+<status status="PASS" start="2025-07-24T17:35:34.855578" elapsed="2.447342"/>
+</kw>
+<doc>Acessa o carrinho de compras e tenta finalizar o pedido.</doc>
+<status status="PASS" start="2025-07-24T17:35:34.854018" elapsed="2.449198"/>
+</kw>
+<doc>Realizar o login com o usuário standard_user e, tentar finalizar o pedido sem produtos no carrinho.</doc>
+<tag>CT03</tag>
+<tag>TENTATIVA_FINALIZACAO_PEDIDO_SEM_PRODUTOS</tag>
+<status status="PASS" start="2025-07-24T17:35:32.510951" elapsed="4.793141"/>
+</test>
+<kw name="Fechar o navegador" owner="teardown" type="TEARDOWN">
+<kw name="Close Browser" owner="SeleniumLibrary">
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2025-07-24T17:35:37.309271" elapsed="2.610661"/>
+</kw>
+<doc>Fecha o navegador (Browser)</doc>
+<status status="PASS" start="2025-07-24T17:35:37.308459" elapsed="2.611822"/>
+</kw>
+<doc>Este arquivo contém os testes automatizados para o sistema de vendas (https://www.saucedemo.com/), incluindo cenários de login, adição e remoção de produtos no carrinho, e finalização de pedidos.</doc>
+<status status="PASS" start="2025-07-24T17:34:45.239544" elapsed="54.680917"/>
+</suite>
+<status status="PASS" start="2025-07-24T17:34:45.078947" elapsed="54.846666"/>
+</suite>
+<statistics>
+<total>
+<stat pass="3" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+<stat pass="1" fail="0" skip="0">CT01</stat>
+<stat pass="1" fail="0" skip="0">CT02</stat>
+<stat pass="1" fail="0" skip="0">CT03</stat>
+<stat pass="1" fail="0" skip="0">LOGIN_USER_PERFORMANCE_GLITCH</stat>
+<stat pass="1" fail="0" skip="0">LOGIN_USER_STANDARD</stat>
+<stat pass="1" fail="0" skip="0">TENTATIVA_FINALIZACAO_PEDIDO_SEM_PRODUTOS</stat>
+</tag>
+<suite>
+<stat name="Tests" id="s1" pass="3" fail="0" skip="0">Tests</stat>
+<stat name="Sistema Vendas" id="s1-s1" pass="3" fail="0" skip="0">Tests.Sistema Vendas</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
