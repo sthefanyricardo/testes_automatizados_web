@@ -48,7 +48,7 @@ Verificar se a atividade "${NUM_ATIVIDADE}" está concluída
 Filtrar as atividades em "${TIPO_FILTRAGEM}"
   [Documentation]  Filtra a lista de atividades com base no tipo de filtragem selecionado
   ${TIPO_FILTRO}  Convert To Lowercase  ${TIPO_FILTRAGEM}
-  ${OPCOES_FOOTER_FORMATADO}  Format String  ${OPCOES_FOOTER}  opc=${TIPO_FILTRO}
+  ${OPCOES_FOOTER_FORMATADO}  Format String  ${HOMER_FOOTER_OPCOES}  opc=${TIPO_FILTRO}
   Click Link  locator=${OPCOES_FOOTER_FORMATADO}
   Capture Page Screenshot
 
@@ -69,7 +69,7 @@ Verificar se a atividade "${NUM_ATIVIDADE}" não está mais presente na lista
 
 Limpar as atividades concluídas
   [Documentation]  Limpa todas as atividades marcadas como concluídas
-  Click Element  locator=${BTN_LIMPAR_ATIVIDADES_CONCLUÍDAS}
+  Click Element  locator=${HOMER_BTN_LIMPAR_ATV_CONCLUÍDAS}
   Capture Page Screenshot
   Verificar se há alguma atividade concluída na lista
 
