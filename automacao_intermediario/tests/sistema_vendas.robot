@@ -22,7 +22,7 @@ Cenario 2: Login, adição, remoção de produtos e, finalização de pedido
     ...  AND  Login com usuário  performance_glitch_user
     Adicionar "segundo" produto ao carrinho
     Adicionar "outro" produto ao carrinho
-    Remover "segundo" produto adicionado
+    Remover "primeiro" produto adicionado
     Acessar carrinho e finalizar o pedido
 
 Cenario 3: Login e tentativa de finalização de pedido sem produtos no carrinho
