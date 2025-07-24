@@ -64,11 +64,10 @@ Converter posição escrita para numero
   [Arguments]  ${POSICAO}
   IF  '${POSICAO}' in ['outro', "OUTRO"]
     ${NOVA_POSICAO}  Evaluate  random.choice(['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto'])  modules=random
-    IF  '${NOVA_POSICAO}' in @{LIST_POSICAO_PRODUTOS_ADICIONADOS}
+    Log  A nova posição escolhida foi: ${NOVA_POSICAO}. E será verificada se já foi adicionada anteriormente.
+    WHILE  '${NOVA_POSICAO}' in @{LIST_POSICAO_PRODUTOS_ADICIONADOS}
       ${NOVA_POSICAO}  Evaluate  random.choice(['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto'])  modules=random
-      Log  A posição '${POSICAO}' foi convertida para '${NOVA_POSICAO}', pois já existe um produto adicionado na posição especificada.
-    ELSE
-      Log  A posição '${POSICAO}' foi convertida para '${NOVA_POSICAO}', pois não existe produto adicionado na posição especificada.
+      Log  A nova posição escolhida foi: ${NOVA_POSICAO}.
     END
     ${POSICAO}  Set Variable  ${NOVA_POSICAO}
   END
