@@ -50,10 +50,10 @@ Este projeto demonstra a automação de funcionalidades mais complexas em um sis
 
 ---
 
-## 📁 Conteúdo do Repositório  
+## 📁 Conteúdo do Repositório 
 1. **Estrutura do Repositório e Descrição das Pastas:**
-Este repositório está organizado em três níveis de complexidade — básico, intermediário e avançado — com automações web desenvolvidas em Robot Framework.
-
+   
+   Este repositório está organizado em três níveis de complexidade — básico, intermediário e avançado — com automações web desenvolvidas em Robot Framework.
 - **automacao_avancado/** → Contém os testes básico de interface web usando **SeleniumLibrary**.
 - **automacao_basico/** → Contém os testes intermediários usando **SeleniumLibrary**, aplicados com padrão de projeto Page Object Model (POM).  
 - **automacao_intermediario/** → Contém os testes avançados com foco em transações bancárias, utilizando **SeleniumLibrary** e **Faker Library**.
@@ -107,8 +107,10 @@ Este repositório está organizado em três níveis de complexidade — básico,
 --- 
 
 ## 🙋‍♀️ Autora
+Feito com ❤️ por **Sthefany A. Ricardo**. 
 
-Feito com ❤️ por **Sthefany A. Ricardo**.
-📧 sthefannyricardo@gmail.com
-🔗 [LinkedIn](https://www.linkedin.com/in/sthefanyricardo/)
-📅 Última atualização: **Julho de 2025**.
+📧 sthefannyricardo@gmail.com 
+
+🔗 [LinkedIn](https://www.linkedin.com/in/sthefanyricardo/) 
+
+📅 Última atualização: **Julho de 2025**. 
