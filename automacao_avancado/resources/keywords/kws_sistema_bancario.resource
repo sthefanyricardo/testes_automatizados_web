@@ -5,7 +5,6 @@ Library    DateTime
 *** Keywords ***
 Dado que realizo o login com usuário "${LOGIN_USER}" e senha "${LOGIN_PASSWORD}" na página inicial do sistema bancário
   [Documentation]  Realiza o login na página inicial do sistema bancário com os dados fornecidos.
-  Acessar página home do site  ${DEMO_TEST_FIRE_URL}
   Realizar login na página inicial do sistema bancário  ${LOGIN_USER}  ${LOGIN_PASSWORD}
 
 Quando realizo uma transferência da conta "${FROM_ACCOUNT}" para a conta "${TO_ACCOUNT}"
@@ -52,6 +51,7 @@ Realizar transferência da conta "${FROM_ACCOUNT}" para a conta "${TO_ACCOUNT}"
   Input Text  ${TRANSFER_FIELD_AMOUNT_TRANSFER}  ${RANDOM_VALUE}
   Click Button  ${TRANSFER_BUTTON_TRANSFER_MONEY}
   Capture Page Screenshot
+  Log  Transferência de ${FROM_ACCOUNT} para ${TO_ACCOUNT}, no valor de ${RANDOM_VALUE}, realizada com sucesso!
   Wait Until Page Contains Element  ${TRANSFER_SUCCESS_MESSAGE}
   Set Test Variable  ${TRANSFERRED_AMOUNT}  ${RANDOM_VALUE}
 
@@ -93,9 +93,9 @@ Verificar se o saldo da conta foi atualizado corretamente
   Log  Novo saldo na conta ${ACCOUNT_ID}: ${CURRENT_AVAILABLE_BALANCE}
   ${result}  Run Keyword And Return Status  Should Not Be Equal  ${CURRENT_AVAILABLE_BALANCE}    ${AVAILABLE_BALANCE}
 
-Verificar o saldo atual da conta "${ACCOUNT_ID}"
+Verificar o saldo atual da conta
   [Documentation]  Verifica o saldo atual da conta bancária especificada.
-  Acessar página home do site  ${DEMO_TEST_FIRE_URL}
+  [Arguments]  ${ACCOUNT_ID}
   Realizar login na página inicial do sistema bancário
   Acessar resumo da conta "${ACCOUNT_ID}"
   Verificar e capturar o saldo da conta  ${ACCOUNT_ID}
