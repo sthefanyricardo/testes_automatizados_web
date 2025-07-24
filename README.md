@@ -38,3 +38,77 @@ Este projeto demonstra a automação de funcionalidades mais complexas em um sis
 [Cenários detalhados e código](./automacao_avançado)
 
 ---
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Python** → Linguagem de programação base para o Robot Framework.  
+- **Git e GitHub** → Controle de versão e compartilhamento de código.  
+- **Visual Studio Code** → IDE utilizada para desenvolvimento.  
+- **Robot Framework** → Framework de automação de testes.  
+- **SeleniumLibrary** → Biblioteca para automação de testes web.  
+- **Faker Library**  → Biblioteca geração de massa de dados.
+
+---
+
+## 📁 Conteúdo do Repositório  
+1. **Estrutura do Repositório e Descrição das Pastas:**
+Este repositório está organizado em três níveis de complexidade — básico, intermediário e avançado — com automações web desenvolvidas em Robot Framework.
+
+- **automacao_avancado/** → Contém os testes básico de interface web usando **SeleniumLibrary**.
+- **automacao_basico/** → Contém os testes intermediários usando **SeleniumLibrary**, aplicados com padrão de projeto Page Object Model (POM).  
+- **automacao_intermediario/** → Contém os testes avançados com foco em transações bancárias, utilizando **SeleniumLibrary** e **Faker Library**.
+- **README.md** → Documentação geral com instruções de instalação, execução e visão geral dos testes.  
+
+---
+
+## 🤖 Como Executar os Testes
+### 🔧 Pré-requisitos (Configuração do Ambiente)
+  1. **Instalação do Python:**
+     - Certifique-se de ter o Python instalado (versão 3.7 ou superior). [Download do Python](https://www.python.org/downloads/)
+  2. **Instalação do WebDriver:**
+     - Baixe o WebDriver correspondente ao seu navegador (ex: [ChromeDriver para Google Chrome](https://googlechromelabs.github.io/chrome-for-testing/) ou [EdgeDriver para o Microsoft Edge](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver)).
+     - Certifique-se de que o caminho para as pastas e/ou arquivos do WebDriver, esteja no PATH do sistema. 
+  3. **Instalação das dependências do projeto:**
+     - Abra o terminal na raiz do projeto e execute o seguinte comando:
+       ```bash
+       pip install -r requirements.txt
+       ```
+       Isso instalará todas as dependências listadas no arquivo.
+     - **Verifique a instalação:**
+       Após a instalação, você pode verificar se tudo está funcionando corretamente executando um dos testes do seu projeto.
+
+### 📊 Executando os Testes
+1. Clone o repositório:
+```bash
+   git clone https://github.com/sthefanyricardo/testes_automatizados_web.git
+```
+2. Pelo terminal ou IDE, navegue até a pasta desejada do projeto, **como no exemplo abaixo:**
+```bash
+   cd testes_automatizados_web/automacao_?
+```
+3. Execute os testes, com os exemplos de comandos a seguir:
+- Dentro da pasta: **testes_automatizados_web/automacao_?**
+
+   📌 Executando testes específicos:
+   ```bash
+      robot -d resultados -t "CT01" tests
+   ```
+   📌 Executando um arquivo específico:
+   ```bash
+      robot -d resultados lista_tarefas.robot
+   ```
+   📌 Executando todos os testes da pasta:
+   ```bash
+      robot -d resultados tests/
+   ```
+4. Verifique os resultados:
+  Os relatórios e logs serão gerados na pasta ```resultados```.
+
+--- 
+
+## 🙋‍♀️ Autora
+
+Feito com ❤️ por **Sthefany A. Ricardo**.
+📧 sthefannyricardo@gmail.com
+🔗 [LinkedIn](https://www.linkedin.com/in/sthefanyricardo/)
+📅 Última atualização: **Julho de 2025**.
