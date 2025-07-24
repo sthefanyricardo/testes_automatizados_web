@@ -20,6 +20,7 @@ Resource  ./credentials/credentials.robot
 Resource  ./page_objects/PO_login.resource
 Resource  ./page_objects/PO_inventory.resource
 Resource  ./page_objects/PO_cart.resource
+Resource  ./page_objects/PO_checkout.resource
 
 # Importando os arquivos de keywords
 Resource  ./keywords/kws_sistema_vendas.resource
