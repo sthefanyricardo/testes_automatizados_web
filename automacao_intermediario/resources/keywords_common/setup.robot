@@ -13,6 +13,6 @@ Abrir o navegador
   IF  '${HEADLESS}' == 'True' or '${HEADLESS}' == 'true'
     Open Browser  about:blank  ${BROWSER}  options=add_argument("--headless=new")
   ELSE
-    Open Browser  about:blank  ${BROWSER}
+    Open Browser  about:blank  ${BROWSER}  options=add_argument("--incognito")
   END
   Maximize Browser Window
