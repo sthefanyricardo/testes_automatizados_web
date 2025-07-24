@@ -89,7 +89,7 @@ Remover "${POSICAO}" produto adicionado
   ${BTN_REMOVER_CARRINHO}  Set Variable  (${INVENTORY_BTN_REMOVER_CARRINHO})[${INDICE_POSICAO}]
   Click Button  ${BTN_REMOVER_CARRINHO}
   Capture Page Screenshot
-  Set Global Variable    @{LIST_POSICAO_PRODUTOS_ADICIONADOS}    @{EMPTY}
+  Limpar variaveis globais
 
 Acessar carrinho e finalizar o pedido
   [Documentation]  Acessa o carrinho de compras e finaliza o pedido.
@@ -100,3 +100,14 @@ Acessar carrinho e finalizar o pedido
 Acessar carrinho e tentar finalizar pedido
   [Documentation]  Acessa o carrinho de compras e tenta finalizar o pedido.
   Acessar carrinho e finalizar o pedido
+
+Limpar variaveis globais
+  [Documentation]  Limpa as variáveis globais utilizadas no teste.
+  Set Global Variable  @{LIST_POSICAO_PRODUTOS_ADICIONADOS}  @{EMPTY}
+  Log  A lista global de posições de produtos adicionados foi limpa.
+  FOR  ${key}  ${value}  IN  &{DIC_POSICOES_PRODUTOS_ADICIONADOS}
+    IF  '${value}' != ''
+      Set To Dictionary  ${DIC_POSICOES_PRODUTOS_ADICIONADOS}  ${key}  ${EMPTY}
+    END
+    Log  O dicionário global de posições de produtos por ordem de adicionados, foi limpo.
+  END
