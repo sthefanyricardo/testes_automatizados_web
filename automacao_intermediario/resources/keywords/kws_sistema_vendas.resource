@@ -120,6 +120,7 @@ Acessar carrinho e finalizar o pedido
   Click Button  ${CHECKOUT_BTN_FINISH}
   Wait Until Element Is Visible  ${CHECKOUT_LBL_FINISH}
   Wait Until Element Is Visible  ${CHECKOUT_LBL_ORDER_COMPLETE}
+  Capture Page Screenshot
 
 Acessar carrinho e tentar finalizar pedido
   [Documentation]  Acessa o carrinho de compras e tenta finalizar o pedido.
