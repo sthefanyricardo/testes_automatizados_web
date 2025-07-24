@@ -9,8 +9,6 @@ ${CHECKOUT_FIELD_POSTAL_CODE}  id=postal-code
 
 ${CHECKOUT_BTN_CONTINUE}  id=continue
 
-${CHECKOUT_BTN_CANCEL}  id=cancel
-
 ${SECOND_CHECKOUT_TITLE}  //span[@data-test='title'][contains(text(), 'Checkout: Overview')]
 
 ${CHECKOUT_BTN_FINISH}  id=finish
