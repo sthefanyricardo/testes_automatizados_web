@@ -5,7 +5,6 @@ Documentation  Arquivo principal de importação de todos os arquivos de recurso
 Library  SeleniumLibrary
 Library  Collections
 Library  String
-Library  XML
 Library  FakerLibrary  locale=pt_BR
 
 # Importando os arquivos de keywords comuns
