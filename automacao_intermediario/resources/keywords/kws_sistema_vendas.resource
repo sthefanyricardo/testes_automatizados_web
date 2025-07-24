@@ -90,16 +90,6 @@ Remover "${POSICAO}" produto adicionado
   Capture Page Screenshot
   Limpar variaveis globais
 
-Acessar carrinho e finalizar o pedido
-  [Documentation]  Acessa o carrinho de compras e finaliza o pedido.
-  Click Link  ${INVENTORY_LINK_CARRINHO}
-  Wait Until Element Is Visible  ${CART_BTN_CHECKOUT}
-  Capture Page Screenshot
-
-Acessar carrinho e tentar finalizar pedido
-  [Documentation]  Acessa o carrinho de compras e tenta finalizar o pedido.
-  Acessar carrinho e finalizar o pedido
-
 Limpar variaveis globais
   [Documentation]  Limpa as variáveis globais utilizadas no teste.
   Set Global Variable  @{LIST_POSICAO_PRODUTOS_ADICIONADOS}  @{EMPTY}
@@ -110,3 +100,14 @@ Limpar variaveis globais
     END
     Log  O dicionário global de posições de produtos por ordem de adicionados, foi limpo.
   END
+
+Acessar carrinho e finalizar o pedido
+  [Documentation]  Acessa o carrinho de compras e finaliza o pedido.
+  Click Link  ${INVENTORY_LINK_CARRINHO}
+  Wait Until Element Is Visible  ${CART_BTN_CHECKOUT}
+  Capture Page Screenshot
+  Click Button  ${CART_BTN_CHECKOUT}
+
+Acessar carrinho e tentar finalizar pedido
+  [Documentation]  Acessa o carrinho de compras e tenta finalizar o pedido.
+  Acessar carrinho e finalizar o pedido
