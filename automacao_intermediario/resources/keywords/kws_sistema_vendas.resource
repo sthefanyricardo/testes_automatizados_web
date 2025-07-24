@@ -104,9 +104,22 @@ Limpar variaveis globais
 Acessar carrinho e finalizar o pedido
   [Documentation]  Acessa o carrinho de compras e finaliza o pedido.
   Click Link  ${INVENTORY_LINK_CARRINHO}
-  Wait Until Element Is Visible  ${CART_BTN_CHECKOUT}
+  Wait Until Element Is Visible  ${CART_TITLE}
   Capture Page Screenshot
   Click Button  ${CART_BTN_CHECKOUT}
+  ${FIRST_NAME}  FakerLibrary.First Name
+  ${LAST_NAME}  FakerLibrary.Last Name
+  ${POSTAL_CODE}  FakerLibrary.Postcode
+  Input Text  ${CHECKOUT_FIELD_FIRST_NAME}  ${FIRST_NAME}
+  Input Text  ${CHECKOUT_FIELD_LAST_NAME}  ${LAST_NAME}
+  Input Text  ${CHECKOUT_FIELD_POSTAL_CODE}  ${POSTAL_CODE}
+  Capture Page Screenshot
+  Click Button  ${CHECKOUT_BTN_CONTINUE}
+  Capture Page Screenshot
+  Wait Until Element Is Visible  ${SECOND_CHECKOUT_TITLE}
+  Click Button  ${CHECKOUT_BTN_FINISH}
+  Wait Until Element Is Visible  ${CHECKOUT_LBL_FINISH}
+  Wait Until Element Is Visible  ${CHECKOUT_LBL_ORDER_COMPLETE}
 
 Acessar carrinho e tentar finalizar pedido
   [Documentation]  Acessa o carrinho de compras e tenta finalizar o pedido.
