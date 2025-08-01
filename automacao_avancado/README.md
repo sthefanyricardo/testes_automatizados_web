@@ -6,7 +6,7 @@ Implementação de testes automatizados utilizando **Robot Framework** com o pad
 
 **Cenário de Teste:**
 
-- **Cenário 1 – Validação de transferência bancária e saldo atualizado**  
+- **CT01: Validação de transferência bancária e saldo atualizado**  
   - Realizar o login  `(usuário e senha: admin)`
   - Realizar uma transferência da conta 800000 Corporate para a conta 800001 Checking 
   - Acessar o resumo da conta 800001 Checking

@@ -5,7 +5,7 @@ Suite Setup  Abrir o navegador
 Suite Teardown  Fechar o navegador
 
 ***Test Cases***
-Cenario 1: Realizar o login, uma transferência, acessar o resumo da conta e verificar a transferência e o saldo
+CT01: Validar login, execução de transferência entre contas e verificação de saldo e extrato da conta destino
   [Documentation]  Teste que verifica o login no sistema bancário, realiza uma transferência e consulta o saldo da conta.
   [Tags]  CT01  LOGIN_TRANSFERENCIA
   [Setup]  Run Keywords  Acessar página home do site  ${DEMO_TEST_FIRE_URL}
