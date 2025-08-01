@@ -2,7 +2,7 @@
 
 ## Automação Básica
 
-Implemetação dos scripts de testes automatizados com **Robot Framework** e o padrão de projeto **Page Object Model (POM)**, para validar as funcionalidades essenciais do gerenciador de tarefas [To-Do](https://todomvc.com/examples/react/dist/).
+Implementação dos scripts de testes automatizados com **Robot Framework** e o padrão de projeto **Page Object Model (POM)**, para validar as funcionalidades essenciais do gerenciador de tarefas [To-Do](https://todomvc.com/examples/react/dist/).
 
 **Cenários de Testes:**
 

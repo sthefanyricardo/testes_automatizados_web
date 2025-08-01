@@ -2,7 +2,7 @@
 
 ## Automação Intermediária
 
-Implemetação dos scripts de testes automatizados com **Robot Framework** e o padrão de projeto **Page Object Model (POM)**, para validar o fluxo de compra na aplicação: [saucedemo](https://www.saucedemo.com/).
+Implementação dos scripts de testes automatizados com **Robot Framework** e o padrão de projeto **Page Object Model (POM)**, para validar o fluxo de compra na aplicação: [saucedemo](https://www.saucedemo.com/).
 
 **Cenários de Testes:**
 
