@@ -6,18 +6,18 @@ Implementação dos scripts de testes automatizados com **Robot Framework** e o 
 
 **Cenários de Testes:**
 
-- **Cenario 1: Adição, conclusão e filtragem de atividades**  
+- **CT01: Adição, conclusão e filtragem de atividades**  
   - Adicionar três atividades
   - Marcar a segunda atividade como Concluído
   - Filtrar pelas atividades Concluídas
 
-- **Cenario 2: Adição, filtragem, conclusão e exclusão de atividade concluída**  
+- **CT02: Adição, filtragem, conclusão e exclusão de atividade concluída**  
   - Adicionar quatro atividades
   - Marcar a terceira atividade como Concluído
   - Excluir a terceira atividade
   - Filtrar pelas atividades Concluídas
 
-- **Cenario 3: Adição, conclusão e limpeza de atividades concluídas**  
+- **CT03: Adição, conclusão e limpeza de atividades concluídas**  
   - Adicionar quatro atividades
   - Marcar a quarta atividade como Concluído
   - Limpar as atividades Concluídas
