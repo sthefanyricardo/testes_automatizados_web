@@ -2,7 +2,7 @@
 
 ## Automação Avançada
 
-Implementação de testes automatizados utilizando **Robot Framework** com o padrão de projeto **Page Object Model (POM)**, para validar funcionalidades bancárias no sistema [Testfire](https://demo.testfire.net/login.jsp), com usuário e senha: **admin**.
+Implementação de testes automatizados utilizando **Robot Framework** com o padrão de projeto **Page Object Model (POM)**, para validar funcionalidades bancárias no sistema [TestFire](https://demo.testfire.net/login.jsp), com usuário e senha: **admin**.
 
 **Cenário de Teste:**
 
