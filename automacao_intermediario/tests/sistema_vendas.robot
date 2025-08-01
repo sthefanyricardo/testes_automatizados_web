@@ -5,7 +5,7 @@ Suite Setup  Abrir o navegador
 Suite Teardown  Fechar o navegador
 
 ***Test Cases***
-Cenario 1: Login, adição, remoção de produtos e, finalização de pedido
+CT01: Finalizar pedido após login, adição e remoção de produtos do carrinho com usuário "standard_user"
     [Documentation]  Realizar o login com o usuário standard_user, adicionar produtos ao carrinho, remover um produto e finalizar o pedido.
     [Tags]  CT01  LOGIN_USER_STANDARD
     [Setup]  Run Keywords  Acessar página home do site  ${SAUCE_DEMO_URL}
@@ -15,7 +15,7 @@ Cenario 1: Login, adição, remoção de produtos e, finalização de pedido
     Remover "primeiro" produto adicionado
     Acessar carrinho e finalizar o pedido
 
-Cenario 2: Login, adição, remoção de produtos e, finalização de pedido
+CT02: Finalizar pedido após login, adição e remoção de produtos do carrinho com usuário "performance_glitch_user"
     [Documentation]  Realizar o login com o usuário performance_glitch_user, adicionar produtos ao carrinho, remover um produto e finalizar o pedido.
     [Tags]  CT02  LOGIN_USER_PERFORMANCE_GLITCH
     [Setup]  Run Keywords  Acessar página home do site  ${SAUCE_DEMO_URL}
@@ -25,7 +25,7 @@ Cenario 2: Login, adição, remoção de produtos e, finalização de pedido
     Remover "primeiro" produto adicionado
     Acessar carrinho e finalizar o pedido
 
-Cenario 3: Login e tentativa de finalização de pedido sem produtos no carrinho
+CT03: Realizar o login com usuário "standard_user" e, tentar finalizar o pedido sem produtos no carrinho
     [Documentation]  Realizar o login com o usuário standard_user e, tentar finalizar o pedido sem produtos no carrinho.
     [Tags]  CT03  TENTATIVA_FINALIZACAO_PEDIDO_SEM_PRODUTOS
     [Setup]  Run Keywords  Acessar página home do site  ${SAUCE_DEMO_URL}
