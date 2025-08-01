@@ -85,6 +85,7 @@ Converter posição escrita para numero
     ${POSICAO}  Set Variable  ${NOVA_POSICAO}
   END
     ${VALOR_POSICAO}  Get From Dictionary  ${DIC_POSICOES}  ${POSICAO}
+    ${VALOR_POSICAO}  Verificar se há produtos já adicionados e atualizar o índice de opções disponíveis  ${VALOR_POSICAO}
     Log  A posição '${POSICAO}' especificada no argumento de entrada, corresponde ao número: ${VALOR_POSICAO}.
     Capturar a posição do produto adicionado  ${POSICAO}
   RETURN  ${VALOR_POSICAO}
@@ -99,11 +100,27 @@ Escolher posição aleatória sem repetição
   ${NOVA_POSICAO}  Evaluate  random.choice(${LISTA_POSICOES_DISPONIVEIS})  modules=random
   RETURN  ${NOVA_POSICAO}
 
+Verificar se há produtos já adicionados e atualizar o índice de opções disponíveis
+  [Documentation]  Verifica se já existem produtos adicionados ao carrinho e atualiza o índice de opções disponíveis, se necessário.
+  [Arguments]  ${INDEX_POSICAO}
+  ${QUANTIDADE_POSICOES}  Get Length  ${LIST_POSICAO_PRODUTOS_ADICIONADOS}
+  IF  ${QUANTIDADE_POSICOES} != 0
+    Log  Há produtos já adicionados ao carrinho, portanto será necessário ajustar o índice de opções de posições disponíveis.
+    ${INDEX_POSICAO_ATUALIZADO}  Evaluate  ${INDEX_POSICAO} - ${QUANTIDADE_POSICOES}  
+    #Corrige o índice de produtos (ou posições disponíveis), a partir do primeiro produto já adicionado.
+    Log  Há essa quantidade de produtos já adicionados: ${QUANTIDADE_POSICOES}, portanto o índice de opções disponíveis foi atualizado para: ${INDEX_POSICAO_ATUALIZADO}.
+    ${INDEX_POSICAO}  Set Variable  ${INDEX_POSICAO_ATUALIZADO}
+  ELSE
+    Log  Nenhum produto foi adicionado ao carrinho ainda, portanto não há necessidade de ajuste de índice de opções de posições disponíveis.
+  END
+  RETURN  ${INDEX_POSICAO}
+
 Remover "${POSICAO}" produto adicionado
   [Documentation]  Remove o produto especificado do carrinho.
   ${NOME_PRODUTO}  Converter posição escrita para o nome do produto  ${POSICAO}
   ${BTN_REMOVER_CARRINHO_FORMATADO}  Format String  ${INVENTORY_BTN_REMOVER_CARRINHO}  text=${NOME_PRODUTO}
   ${BTN_REMOVER_CARRINHO}  Set Variable  ${INVENTORY_DIV_INVENTARIO_ITEM}${BTN_REMOVER_CARRINHO_FORMATADO}
+  Scroll Element Into View  ${BTN_REMOVER_CARRINHO}
   Click Button  ${BTN_REMOVER_CARRINHO}
   Capture Page Screenshot
   Limpar variaveis globais
