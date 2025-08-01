@@ -1,23 +1,23 @@
 # Desafios de Testes Automatizados Web
 
-### Automação Básica
+## Automação Básica
 
-Desenvolva casos de teste automatizados utilizando Robot Framework para validar as funcionalidades essenciais de um gerenciador de tarefas (To-Do).
+Implemetação dos scripts de testes automatizados com **Robot Framework** e o padrão de projeto **Page Object Model (POM)**, para validar as funcionalidades essenciais do gerenciador de tarefas [To-Do](https://todomvc.com/examples/react/dist/).
 
-**Cenários de Teste:**
+**Cenários de Testes:**
 
-- **Cenário 1:**  
-  - Adicionar três tarefas  
-  - Marcar a segunda tarefa como concluída  
-  - Filtrar e validar a exibição das tarefas concluídas
+- **Cenario 1: Adicionar atividades 3, marcar 2ª como concluída, filtrar atividades concluídas**  
+  - Adicionar três atividades
+  - Marcar a segunda atividade como Concluído
+  - Filtrar pelas atividades Concluídas
 
-- **Cenário 2:**  
-  - Adicionar quatro tarefas  
-  - Marcar a terceira tarefa como concluída  
-  - Excluir a terceira tarefa  
-  - Filtrar e validar a exibição das tarefas concluídas
+- **Cenario 2: Adicionar atividades 4, marcar e excluir a 3ª como concluída, filtrar atividades concluídas**  
+  - Adicionar quatro atividades
+  - Marcar a terceira atividade como Concluído
+  - Excluir a terceira atividade
+  - Filtrar pelas atividades Concluídas
 
-- **Cenário 3:**  
-  - Adicionar quatro tarefas  
-  - Marcar a quarta tarefa como concluída  
-  - Limpar todas as tarefas concluídas e validar a remoção
+- **Cenario 3: Adicionar atividades 4, marcar a 4ª como concluída, limpar atividades concluídas**  
+  - Adicionar quatro atividades
+  - Marcar a quarta atividade como Concluído
+  - Limpar as atividades Concluídas
