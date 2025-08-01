@@ -10,7 +10,7 @@ Resource  ../main.robot
 ...  quinto=5
 ...  sexto=6
 
-&{DIC_POSICOES_PRODUTOS_ADICIONADOS}
+&{DIC_PRODUTOS_ADICIONADOS}
 ...  primeiro=
 ...  segundo=
 ...  terceiro=
@@ -40,22 +40,39 @@ Adicionar "${POSICAO}" produto ao carrinho
   [Documentation]  Adiciona o produto especificado ao carrinho.
   Capture Page Screenshot
   ${INDICE_POSICAO}  Converter posição escrita para numero  ${POSICAO}
-  ${BTN_ADICIONAR_CARRINHO}  Set Variable  (${INVENTORY_BTN_ADICIONAR_CARRINHO})[${INDICE_POSICAO}]
+  ${BTN_ADICIONAR_CARRINHO}  Set Variable  (${INVENTORY_DIV_INVENTARIO_ITEM}${INVENTORY_BTN_ADICIONAR_CARRINHO})[${INDICE_POSICAO}]
+  Capturar o nome do produto adicionado  ${INDICE_POSICAO}
+  Scroll Element Into View  ${BTN_ADICIONAR_CARRINHO}
   Click Button  ${BTN_ADICIONAR_CARRINHO}
   Capture Page Screenshot
 
-Capturar os indices dos produtos adicionados
+Capturar o nome do produto adicionado
   [Documentation]  Captura os índices dos produtos adicionados ao carrinho e armazena em uma lista global.
-  [Arguments]  ${POSICAO}=${EMPTY}  ${INDEX_POSICAO}=${EMPTY}
-  IF  '${INDEX_POSICAO}' != '${EMPTY}'
-    FOR  ${key}  ${value}  IN  &{DIC_POSICOES_PRODUTOS_ADICIONADOS}
+  [Arguments]  ${INDICE_POSICAO}
+  ${NOME_PRODUTO}  Get Text  (${INVENTORY_DIV_INVENTARIO_ITEM}${INVENTORY_LBL_ITEM_NOME})[${INDICE_POSICAO}]
+  Log  O produto a ser adicionado é: ${NOME_PRODUTO}.
+  ${NOME_PRODUTO_REPLACE}  Replace String  ${NOME_PRODUTO}  ${SPACE}  -
+  Log  A formatação atual do nome do produto ficou assim: ${NOME_PRODUTO_REPLACE}.
+  ${NOME_PRODUTO_FORMATADO}  Convert To Lower Case  ${NOME_PRODUTO_REPLACE}
+  Log  A formatação final do nome do produto ficou assim: ${NOME_PRODUTO_FORMATADO}.
+  Adicionar nome do produto ao dicionário global  ${NOME_PRODUTO_FORMATADO}
+
+Adicionar nome do produto ao dicionário global
+  [Documentation]  Adiciona o nome do produto ao dicionário global de produtos adicionados.
+  [Arguments]  ${NOME_PRODUTO}=${EMPTY}
+  IF  '${NOME_PRODUTO}' != '${EMPTY}'
+    FOR  ${key}  ${value}  IN  &{DIC_PRODUTOS_ADICIONADOS}
       IF  '${value}' == ''
-        Set To Dictionary  ${DIC_POSICOES_PRODUTOS_ADICIONADOS}  ${key}  ${INDEX_POSICAO}
-        Log  A posição do produto adicionado foi atualizada: ${DIC_POSICOES_PRODUTOS_ADICIONADOS}.
+        Set To Dictionary  ${DIC_PRODUTOS_ADICIONADOS}  ${key}  ${NOME_PRODUTO}
+        Log  A posição do produto adicionado foi atualizada: ${DIC_PRODUTOS_ADICIONADOS}.
         Exit For Loop
       END
     END
   END
+
+Capturar a posição do produto adicionado
+  [Documentation]  Captura a posição do produto adicionado e armazena em uma variável global.
+  [Arguments]  ${POSICAO}=${EMPTY}
   Append To List  ${LIST_POSICAO_PRODUTOS_ADICIONADOS}  ${POSICAO}
   Log  O índice do produto adicionado foi na lista ${LIST_POSICAO_PRODUTOS_ADICIONADOS}.
 
@@ -63,40 +80,74 @@ Converter posição escrita para numero
   [Documentation]  Converte a posição escrita do produto para o número correspondente.
   [Arguments]  ${POSICAO}
   IF  '${POSICAO}' in ['outro', "OUTRO"]
-    ${NOVA_POSICAO}  Evaluate  random.choice(['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto'])  modules=random
-    Log  A nova posição escolhida foi: ${NOVA_POSICAO}. E será verificada se já foi adicionada anteriormente.
-    WHILE  '${NOVA_POSICAO}' in @{LIST_POSICAO_PRODUTOS_ADICIONADOS}
-      ${NOVA_POSICAO}  Evaluate  random.choice(['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto'])  modules=random
-      Log  A nova posição escolhida foi: ${NOVA_POSICAO}.
-    END
+    ${NOVA_POSICAO}  Escolher posição aleatória sem repetição  ${POSICAO}
+    Log  A nova posição aleatória escolhida foi: ${NOVA_POSICAO}
     ${POSICAO}  Set Variable  ${NOVA_POSICAO}
   END
     ${VALOR_POSICAO}  Get From Dictionary  ${DIC_POSICOES}  ${POSICAO}
+    ${VALOR_POSICAO}  Verificar se há produtos já adicionados e atualizar o índice de opções disponíveis  ${VALOR_POSICAO}
     Log  A posição '${POSICAO}' especificada no argumento de entrada, corresponde ao número: ${VALOR_POSICAO}.
-    Capturar os indices dos produtos adicionados  ${POSICAO}  ${VALOR_POSICAO}
+    Capturar a posição do produto adicionado  ${POSICAO}
   RETURN  ${VALOR_POSICAO}
+
+Escolher posição aleatória sem repetição
+  [Documentation]  Escolhe uma nova posição aleatória para adicionar um produto ao carrinho, garantindo que não haja repetição de posições já adicionadas.
+  [Arguments]  ${POSICAO}
+  Log  Haverá uma troca da posição atual: '${POSICAO}', por uma nova posição aleatória válida e não repetida.
+  ${LISTA_TODAS_POSICOES}  Create List  primeiro  segundo  terceiro  quarto  quinto  sexto
+  Remove Values From List  ${LISTA_TODAS_POSICOES}  @{LIST_POSICAO_PRODUTOS_ADICIONADOS}
+  ${LISTA_POSICOES_DISPONIVEIS}  Copy List  ${LISTA_TODAS_POSICOES}
+  ${NOVA_POSICAO}  Evaluate  random.choice(${LISTA_POSICOES_DISPONIVEIS})  modules=random
+  RETURN  ${NOVA_POSICAO}
+
+Verificar se há produtos já adicionados e atualizar o índice de opções disponíveis
+  [Documentation]  Verifica se já existem produtos adicionados ao carrinho e atualiza o índice de opções disponíveis, se necessário.
+  [Arguments]  ${INDEX_POSICAO}
+  ${QUANTIDADE_POSICOES}  Get Length  ${LIST_POSICAO_PRODUTOS_ADICIONADOS}
+  IF  ${QUANTIDADE_POSICOES} != 0
+    IF  ${INDEX_POSICAO} == 1
+      Log  O atual índice de posição escolhido é: "${INDEX_POSICAO}", portanto não há necessidade de ajuste de índice de opções de posições disponíveis.
+    ELSE
+      Log  Há produtos já adicionados ao carrinho, portanto será necessário ajustar o índice de opções de posições disponíveis.
+      ${INDEX_POSICAO_ATUALIZADO}  Evaluate  ${INDEX_POSICAO} - ${QUANTIDADE_POSICOES}  
+      #Corrige o índice de produtos (ou posições disponíveis), a partir do primeiro produto já adicionado.
+      Log  Há essa quantidade de produtos já adicionados: ${QUANTIDADE_POSICOES}, portanto o índice de opções disponíveis foi atualizado para: ${INDEX_POSICAO_ATUALIZADO}.
+      ${INDEX_POSICAO}  Set Variable  ${INDEX_POSICAO_ATUALIZADO}
+    END
+  ELSE
+    Log  Nenhum produto foi adicionado ao carrinho ainda, portanto não há necessidade de ajuste de índice de opções de posições disponíveis.
+  END
+  RETURN  ${INDEX_POSICAO}
 
 Remover "${POSICAO}" produto adicionado
   [Documentation]  Remove o produto especificado do carrinho.
-  FOR  ${key}  ${value}  IN  &{DIC_POSICOES_PRODUTOS_ADICIONADOS}
-    IF  '${key}' == '${POSICAO}'
-      ${INDICE_POSICAO}  Set Variable  ${value}
-      Log  A posição do produto a ser removido é: ${INDICE_POSICAO}.
-      Exit For Loop
-    END
-  END
-  ${BTN_REMOVER_CARRINHO}  Set Variable  (${INVENTORY_BTN_REMOVER_CARRINHO})[${INDICE_POSICAO}]
+  ${NOME_PRODUTO}  Converter posição escrita para o nome do produto  ${POSICAO}
+  ${BTN_REMOVER_CARRINHO_FORMATADO}  Format String  ${INVENTORY_BTN_REMOVER_CARRINHO}  text=${NOME_PRODUTO}
+  ${BTN_REMOVER_CARRINHO}  Set Variable  ${INVENTORY_DIV_INVENTARIO_ITEM}${BTN_REMOVER_CARRINHO_FORMATADO}
+  Scroll Element Into View  ${BTN_REMOVER_CARRINHO}
   Click Button  ${BTN_REMOVER_CARRINHO}
   Capture Page Screenshot
   Limpar variaveis globais
+
+Converter posição escrita para o nome do produto
+  [Documentation]  Converte a posição escrita do produto para o nome do produto correspondente.
+  [Arguments]  ${POSICAO}
+  FOR  ${key}  ${value}  IN  &{DIC_PRODUTOS_ADICIONADOS}
+    IF  '${key}' == '${POSICAO}'
+      ${NOME_PRODUTO}  Set Variable  ${value}
+      Log  O produto a ser removido é: ${NOME_PRODUTO}.
+      Exit For Loop
+    END
+  END
+  RETURN  ${NOME_PRODUTO}
 
 Limpar variaveis globais
   [Documentation]  Limpa as variáveis globais utilizadas no teste.
   Set Global Variable  @{LIST_POSICAO_PRODUTOS_ADICIONADOS}  @{EMPTY}
   Log  A lista global de posições de produtos adicionados foi limpa.
-  FOR  ${key}  ${value}  IN  &{DIC_POSICOES_PRODUTOS_ADICIONADOS}
+  FOR  ${key}  ${value}  IN  &{DIC_PRODUTOS_ADICIONADOS}
     IF  '${value}' != ''
-      Set To Dictionary  ${DIC_POSICOES_PRODUTOS_ADICIONADOS}  ${key}  ${EMPTY}
+      Set To Dictionary  ${DIC_PRODUTOS_ADICIONADOS}  ${key}  ${EMPTY}
     END
     Log  O dicionário global de posições de produtos por ordem de adicionados, foi limpo.
   END

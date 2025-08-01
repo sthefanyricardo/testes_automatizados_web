@@ -35,7 +35,7 @@ Este projeto demonstra a automação de funcionalidades mais complexas em um sis
 - Verificação de extrato e listagem de transações
 - Validação precisa do saldo atualizado após transações
 
-[Cenários detalhados e código](./automacao_avançado)
+[Cenários detalhados e código](./automacao_avancado)
 
 ---
 
