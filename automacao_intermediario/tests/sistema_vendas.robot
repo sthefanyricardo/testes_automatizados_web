@@ -11,7 +11,7 @@ Cenario 1: Login, adição, remoção de produtos e, finalização de pedido
     [Setup]  Run Keywords  Acessar página home do site  ${SAUCE_DEMO_URL}
     ...  AND  Login com usuário  standard_user
     Adicionar "segundo" produto ao carrinho
-    Adicionar "sexto" produto ao carrinho
+    Adicionar "outro" produto ao carrinho
     Remover "primeiro" produto adicionado
     Acessar carrinho e finalizar o pedido
 
