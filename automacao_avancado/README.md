@@ -1,14 +1,14 @@
 # Desafios de Testes Automatizados Web
 
-### Automação Avançada
+## Automação Avançada
 
-Desenvolva scripts de automação com Robot Framework para validar operações bancárias no sistema [demo.testfire.net](https://demo.testfire.net/login.jsp) (usuário e senha: `admin`).
+Implemetação dos casos de testes automatizados com **Robot Framework** e o padrão de projeto **Page Object Model (POM)**, para validar operações bancárias no sistema [testfire](https://demo.testfire.net/login.jsp), com o usuário e senha: **admin**.
 
-**Cenários de Teste:**
+**Cenário de Teste:**
 
-- **Cenário 1:**  
-  - Realizar login  
-  - Efetuar transferência da conta 800000 Corporate para a conta 800001 Checking  
-  - Acessar o extrato da conta 800001 Checking  
-  - Validar o registro correto da transferência e seus detalhes  
-  - Verificar a atualização do saldo da conta
+- **Cenario 1: Realizar o login, uma transferência, acessar o resumo da conta e verificar a transferência e o saldo**  
+  - Realizar o login  `(usuário e senha: admin)`
+  - Realizar uma transferência da conta 800000 Corporate para a conta 800001 Checking 
+  - Acessar o resumo da conta 800001 Checking
+  - Deve listar corretamente a transferência e os dados da mesma
+  - Deve ter atualizado o Saldo da Conta
