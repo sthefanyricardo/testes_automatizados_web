@@ -1,8 +1,10 @@
 # Projetos de Testes Automatizados com Robot Framework
 
-Este repositório contém uma série de projetos de automação de testes desenvolvidos utilizando o Robot Framework. Os testes abrangem diferentes níveis de complexidade (Básico, Intermediário e Avançado) e demonstram a aplicação de boas práticas, como o Page Object Model (POM).
+Este repositório reúne três projetos de automação de testes desenvolvidos com o Robot Framework, organizados por nível de complexidade: básico, intermediário e avançado.
 
----
+Os testes foram criados com foco em boas práticas de automação, incluindo o uso do padrão Page Object Model (POM) e a aplicação da técnica DRY (Don't Repeat Yourself), promovendo maior reutilização de código, clareza e manutenção facilitada.
+
+O objetivo deste repositório é demonstrar abordagens eficazes e escaláveis para validar sistemas web simulados, com estruturas organizadas, legíveis e alinhadas aos princípios da Engenharia de Qualidade.
 
 ## Detalhes dos Projetos
 
