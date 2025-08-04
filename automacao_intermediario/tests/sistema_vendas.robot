@@ -3,6 +3,7 @@ Documentation  Este arquivo contém os testes automatizados para o sistema de ve
 Resource  ../resources/main.robot
 Suite Setup  Abrir o navegador
 Suite Teardown  Fechar o navegador
+Test Teardown  Limpar variaveis globais
 
 ***Test Cases***
 CT01: Finalizar pedido após login, adição e remoção de produtos do carrinho com usuário "standard_user"

@@ -22,12 +22,12 @@ Adicionar "${POSICAO}" produto ao carrinho
   Capture Page Screenshot
   ${INDICE_POSICAO}  Converter posição escrita para numero  ${POSICAO}
   ${BTN_ADICIONAR_CARRINHO}  Set Variable  (${INVENTORY_DIV_INVENTARIO_ITEM}${INVENTORY_BTN_ADICIONAR_CARRINHO})[${INDICE_POSICAO}]
-  Capturar o nome do produto adicionado  ${INDICE_POSICAO}
+  Obter o nome do produto adicionado  ${INDICE_POSICAO}
   Scroll Element Into View  ${BTN_ADICIONAR_CARRINHO}
   Click Button  ${BTN_ADICIONAR_CARRINHO}
   Capture Page Screenshot
 
-Capturar o nome do produto adicionado
+Obter o nome do produto adicionado
   [Documentation]  Captura os índices dos produtos adicionados ao carrinho e armazena em uma lista global.
   [Arguments]  ${INDICE_POSICAO}
   ${NOME_PRODUTO}  Get Text  (${INVENTORY_DIV_INVENTARIO_ITEM}${INVENTORY_LBL_ITEM_NOME})[${INDICE_POSICAO}]
@@ -51,7 +51,7 @@ Adicionar nome do produto ao dicionário global
     END
   END
 
-Capturar a posição do produto adicionado
+Obter a posição do produto adicionado
   [Documentation]  Captura a posição do produto adicionado e armazena em uma variável global.
   [Arguments]  ${POSICAO}=${EMPTY}
   Append To List  ${LIST_POSICAO_PRODUTOS_ADICIONADOS}  ${POSICAO}
@@ -68,7 +68,7 @@ Converter posição escrita para numero
     ${VALOR_POSICAO}  Get From Dictionary  ${DIC_POSICOES}  ${POSICAO}
     ${VALOR_POSICAO}  Verificar se há produtos já adicionados e atualizar o índice de opções disponíveis  ${VALOR_POSICAO}
     Log  A posição '${POSICAO}' especificada no argumento de entrada, corresponde ao número: ${VALOR_POSICAO}.
-    Capturar a posição do produto adicionado  ${POSICAO}
+    Obter a posição do produto adicionado  ${POSICAO}
   RETURN  ${VALOR_POSICAO}
 
 Escolher posição aleatória sem repetição
@@ -108,7 +108,6 @@ Remover "${POSICAO}" produto adicionado
   Scroll Element Into View  ${BTN_REMOVER_CARRINHO}
   Click Button  ${BTN_REMOVER_CARRINHO}
   Capture Page Screenshot
-  Limpar variaveis globais
 
 Converter posição escrita para o nome do produto
   [Documentation]  Converte a posição escrita do produto para o nome do produto correspondente.
