@@ -1,6 +1,5 @@
 *** Settings ***
-Resource  ../main.robot
-Documentation  Arquivo de keywords do sistema de vendas
+Documentation  Este arquivo contém as variáveis de massa de dados para o sistema de vendas (https://www.saucedemo.com/).
 
 *** Variables ***
 &{DIC_POSICOES}

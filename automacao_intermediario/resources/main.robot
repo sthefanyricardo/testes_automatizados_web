@@ -15,9 +15,9 @@ Resource  ./credentials/credentials.resource
 Resource  ./massa_dados/massa_dados.resource
 
 # Importando os arquivos de keywords comuns
-Resource  ./keywords_common/setup.robot
-Resource  ./keywords_common/teardown.robot
-Resource  ./keywords_common/kws_shared.robot
+Resource  ./keywords_common/setup.resource
+Resource  ./keywords_common/teardown.resource
+Resource  ./keywords_common/kws_shared.resource
 
 # Importando os arquivos de pages objects
 Resource  ./page_objects/PO_login.resource

@@ -1,4 +1,5 @@
 *** Settings ***
+Documentation  Este arquivo contém as keywords para o sistema de vendas (https://www.saucedemo.com/), incluindo ações de login, adição e remoção de produtos no carrinho, e finalização de pedidos.
 Resource  ../main.robot
 
 *** Keywords ***
