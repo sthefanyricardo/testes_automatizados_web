@@ -38,6 +38,7 @@ Este projeto foi desenvolvido com as seguintes ferramentas e tecnologias. Certif
 ## 📁 Estrutura do Repositório
 Abaixo está a organização dos arquivos e pastas do projeto, com uma breve descrição de suas funções:
 
+```
 automacao_avancado/
 ├── **`resources/`** → Recursos reutilizáveis do projeto
 │ ├── **`environments/`** → Configurações específicas de ambiente
@@ -49,6 +50,7 @@ automacao_avancado/
 ├── **`tests/`** → Suítes de teste automatizadas
 ├── **`README.md`** → Documentação com instruções de uso e visão geral do projeto
 └── **`requirements.txt`** → Lista de dependências necessárias para executar o projeto
+```
 
 ---
 
@@ -101,5 +103,5 @@ automacao_avancado/
 ---
 
 ## 🙋‍♀️ Autora
-Feito com ❤️ por **Sthefany A. Ricardo**.
-📅 Última atualização: **Agosto de 2025**.
+Feito com ❤️ por **Sthefany A. Ricardo**.  
+📅 Última atualização: **Agosto de 2025**.  
