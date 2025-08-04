@@ -1,6 +1,6 @@
 *** Settings ***
+Documentation  Este arquivo contém os passos para realizar uma transferência bancária no sistema bancário de testes.
 Resource  ../main.robot
-Library    DateTime
 
 *** Keywords ***
 Dado que realizo o login com usuário "${LOGIN_USER}" e senha "${LOGIN_PASSWORD}" na página inicial do sistema bancário

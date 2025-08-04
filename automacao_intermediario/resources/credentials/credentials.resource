@@ -1,3 +1,6 @@
+*** Settings ***
+Documentation  
+
 *** Variables ***
 ${LOGIN_PASSWORD}  secret_sauce
 
