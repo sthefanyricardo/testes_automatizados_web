@@ -15,7 +15,7 @@ Implementação de testes automatizados utilizando **Robot Framework** com o pad
 ## 🧪 Casos de Teste Implementados
 | ID   | Título                                             | Objetivo                                                                                 | Tags                         |
 | ---- | -------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------- |
-| CT01 | Login válido, transferência bancária entre contas e visualização de saldo/extrato da transação | Login bem-sucedido e execução de uma transferência entre contas cadastradas.             | CT01, LOGIN_TRANSFERENCIA |
+| CT01 | Transferência bancária com validação de saldo e extrato | Login bem-sucedido e execução de uma transferência entre contas cadastradas.             | CT01, LOGIN_TRANSFERENCIA |
 
 ---
 
@@ -52,6 +52,7 @@ automacao_avancado/
 │ ├── environments/ → Configurações específicas de ambiente
 │ ├── keywords/ → keywords personalizadas para testes
 │ ├── keywords_common/ → Keywords compartilhadas entre testes
+│ ├── massa_dados/ → Variáveis com dados utilizados para fornecer informações dinâmicas aos testes
 │ ├── page_objects/ → Elementos estruturados com Page Object Model
 │ └── main.robot → Arquivo principal que centraliza os recursos
 ├── resultados/ → Relatórios gerados após a execução dos testes
