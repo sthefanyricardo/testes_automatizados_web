@@ -3,13 +3,6 @@ Documentation  Este arquivo contém as keywords para o sistema de vendas (https:
 Resource  ../main.robot
 
 *** Keywords ***
-Acessar página home do site
-  [Documentation]  Acessa a página inicial do site de testes (https://www.saucedemo.com/)
-  [Arguments]  ${URL_HOME}=${SAUCE_DEMO_URLS.env_v0}
-  Go To  ${URL_HOME} 
-  Title Should Be  ${LOGIN_TITLE}
-  Capture Page Screenshot
-
 Login com usuário
   [Documentation]  Realiza o login no sistema com o usuário e senha fornecidos pelos argumentos.
   [Arguments]  ${username}=${DIC_LOGIN_USERS.user_padrao}  ${password}=${LOGIN_PASSWORD}

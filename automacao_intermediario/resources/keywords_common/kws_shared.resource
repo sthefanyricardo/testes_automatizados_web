@@ -3,6 +3,13 @@ Resource  ../main.robot
 Documentation  Este arquivo contém as keywords que podem ser compartilhadas entre os cenarios de testes para o sistema de vendas (https://www.saucedemo.com/)
 
 *** Keywords ***
+Acessar página home do site
+  [Documentation]  Acessa a página inicial do site de testes (https://www.saucedemo.com/)
+  [Arguments]  ${URL_HOME}=${SAUCE_DEMO_URLS.env_v0}
+  Go To  ${URL_HOME} 
+  Title Should Be  ${LOGIN_TITLE}
+  Capture Page Screenshot
+  
 Criar dados de nome, sobrenome e código postal aleatórios
   [Documentation]  Cria dados aleatórios para o nome, sobrenome e código postal.
   ${FIRST_NAME}  FakerLibrary.First Name
