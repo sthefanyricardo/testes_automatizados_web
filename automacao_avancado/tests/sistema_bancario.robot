@@ -10,7 +10,7 @@ CT01: Validar login, execução de transferência entre contas e verificação d
   [Tags]  CT01  LOGIN_TRANSFERENCIA
   [Setup]  Run Keywords  Acessar página home do site  ${DEMO_TEST_FIRE_URL}
   ...  AND  Verificar o saldo atual da conta  800001 Checking
-  Dado que realizo o login com usuário "admin" e senha "admin" na página inicial do sistema bancário
+  Dado que realizo o login com usuário "${LOGIN_USER}" e senha "${LOGIN_PASSWORD}" na página inicial do sistema bancário
   Quando realizo uma transferência da conta "800000 Corporate" para a conta "800001 Checking"
   Então acesso o resumo da conta "800001 Checking"
   E verifico se a transferência foi listada corretamente

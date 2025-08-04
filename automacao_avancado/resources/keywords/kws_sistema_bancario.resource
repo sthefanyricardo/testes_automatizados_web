@@ -31,7 +31,7 @@ Acessar página home do site
 
 Realizar login na página inicial do sistema bancário
   [Documentation]  Realiza o login na página inicial do sistema bancário.
-  [Arguments]  ${LOGIN_USER}=admin  ${LOGIN_PASSWORD}=admin
+  [Arguments]  ${LOGIN_USER}=${LOGIN_USER}  ${LOGIN_PASSWORD}=${LOGIN_PASSWORD}
   Click Link  ${HOME_LINK_LOGIN}
   Wait Until Page Contains Element  ${LOGIN_TITLE}
   Capture Page Screenshot

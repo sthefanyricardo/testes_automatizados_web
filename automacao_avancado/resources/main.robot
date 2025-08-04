@@ -7,6 +7,9 @@ Library  Collections
 Library  String
 Library  FakerLibrary  locale=pt_BR
 
+# Importando os arquivos de variáveis de URL
+Resource  ./credentials/credentials.resource
+
 # Importando os arquivos de keywords comuns
 Resource  ./keywords_common/setup.robot
 Resource  ./keywords_common/teardown.robot
