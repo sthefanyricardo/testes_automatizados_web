@@ -15,11 +15,17 @@ Obter o nome do produto adicionado
   [Arguments]  ${INDICE_POSICAO}
   ${NOME_PRODUTO}  Get Text  (${INVENTORY_DIV_INVENTARIO_ITEM}${INVENTORY_LBL_ITEM_NOME})[${INDICE_POSICAO}]
   Log  O produto a ser adicionado é: ${NOME_PRODUTO}.
+  ${NOME_PRODUTO_FORMATADO}  Formatar o nome do produto obtido  ${NOME_PRODUTO}
+  Adicionar nome do produto ao dicionário global  ${NOME_PRODUTO_FORMATADO}
+
+Formatar o nome do produto obtido
+  [Documentation]  Formata o nome do produto obtido, removendo espaços e convertendo para minúsculas.
+  [Arguments]  ${NOME_PRODUTO}
   ${NOME_PRODUTO_REPLACE}  Replace String  ${NOME_PRODUTO}  ${SPACE}  -
   Log  A formatação atual do nome do produto ficou assim: ${NOME_PRODUTO_REPLACE}.
   ${NOME_PRODUTO_FORMATADO}  Convert To Lower Case  ${NOME_PRODUTO_REPLACE}
   Log  A formatação final do nome do produto ficou assim: ${NOME_PRODUTO_FORMATADO}.
-  Adicionar nome do produto ao dicionário global  ${NOME_PRODUTO_FORMATADO}
+  RETURN  ${NOME_PRODUTO_FORMATADO}
 
 Adicionar nome do produto ao dicionário global
   [Documentation]  Adiciona o nome do produto ao dicionário global de produtos adicionados.
@@ -28,7 +34,7 @@ Adicionar nome do produto ao dicionário global
     FOR  ${key}  ${value}  IN  &{DIC_PRODUTOS_ADICIONADOS}
       IF  '${value}' == ''
         Set To Dictionary  ${DIC_PRODUTOS_ADICIONADOS}  ${key}  ${NOME_PRODUTO}
-        Log  A posição do produto adicionado foi atualizada: ${DIC_PRODUTOS_ADICIONADOS}.
+        Log  O produto '${NOME_PRODUTO}' foi adicionado ao dicionário global de produtos adicionados: ${DIC_PRODUTOS_ADICIONADOS}.
         Exit For Loop
       END
     END
@@ -38,7 +44,7 @@ Obter a posição do produto adicionado
   [Documentation]  Captura a posição do produto adicionado e armazena em uma variável global.
   [Arguments]  ${POSICAO}=${EMPTY}
   Append To List  ${LIST_POSICAO_PRODUTOS_ADICIONADOS}  ${POSICAO}
-  Log  O índice do produto adicionado foi na lista ${LIST_POSICAO_PRODUTOS_ADICIONADOS}.
+  Log  Lista atualizada de posições dos produtos adicionados: ${LIST_POSICAO_PRODUTOS_ADICIONADOS}.
 
 Converter posição escrita para numero
   [Documentation]  Converte a posição escrita do produto para o número correspondente.
@@ -61,7 +67,11 @@ Escolher posição aleatória sem repetição
   ${LISTA_TODAS_POSICOES}  Create List  primeiro  segundo  terceiro  quarto  quinto  sexto
   Remove Values From List  ${LISTA_TODAS_POSICOES}  @{LIST_POSICAO_PRODUTOS_ADICIONADOS}
   ${LISTA_POSICOES_DISPONIVEIS}  Copy List  ${LISTA_TODAS_POSICOES}
-  ${NOVA_POSICAO}  Evaluate  random.choice(${LISTA_POSICOES_DISPONIVEIS})  modules=random
+  IF  ${LISTA_POSICOES_DISPONIVEIS} == []
+    Fail  Não há mais produtos disponíveis para adicionar.
+  ELSE
+    ${NOVA_POSICAO}  Evaluate  random.choice(${LISTA_POSICOES_DISPONIVEIS})  modules=random
+  END
   RETURN  ${NOVA_POSICAO}
 
 Verificar se há produtos já adicionados e atualizar o índice de opções disponíveis
