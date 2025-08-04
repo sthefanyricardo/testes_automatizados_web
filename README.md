@@ -39,9 +39,9 @@ Este projeto demonstra a automação de funcionalidades mais complexas em um sis
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Tecnologias e ferramentas utilizadas
 
-- **Python:** Linguagem de programação base para o Robot Framework e suas bibliotecas.
+- **Python:** Linguagem utilizada como base do projeto e suporte para bibliotecas do Robot Framework.
 - **Git e GitHub:** Para controle de versão e compartilhamento de código.
 - **Visual Studio Code:** IDE utilizada para o desenvolvimento dos testes.
 - **Robot Framework:** Framework de automação de testes com sintaxe baseada em palavras-chave.
@@ -50,64 +50,29 @@ Este projeto demonstra a automação de funcionalidades mais complexas em um sis
 
 ---
 
-## 📁 Conteúdo do Repositório 
-1. **Estrutura do Repositório e Descrição das Pastas:**
+## 🔧 Requisitos
+- Python 3.13.2 ou superior [Download](https://www.python.org/downloads/)
+- Robot Framework 7.3.2 ou superior [Documentação](https://robotframework.org/?tab=1#getting-started)
+- Git [Download](https://git-scm.com/downloads)
+- Visual Studio Code [Download](https://code.visualstudio.com/download)
+- Um navegador (como Chrome, Microsoft Edge, Firefox, etc.) instalado
+- WebDriver compatível com a versão do seu navegador e adicionado ao PATH:
+  - ChromeDriver para Google Chrome [Download](https://googlechromelabs.github.io/chrome-for-testing/)
+  - EdgeDriver para o Microsoft Edge [Download](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver)
+  - Geckodriver para o FireFox [Download](https://github.com/mozilla/geckodriver/releases)
+
+---
+
+## 📁 Estrutura do Repositório
 O repositório está organizado em pastas, cada uma correspondente a um nível de complexidade:
 
 - **automacao_avancado/** → Contém os testes avançados de interface usando **SeleniumLibrary** e **Faker Library**, aplicados com padrão de projeto Page Object Model (POM).
 - **automacao_basico/** → Contém os testes básicos de interface web usando **SeleniumLibrary**.  
 - **automacao_intermediario/** → Contém os testes intermediários de interface usando **SeleniumLibrary** e **Faker Library**, aplicados com padrão de projeto Page Object Model (POM).
-- **README.md** → Documentação geral com instruções de instalação, execução e visão geral dos testes.  
+- **.gitignore** → Arquivo que lista os diretórios e arquivos a serem ignorados pelo Git.
+- **README.md** → Documentação geral com instruções de instalação, execução e visão geral dos testes.
 
 ---
-
-## 🤖 Como Executar os Testes
-### 🔧 Pré-requisitos (Configuração do Ambiente)
-  1. **Instalação do Python:**
-     - Certifique-se de ter o Python instalado (versão 3.7 ou superior). [Download do Python](https://www.python.org/downloads/)
-  2. **Instalação do WebDriver:**
-     - Baixe o WebDriver correspondente ao seu navegador (ex: [ChromeDriver para Google Chrome](https://googlechromelabs.github.io/chrome-for-testing/) ou [EdgeDriver para o Microsoft Edge](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver)).
-     - Certifique-se de que o caminho para as pastas e/ou arquivos do WebDriver, esteja no PATH do sistema. 
-  3. **Instalação das dependências do projeto:**
-     - Abra o terminal na raiz do projeto e execute o seguinte comando:
-       ```bash
-       pip install -r requirements.txt
-       ```
-       Isso instalará todas as dependências listadas no arquivo.
-     - **Verifique a instalação:**
-       Após a instalação, você pode verificar se tudo está funcionando corretamente executando um dos testes do seu projeto.
----
-
-### 📊 Executando os Testes
-1. Clone o repositório:
-```bash
-   git clone https://github.com/sthefanyricardo/testes_automatizados_web.git
-```
-2. Pelo terminal ou IDE, navegue até a pasta desejada do projeto, **como no exemplo abaixo:**
-```bash
-   cd testes_automatizados_web/automacao_basico
-```
-   **Substitua "automacao_basico" pelo projeto desejado: automacao_intermediario ou automacao_avancado.**
-
-3. Execute os testes, com os exemplos de comandos a seguir:
-- Dentro da pasta: **testes_automatizados_web/automacao_basico**
-
-   📌 Executar somente um teste específico (usando TAGS)
-   ```bash
-      robot -d resultados -t "CT01" tests
-   ```
-   📌 Executar um arquivo de teste específico
-   ```bash
-      robot -d resultados lista_tarefas.robot
-   ```
-   📌 Executar todos os testes da pasta 'tests/'
-   ```bash
-      robot -d resultados tests/
-   ```
-4. Verifique os resultados:
-  Os relatórios e logs serão gerados na pasta ```resultados```.
-
---- 
 
 ## 🙋‍♀️ Autora
 Feito com ❤️ por **Sthefany A. Ricardo**. 
