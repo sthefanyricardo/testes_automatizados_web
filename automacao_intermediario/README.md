@@ -2,28 +2,53 @@
 
 Implementação de testes automatizados utilizando **Robot Framework** com o padrão de projeto **Page Object Model (POM)**, para validar o fluxo de compra na aplicação: [SauceDemo](https://www.saucedemo.com/).
 
-## 🎯 Cenários de Teste
-Estes testes simulam ações reais de usuários, com foco em validar diferentes comportamentos da aplicação em situações comuns e de exceção:
+## ✅ Funcionalidades Testadas
 
-- **CT01: Fluxo completo de compra com o usuário `standard_user`**  
-  - Realizar o login com o usuário `standard_user`
-  - Adicionar o segundo produto no carrinho
-  - Adicionar um outro produto no carrinho
-  - Remover o primeiro produto adicionado
-  - Acessar carrinho e finalizar o pedido
-
-- **CT02: Fluxo completo de compra com o usuário `performance_glitch_user`**  
-  - Realizar o login com o usuário `performance_glitch_user`
-  - Adicionar o segundo produto no carrinho
-  - Adicionar um outro produto no carrinho
-  - Remover o primeiro produto adicionado
-  - Acessar carrinho e finalizar o pedido
-
-- **CT03: Tentativa de finalização sem produtos no carrinho**  
-  - Realizar o login com o usuário `standard_user`
-  - Acessar carrinho e tentar finalizar o pedido
+- **Login**: Acesso com diferentes tipos de usuários (`standard_user`, `performance_glitch_user`)
+- **Carrinho de Compras**:
+  - Adição e remoção de produtos
+  - Seleção aleatória de produtos
+  - Controle de itens para evitar repetição
+  - Tentativa de compra com carrinho vazio
+- **Finalização do Pedido**:
+  - Preenchimento automático de dados com biblioteca Faker
+  - Verificação de mensagens de sucesso
+- **Outros Recursos**:
+  - Aleatoriedade de produtos com controle de repetição
+  - Uso de dicionários para armazenar informações da sessão
 
 ---
+
+## 🧪 Casos de Teste Implementados
+
+
+| ID   | Título                                           | Objetivo                                                                 | Tags                                 |
+|------|--------------------------------------------------|--------------------------------------------------------------------------|--------------------------------------|
+| CT01 | Fluxo completo de compra com usuário padrão      | Valida login, manipulação do carrinho e finalização do pedido.           | CT01, LOGIN_USER_STANDARD               |
+| CT02 | Compra com usuário com falhas de performance     | Verifica fluxo de compra simulando lentidão com `performance_glitch_user`.| CT02, LOGIN_USER_PERFORMANCE_GLITCH            |
+| CT03 | Compra com carrinho vazio                        | Tenta finalizar compra sem produtos no carrinho.                         | CT03, TENTATIVA_FINALIZACAO_PEDIDO_SEM_PRODUTOS       |
+
+💡 *Use as tags com `--include` para executar testes específicos.*
+
+---
+
+## 💡 Boas Práticas Aplicadas
+
+### ✅ Organização e Manutenção
+- **DRY (Don't Repeat Yourself)**: Reutilização de keywords para reduzir código duplicado.
+- **Page Object Model (POM)**: Separação das interações por página para facilitar manutenção.
+- **Separação de Responsabilidades**: Estrutura modular dividida entre testes, localizadores e lógica de negócio.
+
+### ⚙️ Eficiência e Robustez
+- **Suite Setup/Teardown**: Gerenciamento da abertura e fechamento do navegador de forma automática.
+- **Uso de Tags**: Segmentação inteligente de testes para execução seletiva.
+- **Controle de Aleatoriedade**: Garantia de não repetição na escolha de produtos.
+
+### 🔧 Recursos Auxiliares
+- **Faker Library**: Geração de dados realistas para preenchimento de formulários.
+- **Dicionários e Listas**: Armazenamento e reaproveitamento de dados ao longo do fluxo de teste.
+
+--- 
 
 ## 🛠️ Tecnologias, Ferramentas e Requisitos
 Este projeto foi desenvolvido com as seguintes ferramentas e tecnologias. Certifique-se de que sua máquina atende aos requisitos abaixo para executar os testes.
@@ -61,7 +86,7 @@ automacao_intermediario/
 │ ├── page_objects/ → Elementos estruturados com Page Object Model
 │ └── main.robot → Arquivo principal que centraliza os recursos
 ├── resultados/ → Relatórios gerados após a execução dos testes
-├── tests/ → Suítes de teste automatizadas
+├── tests/ → Suítes de testes automatizados
 ├── README.md → Documentação com instruções de uso e visão geral do projeto
 └── requirements.txt → Lista de dependências necessárias para executar o projeto
 ```
@@ -71,7 +96,7 @@ automacao_intermediario/
 ## 🤖 Como Executar os Testes
 ### 🔧 Pré-requisitos (Configuração do Ambiente)
   1. **Instalação do Python:**
-     - Certifique-se de ter o Python instalado (versão 3.7 ou superior). [Download do Python](https://www.python.org/downloads/)
+     - Certifique-se de ter o Python instalado (versão 3.13.2 ou superior). [Download do Python](https://www.python.org/downloads/)
   2. **Instalação do WebDriver:**
      - Baixe o WebDriver correspondente ao seu navegador (ex: [ChromeDriver para Google Chrome](https://googlechromelabs.github.io/chrome-for-testing/) ou [EdgeDriver para o Microsoft Edge](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver) ou [GeckoDriver para o Firefox](https://github.com/mozilla/geckodriver/releases)).
      - Certifique-se de que o caminho para as pastas e/ou arquivos do WebDriver, esteja no PATH do sistema. 

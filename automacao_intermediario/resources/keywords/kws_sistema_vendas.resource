@@ -141,17 +141,6 @@ Converter posição escrita para o nome do produto
   END
   RETURN  ${NOME_PRODUTO}
 
-Limpar variaveis globais
-  [Documentation]  Limpa as variáveis globais utilizadas no teste.
-  Set Global Variable  @{LIST_POSICAO_PRODUTOS_ADICIONADOS}  @{EMPTY}
-  Log  A lista global de posições de produtos adicionados foi limpa.
-  FOR  ${key}  ${value}  IN  &{DIC_PRODUTOS_ADICIONADOS}
-    IF  '${value}' != ''
-      Set To Dictionary  ${DIC_PRODUTOS_ADICIONADOS}  ${key}  ${EMPTY}
-    END
-    Log  O dicionário global de posições de produtos por ordem de adicionados, foi limpo.
-  END
-
 Acessar carrinho e finalizar o pedido
   [Documentation]  Acessa o carrinho de compras e finaliza o pedido.
   Click Link  ${INVENTORY_LINK_CARRINHO}
