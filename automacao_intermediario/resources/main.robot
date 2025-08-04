@@ -6,7 +6,6 @@ Library  SeleniumLibrary
 Library  Collections
 Library  String
 Library  FakerLibrary  locale=pt_BR
-Library  XML
 
 # Importando os arquivos de keywords comuns
 Resource  ./keywords_common/setup.robot
