@@ -98,10 +98,10 @@ Verificar o saldo atual da conta
   [Arguments]  ${ACCOUNT_ID}
   Realizar login na página inicial do sistema bancário
   Acessar resumo da conta "${ACCOUNT_ID}"
-  Verificar e capturar o saldo da conta  ${ACCOUNT_ID}
+  Verificar e obter o saldo da conta  ${ACCOUNT_ID}
   Realizar o logoff do sistema bancário
 
-Verificar e capturar o saldo da conta
+Verificar e obter o saldo da conta
   [Documentation]  Verifica e captura o saldo da conta bancária especificada.
   [Arguments]  ${ACCOUNT_ID}
   Wait Until Page Contains Element  ${ACCOUNT_HISTORY_TITLE}
