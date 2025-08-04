@@ -15,4 +15,3 @@ CT01: Validar login, execução de transferência entre contas e verificação d
   Então acesso o resumo da conta "800001 Checking"
   E verifico se a transferência foi listada corretamente
   E verifico se o saldo da conta "800001 Checking" foi atualizado corretamente
-  
