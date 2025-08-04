@@ -1,10 +1,8 @@
 # Projetos de Testes Automatizados com Robot Framework
 
-Este repositório reúne três projetos de automação de testes desenvolvidos com o Robot Framework, organizados por nível de complexidade: básico, intermediário e avançado.
+Este repositório reúne três projetos de automação de testes web desenvolvidos com o **Robot Framework**, organizados por nível de complexidade: básico, intermediário e avançado.
 
-Os testes foram criados com foco em boas práticas de automação, incluindo o uso do padrão Page Object Model (POM) e a aplicação da técnica DRY (Don't Repeat Yourself), promovendo maior reutilização de código, clareza e manutenção facilitada.
-
-O objetivo deste repositório é demonstrar abordagens eficazes e escaláveis para validar sistemas web simulados, com estruturas organizadas, legíveis e alinhadas aos princípios da Engenharia de Qualidade.
+Os projetos foram criados com foco em **boas práticas de automação**, como o padrão **Page Object Model (POM)** e o princípio **DRY (Don't Repeat Yourself)**. O objetivo é demonstrar uma abordagem eficaz e escalável para a validação de sistemas, com estruturas organizadas, legíveis e alinhadas aos princípios da Engenharia de Qualidade.
 
 ## Detalhes dos Projetos
 
@@ -15,7 +13,7 @@ Este projeto foca em testes de funcionalidades básicas para um gerenciador de a
 - Filtragem e limpeza de atividades concluídas
 - Exclusão de atividades
 
-[Cenários detalhados e código](./automacao_basico)
+[Detalhes do projeto](./automacao_basico)
 
 ---
 
@@ -26,7 +24,7 @@ Este projeto utiliza o site e implementa o padrão de design Page Object Model (
 - Finalização de pedidos
 - Validação dos fluxos de compra
 
-[Cenários detalhados e código](./automacao_intermediario)
+[Detalhes do projeto](./automacao_intermediario)
 
 ---
 
@@ -37,27 +35,27 @@ Este projeto demonstra a automação de funcionalidades mais complexas em um sis
 - Verificação de extrato e listagem de transações
 - Validação precisa do saldo atualizado após transações
 
-[Cenários detalhados e código](./automacao_avancado)
+[Detalhes do projeto](./automacao_avancado)
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **Python** → Linguagem de programação base para o Robot Framework.  
-- **Git e GitHub** → Controle de versão e compartilhamento de código.  
-- **Visual Studio Code** → IDE utilizada para desenvolvimento.  
-- **Robot Framework** → Framework de automação de testes.  
-- **SeleniumLibrary** → Biblioteca para automação de testes web.  
-- **Faker Library**  → Biblioteca geração de massa de dados.
+- **Python:** Linguagem de programação base para o Robot Framework e suas bibliotecas.
+- **Git e GitHub:** Para controle de versão e compartilhamento de código.
+- **Visual Studio Code:** IDE utilizada para o desenvolvimento dos testes.
+- **Robot Framework:** Framework de automação de testes com sintaxe baseada em palavras-chave.
+- **SeleniumLibrary:** Biblioteca essencial para a automação de testes web.
+- **Faker Library:** Biblioteca utilizada para a geração de massa de dados dinâmicos.
 
 ---
 
 ## 📁 Conteúdo do Repositório 
 1. **Estrutura do Repositório e Descrição das Pastas:**
-   
-   Este repositório está organizado em três níveis de complexidade — básico, intermediário e avançado — com automações web desenvolvidas em Robot Framework.
+O repositório está organizado em pastas, cada uma correspondente a um nível de complexidade:
+
 - **automacao_avancado/** → Contém os testes avançados de interface usando **SeleniumLibrary** e **Faker Library**, aplicados com padrão de projeto Page Object Model (POM).
-- **automacao_basico/** → Contém os testes básico de interface web usando **SeleniumLibrary**.  
+- **automacao_basico/** → Contém os testes básicos de interface web usando **SeleniumLibrary**.  
 - **automacao_intermediario/** → Contém os testes intermediários de interface usando **SeleniumLibrary** e **Faker Library**, aplicados com padrão de projeto Page Object Model (POM).
 - **README.md** → Documentação geral com instruções de instalação, execução e visão geral dos testes.  
 
@@ -78,6 +76,7 @@ Este projeto demonstra a automação de funcionalidades mais complexas em um sis
        Isso instalará todas as dependências listadas no arquivo.
      - **Verifique a instalação:**
        Após a instalação, você pode verificar se tudo está funcionando corretamente executando um dos testes do seu projeto.
+---
 
 ### 📊 Executando os Testes
 1. Clone o repositório:
@@ -86,20 +85,22 @@ Este projeto demonstra a automação de funcionalidades mais complexas em um sis
 ```
 2. Pelo terminal ou IDE, navegue até a pasta desejada do projeto, **como no exemplo abaixo:**
 ```bash
-   cd testes_automatizados_web/automacao_?
+   cd testes_automatizados_web/automacao_basico
 ```
-3. Execute os testes, com os exemplos de comandos a seguir:
-- Dentro da pasta: **testes_automatizados_web/automacao_?**
+   **Substitua "automacao_basico" pelo projeto desejado: automacao_intermediario ou automacao_avancado.**
 
-   📌 Executando testes específicos:
+3. Execute os testes, com os exemplos de comandos a seguir:
+- Dentro da pasta: **testes_automatizados_web/automacao_basico**
+
+   📌 Executar somente um teste específico (usando TAGS)
    ```bash
       robot -d resultados -t "CT01" tests
    ```
-   📌 Executando um arquivo específico:
+   📌 Executar um arquivo de teste específico
    ```bash
       robot -d resultados lista_tarefas.robot
    ```
-   📌 Executando todos os testes da pasta:
+   📌 Executar todos os testes da pasta 'tests/'
    ```bash
       robot -d resultados tests/
    ```
@@ -115,4 +116,4 @@ Feito com ❤️ por **Sthefany A. Ricardo**.
 
 🔗 [LinkedIn](https://www.linkedin.com/in/sthefanyricardo/) 
 
-📅 Última atualização: **Julho de 2025**. 
+📅 Última atualização: **Agosto de 2025**. 
