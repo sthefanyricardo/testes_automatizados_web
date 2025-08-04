@@ -58,7 +58,7 @@ Este projeto foi desenvolvido com as seguintes ferramentas e tecnologias. Certif
   - **WebDriver:** O WebDriver compatível com a versão do seu navegador deve ser baixado e adicionado ao PATH do sistema.
     - [ChromeDriver para Google Chrome](https://googlechromelabs.github.io/chrome-for-testing/)
     - [EdgeDriver para o Microsoft Edge](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver)
-    - [Geckodriver para o Firefox](https://github.com/mozilla/geckodriver/releases)
+    - [GeckoDriver para o Firefox](https://github.com/mozilla/geckodriver/releases)
 
 ---
 
