@@ -15,9 +15,7 @@ Implementação de testes automatizados utilizando **Robot Framework** com o pad
 ## 🧪 Casos de Teste Implementados
 | ID   | Título                                             | Objetivo                                                                                 | Tags                         |
 | ---- | -------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------- |
-| CT01 | Login inválido com usuário e senha incorretos      | Verificar que o sistema bloqueia tentativas de login com credenciais inválidas.          | `LOGIN_INVALIDO`             |
-| CT02 | Login válido e visualização de saldo e extrato     | Validar login com credenciais corretas e verificar exibição do saldo e extrato bancário. | `LOGIN_VALIDO_SALDO_EXTRATO` |
-| CT03 | Login válido e transferência bancária entre contas | Login bem-sucedido e execução de uma transferência entre contas cadastradas.             | `LOGIN_VALIDO_TRANSFERENCIA` |
+| CT01 | Login válido, transferência bancária entre contas e visualização de saldo/extrato da transação | Login bem-sucedido e execução de uma transferência entre contas cadastradas.             | CT01, LOGIN_TRANSFERENCIA |
 
 ---
 
