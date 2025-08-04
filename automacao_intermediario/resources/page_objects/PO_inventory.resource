@@ -1,3 +1,6 @@
+*** Settings ***
+Documentation  Este arquivo contém as variáveis de configuração e elementos da página de inventário do sistema de vendas (https://www.saucedemo.com/).
+
 *** Variables ***
 ${INVENTORY_LINK_CARRINHO}  //a[@data-test="shopping-cart-link"]
 
