@@ -13,3 +13,10 @@ Limpar variaveis globais
     END
     Log  O dicionário global de posições de produtos por ordem de adicionados, foi limpo.
   END
+
+Criar dados de nome, sobrenome e código postal aleatórios
+  [Documentation]  Cria dados aleatórios para o nome, sobrenome e código postal.
+  ${FIRST_NAME}  FakerLibrary.First Name
+  ${LAST_NAME}  FakerLibrary.Last Name
+  ${POSTAL_CODE}  FakerLibrary.Postcode
+  RETURN  ${FIRST_NAME}  ${LAST_NAME}  ${POSTAL_CODE}

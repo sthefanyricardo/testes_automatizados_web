@@ -1,25 +1,6 @@
 *** Settings ***
 Resource  ../main.robot
 
-*** Variables ***
-&{DIC_POSICOES}
-...  primeiro=1
-...  segundo=2
-...  terceiro=3
-...  quarto=4
-...  quinto=5
-...  sexto=6
-
-&{DIC_PRODUTOS_ADICIONADOS}
-...  primeiro=
-...  segundo=
-...  terceiro=
-...  quarto=
-...  quinto=
-...  sexto=
-
-@{LIST_POSICAO_PRODUTOS_ADICIONADOS}
-
 *** Keywords ***
 Acessar página home do site
   [Documentation]  Acessa a página inicial do site de testes (https://www.saucedemo.com/)
@@ -147,9 +128,7 @@ Acessar carrinho e finalizar o pedido
   Wait Until Element Is Visible  ${CART_TITLE}
   Capture Page Screenshot
   Click Button  ${CART_BTN_CHECKOUT}
-  ${FIRST_NAME}  FakerLibrary.First Name
-  ${LAST_NAME}  FakerLibrary.Last Name
-  ${POSTAL_CODE}  FakerLibrary.Postcode
+  ${FIRST_NAME}  ${LAST_NAME}  ${POSTAL_CODE}  Criar dados de nome, sobrenome e código postal aleatórios
   Input Text  ${CHECKOUT_FIELD_FIRST_NAME}  ${FIRST_NAME}
   Input Text  ${CHECKOUT_FIELD_LAST_NAME}  ${LAST_NAME}
   Input Text  ${CHECKOUT_FIELD_POSTAL_CODE}  ${POSTAL_CODE}
