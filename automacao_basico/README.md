@@ -24,9 +24,9 @@ Implementação dos scripts de testes automatizados com **Robot Framework** e o 
 ## 🧪 Casos de Teste Implementados
 | ID   | Título                                                           | Objetivo                                                                                                             | Tags                               |
 | ---- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| CT01 | Adicionar atividades, marcar como concluída e filtrar concluídas | Verifica a adição de 3 atividades, marca a 2ª como concluída e filtra todas as atividades concluídas.                | `ADICIONAR_MARCAR_FILTRAR`         |
-| CT02 | Adicionar, concluir, excluir atividade e filtrar concluídas      | Adiciona 4 atividades, marca a 3ª como concluída, exclui essa atividade e filtra as atividades concluídas restantes. | `ADICIONAR_MARCAR_EXCLUIR_FILTRAR` |
-| CT03 | Adicionar atividades, concluir uma e limpar concluídas           | Adiciona 4 atividades, marca a 4ª como concluída e executa a limpeza das atividades concluídas.                      | `ADICIONAR_MARCAR_LIMPAR`          |
+| CT01 | Adicionar atividades, marcar como concluída e filtrar concluídas | Verifica a adição de 3 atividades, marca a 2ª como concluída e filtra todas as atividades concluídas.                | CT01, ADICIONAR_MARCAR_FILTRAR         |
+| CT02 | Adicionar, concluir, excluir atividade e filtrar concluídas      | Adiciona 4 atividades, marca a 3ª como concluída, exclui essa atividade e filtra as atividades concluídas restantes. | CT02, ADICIONAR_MARCAR_EXCLUIR_FILTRAR |
+| CT03 | Adicionar atividades, concluir uma e limpar concluídas           | Adiciona 4 atividades, marca a 4ª como concluída e executa a limpeza das atividades concluídas.                      | CT03, ADICIONAR_MARCAR_LIMPAR          |
 
 ---
 
