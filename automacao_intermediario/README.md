@@ -17,8 +17,6 @@ Implementação de testes automatizados utilizando **Robot Framework** com o pad
   - Aleatoriedade de produtos com controle de repetição
   - Uso de dicionários para armazenar informações da sessão
 
----
-
 ## 🧪 Casos de Teste Implementados
 
 
