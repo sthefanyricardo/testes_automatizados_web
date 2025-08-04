@@ -1,0 +1,1408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.3.2 (Python 3.13.2 on win32)" generated="2025-08-04T05:36:35.994457" rpa="false" schemaversion="5">
+<suite id="s1" name="Tests" source="C:\workspace\testes_automatizados_web\automacao_basico\tests">
+<suite id="s1-s1" name="Lista Tarefas" source="C:\workspace\testes_automatizados_web\automacao_basico\tests\lista_tarefas.robot">
+<kw name="Abrir o navegador" owner="setup" type="SETUP">
+<if>
+<branch type="IF" condition="'${HEADLESS}' == 'True' or '${HEADLESS}' == 'true'">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<arg>about:blank</arg>
+<arg>${BROWSER}</arg>
+<arg>options=add_argument("--headless=new")</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="NOT RUN" start="2025-08-04T05:36:41.305406" elapsed="0.000237"/>
+</kw>
+<status status="NOT RUN" start="2025-08-04T05:36:41.299647" elapsed="0.006364"/>
+</branch>
+<branch type="ELSE">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:41.309127" level="INFO">Opening browser 'chrome' to base url 'about:blank'.</msg>
+<arg>about:blank</arg>
+<arg>${BROWSER}</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2025-08-04T05:36:41.308031" elapsed="3.208907"/>
+</kw>
+<status status="PASS" start="2025-08-04T05:36:41.306260" elapsed="3.211031"/>
+</branch>
+<status status="PASS" start="2025-08-04T05:36:41.299490" elapsed="3.218040"/>
+</if>
+<kw name="Maximize Browser Window" owner="SeleniumLibrary">
+<doc>Maximizes current browser window.</doc>
+<status status="PASS" start="2025-08-04T05:36:44.518298" elapsed="0.154578"/>
+</kw>
+<doc>Abre o navegador (Browser) com as opções definidas</doc>
+<status status="PASS" start="2025-08-04T05:36:41.298538" elapsed="3.374854"/>
+</kw>
+<test id="s1-s1-t1" name="CT01: Adicionar atividades, marcar como concluída e filtrar concluídas" line="9">
+<kw name="Acessar página home do site" owner="kws_lista_tarefas" type="SETUP">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:44.680804" level="INFO">Opening url 'https://todomvc.com/examples/react/dist/'</msg>
+<arg>${URL_HOME}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2025-08-04T05:36:44.680157" elapsed="3.305109"/>
+</kw>
+<kw name="Title Should Be" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:48.012753" level="INFO">Page title is 'TodoMVC: React'.</msg>
+<arg>${HOME_TITLE}</arg>
+<doc>Verifies that the current page title equals ``title``.</doc>
+<status status="PASS" start="2025-08-04T05:36:47.987642" elapsed="0.025389"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:48.235181" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-1.png"&gt;&lt;img src="selenium-screenshot-1.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:36:48.013714" elapsed="0.222213"/>
+</kw>
+<arg>${TODO_MVC_URL}</arg>
+<doc>Acessa a página inicial do site de testes (https://todomvc.com/examples/react/dist/)</doc>
+<status status="PASS" start="2025-08-04T05:36:44.678493" elapsed="3.558237"/>
+</kw>
+<kw name="Adicionar &quot;3&quot; atividade(s)" owner="kws_lista_tarefas" source_name="Adicionar &quot;${QUANT_ATIVIDADES}&quot; atividade(s)">
+<kw name="Create List" owner="BuiltIn">
+<msg time="2025-08-04T05:36:48.257763" level="INFO">@{LISTA_ATIVIDADES} = [ ]</msg>
+<var>@{LISTA_ATIVIDADES}</var>
+<doc>Returns a list containing given items.</doc>
+<status status="PASS" start="2025-08-04T05:36:48.256757" elapsed="0.001173"/>
+</kw>
+<for flavor="IN RANGE">
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:36:48.260931" level="INFO">${ATIVIDADE} = Atividade 1</msg>
+<var>${ATIVIDADE}</var>
+<arg>"Atividade " + str(${INDEX} + 1)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:36:48.260060" elapsed="0.001021"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${LISTA_ATIVIDADES}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-08-04T05:36:48.261709" elapsed="0.000667"/>
+</kw>
+<kw name="Inserir atividade" owner="kws_lista_tarefas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:48.267008" level="INFO">Typing text 'Atividade 1' into text field 'id=todo-input'.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>${TEXTO_ATIVIDADE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:48.265674" elapsed="0.255910"/>
+</kw>
+<kw name="Press Keys" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:48.523722" level="INFO">Sending key(s) ('RETURN',) to id=todo-input element.</msg>
+<msg time="2025-08-04T05:36:48.849673" level="INFO">Pressing special key RETURN to element.</msg>
+<msg time="2025-08-04T05:36:48.849950" level="INFO">Releasing special key RETURN.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>RETURN</arg>
+<doc>Simulates the user pressing key(s) to an element or on the active browser.</doc>
+<status status="PASS" start="2025-08-04T05:36:48.522302" elapsed="0.431600"/>
+</kw>
+<arg>${HOME_INPUT_NOVA_TAREFA}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Clicar no campo de entrada, inserir uma atividade e pressionar Enter</doc>
+<status status="PASS" start="2025-08-04T05:36:48.263618" elapsed="0.690760"/>
+</kw>
+<var name="${INDEX}">0</var>
+<status status="PASS" start="2025-08-04T05:36:48.259468" elapsed="0.695189"/>
+</iter>
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:36:48.957286" level="INFO">${ATIVIDADE} = Atividade 2</msg>
+<var>${ATIVIDADE}</var>
+<arg>"Atividade " + str(${INDEX} + 1)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:36:48.956042" elapsed="0.001432"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${LISTA_ATIVIDADES}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-08-04T05:36:48.958387" elapsed="0.000871"/>
+</kw>
+<kw name="Inserir atividade" owner="kws_lista_tarefas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:48.962658" level="INFO">Typing text 'Atividade 2' into text field 'id=todo-input'.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>${TEXTO_ATIVIDADE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:48.961799" elapsed="0.223065"/>
+</kw>
+<kw name="Press Keys" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:49.187753" level="INFO">Sending key(s) ('RETURN',) to id=todo-input element.</msg>
+<msg time="2025-08-04T05:36:49.514954" level="INFO">Pressing special key RETURN to element.</msg>
+<msg time="2025-08-04T05:36:49.515229" level="INFO">Releasing special key RETURN.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>RETURN</arg>
+<doc>Simulates the user pressing key(s) to an element or on the active browser.</doc>
+<status status="PASS" start="2025-08-04T05:36:49.186293" elapsed="0.395067"/>
+</kw>
+<arg>${HOME_INPUT_NOVA_TAREFA}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Clicar no campo de entrada, inserir uma atividade e pressionar Enter</doc>
+<status status="PASS" start="2025-08-04T05:36:48.960149" elapsed="0.621649"/>
+</kw>
+<var name="${INDEX}">1</var>
+<status status="PASS" start="2025-08-04T05:36:48.955322" elapsed="0.626744"/>
+</iter>
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:36:49.584327" level="INFO">${ATIVIDADE} = Atividade 3</msg>
+<var>${ATIVIDADE}</var>
+<arg>"Atividade " + str(${INDEX} + 1)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:36:49.583290" elapsed="0.001195"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${LISTA_ATIVIDADES}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-08-04T05:36:49.585143" elapsed="0.001728"/>
+</kw>
+<kw name="Inserir atividade" owner="kws_lista_tarefas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:49.590072" level="INFO">Typing text 'Atividade 3' into text field 'id=todo-input'.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>${TEXTO_ATIVIDADE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:49.589158" elapsed="0.524015"/>
+</kw>
+<kw name="Press Keys" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:50.115243" level="INFO">Sending key(s) ('RETURN',) to id=todo-input element.</msg>
+<msg time="2025-08-04T05:36:50.425322" level="INFO">Pressing special key RETURN to element.</msg>
+<msg time="2025-08-04T05:36:50.425754" level="INFO">Releasing special key RETURN.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>RETURN</arg>
+<doc>Simulates the user pressing key(s) to an element or on the active browser.</doc>
+<status status="PASS" start="2025-08-04T05:36:50.114045" elapsed="0.342260"/>
+</kw>
+<arg>${HOME_INPUT_NOVA_TAREFA}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Clicar no campo de entrada, inserir uma atividade e pressionar Enter</doc>
+<status status="PASS" start="2025-08-04T05:36:49.587627" elapsed="0.869198"/>
+</kw>
+<var name="${INDEX}">2</var>
+<status status="PASS" start="2025-08-04T05:36:49.582674" elapsed="0.874471"/>
+</iter>
+<var>${INDEX}</var>
+<value>${QUANT_ATIVIDADES}</value>
+<status status="PASS" start="2025-08-04T05:36:48.258446" elapsed="2.199022"/>
+</for>
+<kw name="Set Test Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:36:50.465062" level="INFO">@{LISTA_ATIVIDADES_GERADA} = [ Atividade 1 | Atividade 2 | Atividade 3 ]</msg>
+<arg>@{LISTA_ATIVIDADES_GERADA}</arg>
+<arg>@{LISTA_ATIVIDADES}</arg>
+<doc>Makes a variable available everywhere within the scope of the current test.</doc>
+<status status="PASS" start="2025-08-04T05:36:50.458552" elapsed="0.006848"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${HOME_LISTA_TAREFAS}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-04T05:36:50.466392" elapsed="0.055471"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:50.717463" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-2.png"&gt;&lt;img src="selenium-screenshot-2.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:36:50.522585" elapsed="0.195194"/>
+</kw>
+<doc>Cria uma lista de atividades com o número de atividades especificado e insere cada atividade na lista</doc>
+<status status="PASS" start="2025-08-04T05:36:48.254090" elapsed="2.464049"/>
+</kw>
+<kw name="Marcar atividade &quot;2&quot; como concluída" owner="kws_lista_tarefas" source_name="Marcar atividade &quot;${NUM_ATIVIDADE}&quot; como concluída">
+<kw name="Click Element" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:50.721944" level="INFO">Clicking element '(//li[@data-testid='todo-item']//input[@data-testid='todo-item-toggle'])[2]'.</msg>
+<arg>locator=(${HOME_LISTA_TAREFAS}${HOME_CHECKBOX_OPCOES_LISTA})[${NUM_ATIVIDADE}]</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:50.720964" elapsed="0.197470"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:51.205963" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-3.png"&gt;&lt;img src="selenium-screenshot-3.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:36:50.920016" elapsed="0.286307"/>
+</kw>
+<kw name="Verificar se a atividade &quot;${NUM_ATIVIDADE}&quot; está concluída" owner="kws_lista_tarefas" source_name="Verificar se a atividade &quot;${NUM_ATIVIDADE}&quot; está concluída">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:36:51.210020" level="INFO">${ATIVIDADE_SELECIONADA} = (//li[@data-testid='todo-item'])[2]</msg>
+<var>${ATIVIDADE_SELECIONADA}</var>
+<arg>(${HOME_LISTA_TAREFAS})[${NUM_ATIVIDADE}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.209027" elapsed="0.001186"/>
+</kw>
+<kw name="Element Attribute Value Should Be" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:51.310718" level="INFO">Element '(//li[@data-testid='todo-item'])[2]' attribute 'class' contains value 'completed'.</msg>
+<arg>locator=${ATIVIDADE_SELECIONADA}</arg>
+<arg>attribute=class</arg>
+<arg>expected=completed</arg>
+<doc>Verifies element identified by ``locator`` contains expected attribute value.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.211003" elapsed="0.100079"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:36:51.312773" level="INFO">A atividade "2" foi marcada como concluída, com sucesso!</msg>
+<arg>A atividade "${NUM_ATIVIDADE}" foi marcada como concluída, com sucesso!</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.311917" elapsed="0.001120"/>
+</kw>
+<return>
+<value>${ATIVIDADE_SELECIONADA}</value>
+<status status="PASS" start="2025-08-04T05:36:51.313384" elapsed="0.000258"/>
+</return>
+<msg time="2025-08-04T05:36:51.314394" level="INFO">${DIV_ATIVIDADE_SELECIONADA} = (//li[@data-testid='todo-item'])[2]</msg>
+<var>${DIV_ATIVIDADE_SELECIONADA}</var>
+<doc>Verifica se a atividade selecionada está marcada como concluída</doc>
+<status status="PASS" start="2025-08-04T05:36:51.207571" elapsed="0.106986"/>
+</kw>
+<kw name="Obter o conteúdo da atividade selecionada" owner="kws_lista_tarefas">
+<kw name="Get Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:51.399652" level="INFO">${TEXTO_ATIVIDADE_SELECIONADA} = Atividade 2</msg>
+<var>${TEXTO_ATIVIDADE_SELECIONADA}</var>
+<arg>locator=${DIV_ATIVIDADE_SELECIONADA}//label</arg>
+<doc>Returns the text value of the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.317116" elapsed="0.082684"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:36:51.401194" level="INFO">Texto da atividade marcada como concluída: Atividade 2</msg>
+<arg>Texto da atividade marcada como concluída: ${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.400549" elapsed="0.000873"/>
+</kw>
+<return>
+<value>${TEXTO_ATIVIDADE_SELECIONADA}</value>
+<status status="PASS" start="2025-08-04T05:36:51.401709" elapsed="0.000603"/>
+</return>
+<msg time="2025-08-04T05:36:51.403290" level="INFO">${TEXTO_ATIVIDADE_SELECIONADA} = Atividade 2</msg>
+<var>${TEXTO_ATIVIDADE_SELECIONADA}</var>
+<arg>${DIV_ATIVIDADE_SELECIONADA}</arg>
+<doc>Obtém o conteúdo da atividade selecionada na lista de tarefas</doc>
+<status status="PASS" start="2025-08-04T05:36:51.315535" elapsed="0.087928"/>
+</kw>
+<kw name="Validar o texto da atividade selecionada" owner="kws_lista_tarefas">
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:36:51.407648" level="INFO">${INDEX_CORRIGIDO} = 1</msg>
+<var>${INDEX_CORRIGIDO}</var>
+<arg>${NUM_ATIVIDADE} - 1</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.406538" elapsed="0.001277"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:36:51.409721" level="INFO">${TEXTO_ATIVIDADE_LISTA} = Atividade 2</msg>
+<var>${TEXTO_ATIVIDADE_LISTA}</var>
+<arg>${LISTA_ATIVIDADES_GERADA}[${INDEX_CORRIGIDO}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.408569" elapsed="0.001310"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<arg>${TEXTO_ATIVIDADE_LISTA}</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.412064" elapsed="0.001069"/>
+</kw>
+<msg time="2025-08-04T05:36:51.413733" level="INFO">${resultado} = True</msg>
+<var>${resultado}</var>
+<arg>Should Be Equal</arg>
+<arg>${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<arg>${TEXTO_ATIVIDADE_LISTA}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.411075" elapsed="0.002830"/>
+</kw>
+<if>
+<branch type="IF" condition="${resultado}">
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:36:51.416285" level="INFO">A atividade "2" foi validada com sucesso, o texto retornado "Atividade 2", confere com o texto da mesma posição na lista de atividades gerada: "Atividade 2".</msg>
+<arg>A atividade "${NUM_ATIVIDADE}" foi validada com sucesso, o texto retornado "${TEXTO_ATIVIDADE_SELECIONADA}", confere com o texto da mesma posição na lista de atividades gerada: "${TEXTO_ATIVIDADE_LISTA}".</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.415336" elapsed="0.001215"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:36:51.418192" level="INFO">${resultado} = Atividade 2</msg>
+<var>${resultado}</var>
+<arg>${TEXTO_ATIVIDADE_LISTA}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.417322" elapsed="0.001037"/>
+</kw>
+<status status="PASS" start="2025-08-04T05:36:51.414452" elapsed="0.004322"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>Falha ao validar a atividade "${NUM_ATIVIDADE}", o texto retornado "${TEXTO_ATIVIDADE_SELECIONADA}" não confere com o texto da mesma posição na lista de atividades gerada "${TEXTO_ATIVIDADE_LISTA}"</arg>
+<arg>ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2025-08-04T05:36:51.419903" elapsed="0.000203"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<var>${resultado}</var>
+<arg>Fail</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" start="2025-08-04T05:36:51.420877" elapsed="0.000174"/>
+</kw>
+<status status="NOT RUN" start="2025-08-04T05:36:51.419206" elapsed="0.002089"/>
+</branch>
+<status status="PASS" start="2025-08-04T05:36:51.414335" elapsed="0.007118"/>
+</if>
+<return>
+<value>${resultado}</value>
+<status status="PASS" start="2025-08-04T05:36:51.421619" elapsed="0.000166"/>
+</return>
+<msg time="2025-08-04T05:36:51.422409" level="INFO">${TEXTO_ATIVIDADE_VALIDADO} = Atividade 2</msg>
+<var>${TEXTO_ATIVIDADE_VALIDADO}</var>
+<arg>${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<arg>${NUM_ATIVIDADE}</arg>
+<doc>Validar se o texto da atividade selecionada é igual ao texto da mesma posição na lista de atividades gerada</doc>
+<status status="PASS" start="2025-08-04T05:36:51.404711" elapsed="0.017837"/>
+</kw>
+<doc>Marca a atividade selecionada como concluída</doc>
+<status status="PASS" start="2025-08-04T05:36:50.719648" elapsed="0.703264"/>
+</kw>
+<kw name="Filtrar as atividades em &quot;Completed&quot;" owner="kws_lista_tarefas" source_name="Filtrar as atividades em &quot;${TIPO_FILTRAGEM}&quot;">
+<kw name="Convert To Lower Case" owner="String">
+<msg time="2025-08-04T05:36:51.426494" level="INFO">${TIPO_FILTRO} = completed</msg>
+<var>${TIPO_FILTRO}</var>
+<arg>${TIPO_FILTRAGEM}</arg>
+<doc>Converts string to lower case.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.425672" elapsed="0.000990"/>
+</kw>
+<kw name="Format String" owner="String">
+<msg time="2025-08-04T05:36:51.430404" level="INFO">${OPCOES_FOOTER_FORMATADO} = //ul[@data-testid='footer-navigation']//a[contains(@href, 'completed')]</msg>
+<var>${OPCOES_FOOTER_FORMATADO}</var>
+<arg>${HOMER_FOOTER_OPCOES}</arg>
+<arg>opc=${TIPO_FILTRO}</arg>
+<doc>Formats a ``template`` using the given ``positional`` and ``named`` arguments.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.427547" elapsed="0.003039"/>
+</kw>
+<kw name="Click Link" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:51.433746" level="INFO">Clicking link '//ul[@data-testid='footer-navigation']//a[contains(@href, 'completed')]'.</msg>
+<arg>locator=${OPCOES_FOOTER_FORMATADO}</arg>
+<doc>Clicks a link identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.431382" elapsed="0.392097"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:52.145856" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-4.png"&gt;&lt;img src="selenium-screenshot-4.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:36:51.824391" elapsed="0.321798"/>
+</kw>
+<doc>Filtra a lista de atividades com base no tipo de filtragem selecionado</doc>
+<status status="PASS" start="2025-08-04T05:36:51.424227" elapsed="0.722346"/>
+</kw>
+<doc>Teste que verifica a adição de 3 atividades, marca a 2ª atividade como concluída e faz a filtragem de todas as atividades concluídas</doc>
+<tag>ADICIONAR_MARCAR_FILTRAR</tag>
+<tag>CT01</tag>
+<status status="PASS" start="2025-08-04T05:36:44.673753" elapsed="7.473802"/>
+</test>
+<test id="s1-s1-t2" name="CT02: Adicionar, concluir, excluir atividade e filtrar concluídas" line="16">
+<kw name="Acessar página home do site" owner="kws_lista_tarefas" type="SETUP">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:52.155985" level="INFO">Opening url 'https://todomvc.com/examples/react/dist/'</msg>
+<arg>${URL_HOME}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2025-08-04T05:36:52.155349" elapsed="0.219105"/>
+</kw>
+<kw name="Title Should Be" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:52.551020" level="INFO">Page title is 'TodoMVC: React'.</msg>
+<arg>${HOME_TITLE}</arg>
+<doc>Verifies that the current page title equals ``title``.</doc>
+<status status="PASS" start="2025-08-04T05:36:52.375333" elapsed="0.176028"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:52.745325" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-5.png"&gt;&lt;img src="selenium-screenshot-5.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:36:52.552431" elapsed="0.193223"/>
+</kw>
+<arg>${TODO_MVC_URL}</arg>
+<doc>Acessa a página inicial do site de testes (https://todomvc.com/examples/react/dist/)</doc>
+<status status="PASS" start="2025-08-04T05:36:52.153376" elapsed="0.592646"/>
+</kw>
+<kw name="Adicionar &quot;4&quot; atividade(s)" owner="kws_lista_tarefas" source_name="Adicionar &quot;${QUANT_ATIVIDADES}&quot; atividade(s)">
+<kw name="Create List" owner="BuiltIn">
+<msg time="2025-08-04T05:36:52.749779" level="INFO">@{LISTA_ATIVIDADES} = [ ]</msg>
+<var>@{LISTA_ATIVIDADES}</var>
+<doc>Returns a list containing given items.</doc>
+<status status="PASS" start="2025-08-04T05:36:52.748972" elapsed="0.001005"/>
+</kw>
+<for flavor="IN RANGE">
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:36:52.753678" level="INFO">${ATIVIDADE} = Atividade 1</msg>
+<var>${ATIVIDADE}</var>
+<arg>"Atividade " + str(${INDEX} + 1)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:36:52.752611" elapsed="0.001251"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${LISTA_ATIVIDADES}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-08-04T05:36:52.754736" elapsed="0.000926"/>
+</kw>
+<kw name="Inserir atividade" owner="kws_lista_tarefas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:52.759420" level="INFO">Typing text 'Atividade 1' into text field 'id=todo-input'.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>${TEXTO_ATIVIDADE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:52.758419" elapsed="0.293800"/>
+</kw>
+<kw name="Press Keys" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:53.054771" level="INFO">Sending key(s) ('RETURN',) to id=todo-input element.</msg>
+<msg time="2025-08-04T05:36:53.359307" level="INFO">Pressing special key RETURN to element.</msg>
+<msg time="2025-08-04T05:36:53.359509" level="INFO">Releasing special key RETURN.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>RETURN</arg>
+<doc>Simulates the user pressing key(s) to an element or on the active browser.</doc>
+<status status="PASS" start="2025-08-04T05:36:53.053219" elapsed="0.329130"/>
+</kw>
+<arg>${HOME_INPUT_NOVA_TAREFA}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Clicar no campo de entrada, inserir uma atividade e pressionar Enter</doc>
+<status status="PASS" start="2025-08-04T05:36:52.756746" elapsed="0.626049"/>
+</kw>
+<var name="${INDEX}">0</var>
+<status status="PASS" start="2025-08-04T05:36:52.751333" elapsed="0.631747"/>
+</iter>
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:36:53.386934" level="INFO">${ATIVIDADE} = Atividade 2</msg>
+<var>${ATIVIDADE}</var>
+<arg>"Atividade " + str(${INDEX} + 1)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:36:53.384504" elapsed="0.002704"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${LISTA_ATIVIDADES}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-08-04T05:36:53.388034" elapsed="0.000759"/>
+</kw>
+<kw name="Inserir atividade" owner="kws_lista_tarefas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:53.391477" level="INFO">Typing text 'Atividade 2' into text field 'id=todo-input'.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>${TEXTO_ATIVIDADE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:53.390711" elapsed="0.236253"/>
+</kw>
+<kw name="Press Keys" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:53.629446" level="INFO">Sending key(s) ('RETURN',) to id=todo-input element.</msg>
+<msg time="2025-08-04T05:36:53.943253" level="INFO">Pressing special key RETURN to element.</msg>
+<msg time="2025-08-04T05:36:53.943513" level="INFO">Releasing special key RETURN.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>RETURN</arg>
+<doc>Simulates the user pressing key(s) to an element or on the active browser.</doc>
+<status status="PASS" start="2025-08-04T05:36:53.627894" elapsed="0.347935"/>
+</kw>
+<arg>${HOME_INPUT_NOVA_TAREFA}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Clicar no campo de entrada, inserir uma atividade e pressionar Enter</doc>
+<status status="PASS" start="2025-08-04T05:36:53.389411" elapsed="0.586997"/>
+</kw>
+<var name="${INDEX}">1</var>
+<status status="PASS" start="2025-08-04T05:36:53.383697" elapsed="0.593095"/>
+</iter>
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:36:53.979110" level="INFO">${ATIVIDADE} = Atividade 3</msg>
+<var>${ATIVIDADE}</var>
+<arg>"Atividade " + str(${INDEX} + 1)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:36:53.978079" elapsed="0.001191"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${LISTA_ATIVIDADES}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-08-04T05:36:53.980013" elapsed="0.000795"/>
+</kw>
+<kw name="Inserir atividade" owner="kws_lista_tarefas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:53.984182" level="INFO">Typing text 'Atividade 3' into text field 'id=todo-input'.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>${TEXTO_ATIVIDADE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:53.983215" elapsed="0.208762"/>
+</kw>
+<kw name="Press Keys" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:54.193847" level="INFO">Sending key(s) ('RETURN',) to id=todo-input element.</msg>
+<msg time="2025-08-04T05:36:54.502846" level="INFO">Pressing special key RETURN to element.</msg>
+<msg time="2025-08-04T05:36:54.503162" level="INFO">Releasing special key RETURN.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>RETURN</arg>
+<doc>Simulates the user pressing key(s) to an element or on the active browser.</doc>
+<status status="PASS" start="2025-08-04T05:36:54.192708" elapsed="0.337836"/>
+</kw>
+<arg>${HOME_INPUT_NOVA_TAREFA}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Clicar no campo de entrada, inserir uma atividade e pressionar Enter</doc>
+<status status="PASS" start="2025-08-04T05:36:53.981580" elapsed="0.549339"/>
+</kw>
+<var name="${INDEX}">2</var>
+<status status="PASS" start="2025-08-04T05:36:53.977423" elapsed="0.553736"/>
+</iter>
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:36:54.533535" level="INFO">${ATIVIDADE} = Atividade 4</msg>
+<var>${ATIVIDADE}</var>
+<arg>"Atividade " + str(${INDEX} + 1)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:36:54.532354" elapsed="0.001372"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${LISTA_ATIVIDADES}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-08-04T05:36:54.534807" elapsed="0.002548"/>
+</kw>
+<kw name="Inserir atividade" owner="kws_lista_tarefas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:54.541209" level="INFO">Typing text 'Atividade 4' into text field 'id=todo-input'.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>${TEXTO_ATIVIDADE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:54.540010" elapsed="0.292942"/>
+</kw>
+<kw name="Press Keys" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:54.837249" level="INFO">Sending key(s) ('RETURN',) to id=todo-input element.</msg>
+<msg time="2025-08-04T05:36:55.148842" level="INFO">Pressing special key RETURN to element.</msg>
+<msg time="2025-08-04T05:36:55.149092" level="INFO">Releasing special key RETURN.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>RETURN</arg>
+<doc>Simulates the user pressing key(s) to an element or on the active browser.</doc>
+<status status="PASS" start="2025-08-04T05:36:54.833817" elapsed="0.379622"/>
+</kw>
+<arg>${HOME_INPUT_NOVA_TAREFA}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Clicar no campo de entrada, inserir uma atividade e pressionar Enter</doc>
+<status status="PASS" start="2025-08-04T05:36:54.538339" elapsed="0.675536"/>
+</kw>
+<var name="${INDEX}">3</var>
+<status status="PASS" start="2025-08-04T05:36:54.531756" elapsed="0.682412"/>
+</iter>
+<var>${INDEX}</var>
+<value>${QUANT_ATIVIDADES}</value>
+<status status="PASS" start="2025-08-04T05:36:52.750387" elapsed="2.464215"/>
+</for>
+<kw name="Set Test Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:36:55.219175" level="INFO">@{LISTA_ATIVIDADES_GERADA} = [ Atividade 1 | Atividade 2 | Atividade 3 | Atividade 4 ]</msg>
+<arg>@{LISTA_ATIVIDADES_GERADA}</arg>
+<arg>@{LISTA_ATIVIDADES}</arg>
+<doc>Makes a variable available everywhere within the scope of the current test.</doc>
+<status status="PASS" start="2025-08-04T05:36:55.215486" elapsed="0.003985"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${HOME_LISTA_TAREFAS}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-04T05:36:55.220785" elapsed="0.060464"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:55.512902" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-6.png"&gt;&lt;img src="selenium-screenshot-6.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:36:55.282463" elapsed="0.230774"/>
+</kw>
+<doc>Cria uma lista de atividades com o número de atividades especificado e insere cada atividade na lista</doc>
+<status status="PASS" start="2025-08-04T05:36:52.747576" elapsed="2.766025"/>
+</kw>
+<kw name="Marcar atividade &quot;3&quot; como concluída" owner="kws_lista_tarefas" source_name="Marcar atividade &quot;${NUM_ATIVIDADE}&quot; como concluída">
+<kw name="Click Element" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:55.519628" level="INFO">Clicking element '(//li[@data-testid='todo-item']//input[@data-testid='todo-item-toggle'])[3]'.</msg>
+<arg>locator=(${HOME_LISTA_TAREFAS}${HOME_CHECKBOX_OPCOES_LISTA})[${NUM_ATIVIDADE}]</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:55.518055" elapsed="0.285416"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:56.037437" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-7.png"&gt;&lt;img src="selenium-screenshot-7.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:36:55.804792" elapsed="0.233038"/>
+</kw>
+<kw name="Verificar se a atividade &quot;${NUM_ATIVIDADE}&quot; está concluída" owner="kws_lista_tarefas" source_name="Verificar se a atividade &quot;${NUM_ATIVIDADE}&quot; está concluída">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.041781" level="INFO">${ATIVIDADE_SELECIONADA} = (//li[@data-testid='todo-item'])[3]</msg>
+<var>${ATIVIDADE_SELECIONADA}</var>
+<arg>(${HOME_LISTA_TAREFAS})[${NUM_ATIVIDADE}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.040908" elapsed="0.001006"/>
+</kw>
+<kw name="Element Attribute Value Should Be" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:56.088712" level="INFO">Element '(//li[@data-testid='todo-item'])[3]' attribute 'class' contains value 'completed'.</msg>
+<arg>locator=${ATIVIDADE_SELECIONADA}</arg>
+<arg>attribute=class</arg>
+<arg>expected=completed</arg>
+<doc>Verifies element identified by ``locator`` contains expected attribute value.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.042564" elapsed="0.046456"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.090432" level="INFO">A atividade "3" foi marcada como concluída, com sucesso!</msg>
+<arg>A atividade "${NUM_ATIVIDADE}" foi marcada como concluída, com sucesso!</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.089717" elapsed="0.000916"/>
+</kw>
+<return>
+<value>${ATIVIDADE_SELECIONADA}</value>
+<status status="PASS" start="2025-08-04T05:36:56.090886" elapsed="0.000152"/>
+</return>
+<msg time="2025-08-04T05:36:56.091592" level="INFO">${DIV_ATIVIDADE_SELECIONADA} = (//li[@data-testid='todo-item'])[3]</msg>
+<var>${DIV_ATIVIDADE_SELECIONADA}</var>
+<doc>Verifica se a atividade selecionada está marcada como concluída</doc>
+<status status="PASS" start="2025-08-04T05:36:56.039171" elapsed="0.052539"/>
+</kw>
+<kw name="Obter o conteúdo da atividade selecionada" owner="kws_lista_tarefas">
+<kw name="Get Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:56.158790" level="INFO">${TEXTO_ATIVIDADE_SELECIONADA} = Atividade 3</msg>
+<var>${TEXTO_ATIVIDADE_SELECIONADA}</var>
+<arg>locator=${DIV_ATIVIDADE_SELECIONADA}//label</arg>
+<doc>Returns the text value of the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.093580" elapsed="0.065420"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.160247" level="INFO">Texto da atividade marcada como concluída: Atividade 3</msg>
+<arg>Texto da atividade marcada como concluída: ${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.159701" elapsed="0.000751"/>
+</kw>
+<return>
+<value>${TEXTO_ATIVIDADE_SELECIONADA}</value>
+<status status="PASS" start="2025-08-04T05:36:56.160693" elapsed="0.000148"/>
+</return>
+<msg time="2025-08-04T05:36:56.161398" level="INFO">${TEXTO_ATIVIDADE_SELECIONADA} = Atividade 3</msg>
+<var>${TEXTO_ATIVIDADE_SELECIONADA}</var>
+<arg>${DIV_ATIVIDADE_SELECIONADA}</arg>
+<doc>Obtém o conteúdo da atividade selecionada na lista de tarefas</doc>
+<status status="PASS" start="2025-08-04T05:36:56.092372" elapsed="0.069142"/>
+</kw>
+<kw name="Validar o texto da atividade selecionada" owner="kws_lista_tarefas">
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.164995" level="INFO">${INDEX_CORRIGIDO} = 2</msg>
+<var>${INDEX_CORRIGIDO}</var>
+<arg>${NUM_ATIVIDADE} - 1</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.163949" elapsed="0.001217"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.166642" level="INFO">${TEXTO_ATIVIDADE_LISTA} = Atividade 3</msg>
+<var>${TEXTO_ATIVIDADE_LISTA}</var>
+<arg>${LISTA_ATIVIDADES_GERADA}[${INDEX_CORRIGIDO}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.165836" elapsed="0.000930"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<arg>${TEXTO_ATIVIDADE_LISTA}</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.168094" elapsed="0.001571"/>
+</kw>
+<msg time="2025-08-04T05:36:56.170256" level="INFO">${resultado} = True</msg>
+<var>${resultado}</var>
+<arg>Should Be Equal</arg>
+<arg>${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<arg>${TEXTO_ATIVIDADE_LISTA}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.167406" elapsed="0.003032"/>
+</kw>
+<if>
+<branch type="IF" condition="${resultado}">
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.172906" level="INFO">A atividade "3" foi validada com sucesso, o texto retornado "Atividade 3", confere com o texto da mesma posição na lista de atividades gerada: "Atividade 3".</msg>
+<arg>A atividade "${NUM_ATIVIDADE}" foi validada com sucesso, o texto retornado "${TEXTO_ATIVIDADE_SELECIONADA}", confere com o texto da mesma posição na lista de atividades gerada: "${TEXTO_ATIVIDADE_LISTA}".</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.171881" elapsed="0.001313"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.174886" level="INFO">${resultado} = Atividade 3</msg>
+<var>${resultado}</var>
+<arg>${TEXTO_ATIVIDADE_LISTA}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.174055" elapsed="0.000987"/>
+</kw>
+<status status="PASS" start="2025-08-04T05:36:56.170950" elapsed="0.004377"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>Falha ao validar a atividade "${NUM_ATIVIDADE}", o texto retornado "${TEXTO_ATIVIDADE_SELECIONADA}" não confere com o texto da mesma posição na lista de atividades gerada "${TEXTO_ATIVIDADE_LISTA}"</arg>
+<arg>ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2025-08-04T05:36:56.176222" elapsed="0.000186"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<var>${resultado}</var>
+<arg>Fail</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" start="2025-08-04T05:36:56.177340" elapsed="0.000174"/>
+</kw>
+<status status="NOT RUN" start="2025-08-04T05:36:56.175558" elapsed="0.002183"/>
+</branch>
+<status status="PASS" start="2025-08-04T05:36:56.170842" elapsed="0.007064"/>
+</if>
+<return>
+<value>${resultado}</value>
+<status status="PASS" start="2025-08-04T05:36:56.178068" elapsed="0.000157"/>
+</return>
+<msg time="2025-08-04T05:36:56.178848" level="INFO">${TEXTO_ATIVIDADE_VALIDADO} = Atividade 3</msg>
+<var>${TEXTO_ATIVIDADE_VALIDADO}</var>
+<arg>${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<arg>${NUM_ATIVIDADE}</arg>
+<doc>Validar se o texto da atividade selecionada é igual ao texto da mesma posição na lista de atividades gerada</doc>
+<status status="PASS" start="2025-08-04T05:36:56.162476" elapsed="0.016505"/>
+</kw>
+<doc>Marca a atividade selecionada como concluída</doc>
+<status status="PASS" start="2025-08-04T05:36:55.516749" elapsed="0.662590"/>
+</kw>
+<kw name="Excluir atividade &quot;3&quot;" owner="kws_lista_tarefas" source_name="Excluir atividade &quot;${NUM_ATIVIDADE}&quot;">
+<kw name="Obter o conteúdo da atividade que será excluída" owner="kws_lista_tarefas">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.184885" level="INFO">${DIV_ATIVIDADE_EXCLUIDA} = (//li[@data-testid='todo-item'])[3]</msg>
+<var>${DIV_ATIVIDADE_EXCLUIDA}</var>
+<arg>(${HOME_LISTA_TAREFAS})[${NUM_ATIVIDADE}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.183906" elapsed="0.001602"/>
+</kw>
+<kw name="Obter o conteúdo da atividade selecionada" owner="kws_lista_tarefas">
+<kw name="Get Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:56.229838" level="INFO">${TEXTO_ATIVIDADE_SELECIONADA} = Atividade 3</msg>
+<var>${TEXTO_ATIVIDADE_SELECIONADA}</var>
+<arg>locator=${DIV_ATIVIDADE_SELECIONADA}//label</arg>
+<doc>Returns the text value of the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.188317" elapsed="0.041662"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.231159" level="INFO">Texto da atividade marcada como concluída: Atividade 3</msg>
+<arg>Texto da atividade marcada como concluída: ${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.230627" elapsed="0.000734"/>
+</kw>
+<return>
+<value>${TEXTO_ATIVIDADE_SELECIONADA}</value>
+<status status="PASS" start="2025-08-04T05:36:56.231600" elapsed="0.000148"/>
+</return>
+<msg time="2025-08-04T05:36:56.232301" level="INFO">${TEXTO_ATIVIDADE_SELECIONADA} = Atividade 3</msg>
+<var>${TEXTO_ATIVIDADE_SELECIONADA}</var>
+<arg>${DIV_ATIVIDADE_EXCLUIDA}</arg>
+<doc>Obtém o conteúdo da atividade selecionada na lista de tarefas</doc>
+<status status="PASS" start="2025-08-04T05:36:56.186630" elapsed="0.045787"/>
+</kw>
+<kw name="Validar o texto da atividade selecionada" owner="kws_lista_tarefas">
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.236396" level="INFO">${INDEX_CORRIGIDO} = 2</msg>
+<var>${INDEX_CORRIGIDO}</var>
+<arg>${NUM_ATIVIDADE} - 1</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.234745" elapsed="0.001796"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.238014" level="INFO">${TEXTO_ATIVIDADE_LISTA} = Atividade 3</msg>
+<var>${TEXTO_ATIVIDADE_LISTA}</var>
+<arg>${LISTA_ATIVIDADES_GERADA}[${INDEX_CORRIGIDO}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.237229" elapsed="0.000909"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<arg>${TEXTO_ATIVIDADE_LISTA}</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.239452" elapsed="0.000720"/>
+</kw>
+<msg time="2025-08-04T05:36:56.240576" level="INFO">${resultado} = True</msg>
+<var>${resultado}</var>
+<arg>Should Be Equal</arg>
+<arg>${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<arg>${TEXTO_ATIVIDADE_LISTA}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.238773" elapsed="0.001914"/>
+</kw>
+<if>
+<branch type="IF" condition="${resultado}">
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.242384" level="INFO">A atividade "3" foi validada com sucesso, o texto retornado "Atividade 3", confere com o texto da mesma posição na lista de atividades gerada: "Atividade 3".</msg>
+<arg>A atividade "${NUM_ATIVIDADE}" foi validada com sucesso, o texto retornado "${TEXTO_ATIVIDADE_SELECIONADA}", confere com o texto da mesma posição na lista de atividades gerada: "${TEXTO_ATIVIDADE_LISTA}".</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.241675" elapsed="0.000900"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.243881" level="INFO">${resultado} = Atividade 3</msg>
+<var>${resultado}</var>
+<arg>${TEXTO_ATIVIDADE_LISTA}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.243155" elapsed="0.000863"/>
+</kw>
+<status status="PASS" start="2025-08-04T05:36:56.241044" elapsed="0.003197"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>Falha ao validar a atividade "${NUM_ATIVIDADE}", o texto retornado "${TEXTO_ATIVIDADE_SELECIONADA}" não confere com o texto da mesma posição na lista de atividades gerada "${TEXTO_ATIVIDADE_LISTA}"</arg>
+<arg>ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2025-08-04T05:36:56.244951" elapsed="0.000112"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<var>${resultado}</var>
+<arg>Fail</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" start="2025-08-04T05:36:56.245603" elapsed="0.000107"/>
+</kw>
+<status status="NOT RUN" start="2025-08-04T05:36:56.244430" elapsed="0.001467"/>
+</branch>
+<status status="PASS" start="2025-08-04T05:36:56.240970" elapsed="0.005078"/>
+</if>
+<return>
+<value>${resultado}</value>
+<status status="PASS" start="2025-08-04T05:36:56.246206" elapsed="0.000148"/>
+</return>
+<msg time="2025-08-04T05:36:56.246911" level="INFO">${TEXTO_ATIVIDADE_VALIDADO} = Atividade 3</msg>
+<var>${TEXTO_ATIVIDADE_VALIDADO}</var>
+<arg>${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<arg>${NUM_ATIVIDADE}</arg>
+<doc>Validar se o texto da atividade selecionada é igual ao texto da mesma posição na lista de atividades gerada</doc>
+<status status="PASS" start="2025-08-04T05:36:56.233336" elapsed="0.013694"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.248232" level="INFO">A atividade "3" foi selecionada para exclusão, e o seu conteúdo é: "Atividade 3".</msg>
+<arg>A atividade "${NUM_ATIVIDADE}" foi selecionada para exclusão, e o seu conteúdo é: "${TEXTO_ATIVIDADE_VALIDADO}".</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.247627" elapsed="0.000822"/>
+</kw>
+<return>
+<value>${TEXTO_ATIVIDADE_VALIDADO}</value>
+<status status="PASS" start="2025-08-04T05:36:56.248753" elapsed="0.000228"/>
+</return>
+<msg time="2025-08-04T05:36:56.249685" level="INFO">${TEXTO_ATIVIDADE_VALIDADO} = Atividade 3</msg>
+<var>${TEXTO_ATIVIDADE_VALIDADO}</var>
+<arg>${NUM_ATIVIDADE}</arg>
+<doc>Obtém o conteúdo da atividade que será excluída</doc>
+<status status="PASS" start="2025-08-04T05:36:56.182426" elapsed="0.067408"/>
+</kw>
+<kw name="Click Element" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:56.251996" level="INFO">Clicking element '(//li[@data-testid='todo-item']//button[@class='destroy'])[3]'.</msg>
+<arg>locator=(${HOME_LISTA_TAREFAS}${HOME_BTN_OPCOES_LISTA})[${NUM_ATIVIDADE}]</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.250600" elapsed="0.190564"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:56.645659" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-8.png"&gt;&lt;img src="selenium-screenshot-8.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.442006" elapsed="0.203966"/>
+</kw>
+<kw name="Verificar se a atividade especificada foi removida da lista" owner="kws_lista_tarefas">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.649089" level="INFO">${ATIVIDADE_EXCLUIDA} = //li[@data-testid='todo-item']//label[contains(text(), '{text}')]</msg>
+<var>${ATIVIDADE_EXCLUIDA}</var>
+<arg>${HOME_LISTA_TAREFAS}${HOME_LABEL_OPCOES_LISTA}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.648275" elapsed="0.000940"/>
+</kw>
+<kw name="Format String" owner="String">
+<msg time="2025-08-04T05:36:56.653009" level="INFO">${ATIVIDADE_EXCLUIDA_FORMATADA} = //li[@data-testid='todo-item']//label[contains(text(), 'Atividade 3')]</msg>
+<var>${ATIVIDADE_EXCLUIDA_FORMATADA}</var>
+<arg>${ATIVIDADE_EXCLUIDA}</arg>
+<arg>text=${TEXTO_ATIVIDADE_VALIDADO}</arg>
+<doc>Formats a ``template`` using the given ``positional`` and ``named`` arguments.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.649861" elapsed="0.003336"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<kw name="Element Should Be Visible" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:56.906169" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-9.png"&gt;&lt;img src="selenium-screenshot-9.png" width="800px"&gt;&lt;/a&gt;</msg>
+<msg time="2025-08-04T05:36:56.906809" level="FAIL">Element with locator '//li[@data-testid='todo-item']//label[contains(text(), 'Atividade 3')]' not found.</msg>
+<arg>locator=${ATIVIDADE_EXCLUIDA_FORMATADA}</arg>
+<doc>Verifies that the element identified by ``locator`` is visible.</doc>
+<status status="FAIL" start="2025-08-04T05:36:56.655304" elapsed="0.264960">Element with locator '//li[@data-testid='todo-item']//label[contains(text(), 'Atividade 3')]' not found.</status>
+</kw>
+<msg time="2025-08-04T05:36:56.921122" level="INFO">${ELEMENTO_PRESENTE} = False</msg>
+<var>${ELEMENTO_PRESENTE}</var>
+<arg>Element Should Be Visible</arg>
+<arg>locator=${ATIVIDADE_EXCLUIDA_FORMATADA}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.654038" elapsed="0.267253"/>
+</kw>
+<kw name="Should Not Be True" owner="BuiltIn">
+<arg>${ELEMENTO_PRESENTE}</arg>
+<doc>Fails if the given condition is true.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.922215" elapsed="0.001077"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:36:56.924641" level="INFO">A atividade "3", não está mais presente na lista!</msg>
+<arg>A atividade "${NUM_ATIVIDADE}", não está mais presente na lista!</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.924072" elapsed="0.000804"/>
+</kw>
+<arg>${NUM_ATIVIDADE}</arg>
+<arg>${TEXTO_ATIVIDADE_VALIDADO}</arg>
+<doc>Verifica se a atividade removida da lista de tarefas não está mais visível</doc>
+<status status="PASS" start="2025-08-04T05:36:56.646748" elapsed="0.278478"/>
+</kw>
+<doc>Exclui a atividade selecionada da lista de tarefas</doc>
+<status status="PASS" start="2025-08-04T05:36:56.180883" elapsed="0.744702"/>
+</kw>
+<kw name="Filtrar as atividades em &quot;Completed&quot;" owner="kws_lista_tarefas" source_name="Filtrar as atividades em &quot;${TIPO_FILTRAGEM}&quot;">
+<kw name="Convert To Lower Case" owner="String">
+<msg time="2025-08-04T05:36:56.929147" level="INFO">${TIPO_FILTRO} = completed</msg>
+<var>${TIPO_FILTRO}</var>
+<arg>${TIPO_FILTRAGEM}</arg>
+<doc>Converts string to lower case.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.928511" elapsed="0.000760"/>
+</kw>
+<kw name="Format String" owner="String">
+<msg time="2025-08-04T05:36:56.931421" level="INFO">${OPCOES_FOOTER_FORMATADO} = //ul[@data-testid='footer-navigation']//a[contains(@href, 'completed')]</msg>
+<var>${OPCOES_FOOTER_FORMATADO}</var>
+<arg>${HOMER_FOOTER_OPCOES}</arg>
+<arg>opc=${TIPO_FILTRO}</arg>
+<doc>Formats a ``template`` using the given ``positional`` and ``named`` arguments.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.929910" elapsed="0.001657"/>
+</kw>
+<kw name="Click Link" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:56.933001" level="INFO">Clicking link '//ul[@data-testid='footer-navigation']//a[contains(@href, 'completed')]'.</msg>
+<arg>locator=${OPCOES_FOOTER_FORMATADO}</arg>
+<doc>Clicks a link identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:56.932241" elapsed="0.211807"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:57.354407" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-10.png"&gt;&lt;img src="selenium-screenshot-10.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:36:57.145172" elapsed="0.209581"/>
+</kw>
+<doc>Filtra a lista de atividades com base no tipo de filtragem selecionado</doc>
+<status status="PASS" start="2025-08-04T05:36:56.927271" elapsed="0.428437"/>
+</kw>
+<doc>Teste que verifica a adição de 4 atividades, marca a 3ª atividade como concluída e depois exclui essa atividade, e faz a filtragem de todas as atividades concluídas</doc>
+<tag>ADICIONAR_MARCAR_EXCLUIR_FILTRAR</tag>
+<tag>CT02</tag>
+<status status="PASS" start="2025-08-04T05:36:52.149489" elapsed="5.210194"/>
+</test>
+<test id="s1-s1-t3" name="CT03: Adicionar atividades, concluir uma e limpar concluídas" line="24">
+<kw name="Acessar página home do site" owner="kws_lista_tarefas" type="SETUP">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:57.366179" level="INFO">Opening url 'https://todomvc.com/examples/react/dist/'</msg>
+<arg>${URL_HOME}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2025-08-04T05:36:57.365652" elapsed="0.341377"/>
+</kw>
+<kw name="Title Should Be" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:57.946306" level="INFO">Page title is 'TodoMVC: React'.</msg>
+<arg>${HOME_TITLE}</arg>
+<doc>Verifies that the current page title equals ``title``.</doc>
+<status status="PASS" start="2025-08-04T05:36:57.707772" elapsed="0.238859"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:58.264644" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-11.png"&gt;&lt;img src="selenium-screenshot-11.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:36:57.947449" elapsed="0.317551"/>
+</kw>
+<arg>${TODO_MVC_URL}</arg>
+<doc>Acessa a página inicial do site de testes (https://todomvc.com/examples/react/dist/)</doc>
+<status status="PASS" start="2025-08-04T05:36:57.364441" elapsed="0.900982"/>
+</kw>
+<kw name="Adicionar &quot;4&quot; atividade(s)" owner="kws_lista_tarefas" source_name="Adicionar &quot;${QUANT_ATIVIDADES}&quot; atividade(s)">
+<kw name="Create List" owner="BuiltIn">
+<msg time="2025-08-04T05:36:58.276684" level="INFO">@{LISTA_ATIVIDADES} = [ ]</msg>
+<var>@{LISTA_ATIVIDADES}</var>
+<doc>Returns a list containing given items.</doc>
+<status status="PASS" start="2025-08-04T05:36:58.275955" elapsed="0.000896"/>
+</kw>
+<for flavor="IN RANGE">
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:36:58.280301" level="INFO">${ATIVIDADE} = Atividade 1</msg>
+<var>${ATIVIDADE}</var>
+<arg>"Atividade " + str(${INDEX} + 1)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:36:58.279195" elapsed="0.001274"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${LISTA_ATIVIDADES}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-08-04T05:36:58.281205" elapsed="0.000762"/>
+</kw>
+<kw name="Inserir atividade" owner="kws_lista_tarefas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:58.286536" level="INFO">Typing text 'Atividade 1' into text field 'id=todo-input'.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>${TEXTO_ATIVIDADE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:36:58.284521" elapsed="0.546811"/>
+</kw>
+<kw name="Press Keys" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:36:58.834083" level="INFO">Sending key(s) ('RETURN',) to id=todo-input element.</msg>
+<msg time="2025-08-04T05:36:59.795186" level="INFO">Pressing special key RETURN to element.</msg>
+<msg time="2025-08-04T05:36:59.795447" level="INFO">Releasing special key RETURN.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>RETURN</arg>
+<doc>Simulates the user pressing key(s) to an element or on the active browser.</doc>
+<status status="PASS" start="2025-08-04T05:36:58.832189" elapsed="1.177567"/>
+</kw>
+<arg>${HOME_INPUT_NOVA_TAREFA}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Clicar no campo de entrada, inserir uma atividade e pressionar Enter</doc>
+<status status="PASS" start="2025-08-04T05:36:58.282744" elapsed="1.727546"/>
+</kw>
+<var name="${INDEX}">0</var>
+<status status="PASS" start="2025-08-04T05:36:58.278533" elapsed="1.732669"/>
+</iter>
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:37:00.014659" level="INFO">${ATIVIDADE} = Atividade 2</msg>
+<var>${ATIVIDADE}</var>
+<arg>"Atividade " + str(${INDEX} + 1)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:37:00.013493" elapsed="0.001333"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${LISTA_ATIVIDADES}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-08-04T05:37:00.016306" elapsed="0.001357"/>
+</kw>
+<kw name="Inserir atividade" owner="kws_lista_tarefas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:00.021868" level="INFO">Typing text 'Atividade 2' into text field 'id=todo-input'.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>${TEXTO_ATIVIDADE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:37:00.020763" elapsed="0.278702"/>
+</kw>
+<kw name="Press Keys" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:00.302472" level="INFO">Sending key(s) ('RETURN',) to id=todo-input element.</msg>
+<msg time="2025-08-04T05:37:00.798920" level="INFO">Pressing special key RETURN to element.</msg>
+<msg time="2025-08-04T05:37:00.799168" level="INFO">Releasing special key RETURN.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>RETURN</arg>
+<doc>Simulates the user pressing key(s) to an element or on the active browser.</doc>
+<status status="PASS" start="2025-08-04T05:37:00.300373" elapsed="0.692263"/>
+</kw>
+<arg>${HOME_INPUT_NOVA_TAREFA}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Clicar no campo de entrada, inserir uma atividade e pressionar Enter</doc>
+<status status="PASS" start="2025-08-04T05:37:00.019105" elapsed="0.974062"/>
+</kw>
+<var name="${INDEX}">1</var>
+<status status="PASS" start="2025-08-04T05:37:00.011923" elapsed="0.981668"/>
+</iter>
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:37:00.996100" level="INFO">${ATIVIDADE} = Atividade 3</msg>
+<var>${ATIVIDADE}</var>
+<arg>"Atividade " + str(${INDEX} + 1)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:37:00.994976" elapsed="0.001297"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${LISTA_ATIVIDADES}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-08-04T05:37:00.997024" elapsed="0.000841"/>
+</kw>
+<kw name="Inserir atividade" owner="kws_lista_tarefas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:01.001392" level="INFO">Typing text 'Atividade 3' into text field 'id=todo-input'.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>${TEXTO_ATIVIDADE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:37:01.000378" elapsed="2.981256"/>
+</kw>
+<kw name="Press Keys" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:03.984003" level="INFO">Sending key(s) ('RETURN',) to id=todo-input element.</msg>
+<msg time="2025-08-04T05:37:04.732116" level="INFO">Pressing special key RETURN to element.</msg>
+<msg time="2025-08-04T05:37:04.732342" level="INFO">Releasing special key RETURN.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>RETURN</arg>
+<doc>Simulates the user pressing key(s) to an element or on the active browser.</doc>
+<status status="PASS" start="2025-08-04T05:37:03.982476" elapsed="0.773710"/>
+</kw>
+<arg>${HOME_INPUT_NOVA_TAREFA}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Clicar no campo de entrada, inserir uma atividade e pressionar Enter</doc>
+<status status="PASS" start="2025-08-04T05:37:00.998651" elapsed="3.757992"/>
+</kw>
+<var name="${INDEX}">2</var>
+<status status="PASS" start="2025-08-04T05:37:00.994277" elapsed="3.762688"/>
+</iter>
+<iter>
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:37:04.759617" level="INFO">${ATIVIDADE} = Atividade 4</msg>
+<var>${ATIVIDADE}</var>
+<arg>"Atividade " + str(${INDEX} + 1)</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:37:04.758278" elapsed="0.001589"/>
+</kw>
+<kw name="Append To List" owner="Collections">
+<arg>${LISTA_ATIVIDADES}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Adds ``values`` to the end of ``list``.</doc>
+<status status="PASS" start="2025-08-04T05:37:04.760807" elapsed="0.001109"/>
+</kw>
+<kw name="Inserir atividade" owner="kws_lista_tarefas">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:04.765653" level="INFO">Typing text 'Atividade 4' into text field 'id=todo-input'.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>${TEXTO_ATIVIDADE}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:37:04.764695" elapsed="0.223227"/>
+</kw>
+<kw name="Press Keys" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:04.990198" level="INFO">Sending key(s) ('RETURN',) to id=todo-input element.</msg>
+<msg time="2025-08-04T05:37:05.316864" level="INFO">Pressing special key RETURN to element.</msg>
+<msg time="2025-08-04T05:37:05.317110" level="INFO">Releasing special key RETURN.</msg>
+<arg>${INPUT_NOVA_TAREFA}</arg>
+<arg>RETURN</arg>
+<doc>Simulates the user pressing key(s) to an element or on the active browser.</doc>
+<status status="PASS" start="2025-08-04T05:37:04.988753" elapsed="0.372535"/>
+</kw>
+<arg>${HOME_INPUT_NOVA_TAREFA}</arg>
+<arg>${ATIVIDADE}</arg>
+<doc>Clicar no campo de entrada, inserir uma atividade e pressionar Enter</doc>
+<status status="PASS" start="2025-08-04T05:37:04.762944" elapsed="0.598763"/>
+</kw>
+<var name="${INDEX}">3</var>
+<status status="PASS" start="2025-08-04T05:37:04.757572" elapsed="0.604366"/>
+</iter>
+<var>${INDEX}</var>
+<value>${QUANT_ATIVIDADES}</value>
+<status status="PASS" start="2025-08-04T05:36:58.277643" elapsed="7.084532"/>
+</for>
+<kw name="Set Test Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:37:05.365882" level="INFO">@{LISTA_ATIVIDADES_GERADA} = [ Atividade 1 | Atividade 2 | Atividade 3 | Atividade 4 ]</msg>
+<arg>@{LISTA_ATIVIDADES_GERADA}</arg>
+<arg>@{LISTA_ATIVIDADES}</arg>
+<doc>Makes a variable available everywhere within the scope of the current test.</doc>
+<status status="PASS" start="2025-08-04T05:37:05.363293" elapsed="0.002841"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${HOME_LISTA_TAREFAS}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-04T05:37:05.366860" elapsed="0.065434"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:05.631499" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-12.png"&gt;&lt;img src="selenium-screenshot-12.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:37:05.433048" elapsed="0.198790"/>
+</kw>
+<doc>Cria uma lista de atividades com o número de atividades especificado e insere cada atividade na lista</doc>
+<status status="PASS" start="2025-08-04T05:36:58.274616" elapsed="7.357622"/>
+</kw>
+<kw name="Marcar atividade &quot;4&quot; como concluída" owner="kws_lista_tarefas" source_name="Marcar atividade &quot;${NUM_ATIVIDADE}&quot; como concluída">
+<kw name="Click Element" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:05.636796" level="INFO">Clicking element '(//li[@data-testid='todo-item']//input[@data-testid='todo-item-toggle'])[4]'.</msg>
+<arg>locator=(${HOME_LISTA_TAREFAS}${HOME_CHECKBOX_OPCOES_LISTA})[${NUM_ATIVIDADE}]</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:37:05.635635" elapsed="0.460412"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:06.364113" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-13.png"&gt;&lt;img src="selenium-screenshot-13.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.096846" elapsed="0.267592"/>
+</kw>
+<kw name="Verificar se a atividade &quot;${NUM_ATIVIDADE}&quot; está concluída" owner="kws_lista_tarefas" source_name="Verificar se a atividade &quot;${NUM_ATIVIDADE}&quot; está concluída">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:37:06.367813" level="INFO">${ATIVIDADE_SELECIONADA} = (//li[@data-testid='todo-item'])[4]</msg>
+<var>${ATIVIDADE_SELECIONADA}</var>
+<arg>(${HOME_LISTA_TAREFAS})[${NUM_ATIVIDADE}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.367005" elapsed="0.001316"/>
+</kw>
+<kw name="Element Attribute Value Should Be" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:06.466907" level="INFO">Element '(//li[@data-testid='todo-item'])[4]' attribute 'class' contains value 'completed'.</msg>
+<arg>locator=${ATIVIDADE_SELECIONADA}</arg>
+<arg>attribute=class</arg>
+<arg>expected=completed</arg>
+<doc>Verifies element identified by ``locator`` contains expected attribute value.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.369534" elapsed="0.097758"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:37:06.469414" level="INFO">A atividade "4" foi marcada como concluída, com sucesso!</msg>
+<arg>A atividade "${NUM_ATIVIDADE}" foi marcada como concluída, com sucesso!</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.468347" elapsed="0.001379"/>
+</kw>
+<return>
+<value>${ATIVIDADE_SELECIONADA}</value>
+<status status="PASS" start="2025-08-04T05:37:06.470057" elapsed="0.000246"/>
+</return>
+<msg time="2025-08-04T05:37:06.471190" level="INFO">${DIV_ATIVIDADE_SELECIONADA} = (//li[@data-testid='todo-item'])[4]</msg>
+<var>${DIV_ATIVIDADE_SELECIONADA}</var>
+<doc>Verifica se a atividade selecionada está marcada como concluída</doc>
+<status status="PASS" start="2025-08-04T05:37:06.365627" elapsed="0.105750"/>
+</kw>
+<kw name="Obter o conteúdo da atividade selecionada" owner="kws_lista_tarefas">
+<kw name="Get Text" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:06.541174" level="INFO">${TEXTO_ATIVIDADE_SELECIONADA} = Atividade 4</msg>
+<var>${TEXTO_ATIVIDADE_SELECIONADA}</var>
+<arg>locator=${DIV_ATIVIDADE_SELECIONADA}//label</arg>
+<doc>Returns the text value of the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.474176" elapsed="0.067165"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:37:06.542626" level="INFO">Texto da atividade marcada como concluída: Atividade 4</msg>
+<arg>Texto da atividade marcada como concluída: ${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.542045" elapsed="0.000779"/>
+</kw>
+<return>
+<value>${TEXTO_ATIVIDADE_SELECIONADA}</value>
+<status status="PASS" start="2025-08-04T05:37:06.543065" elapsed="0.000171"/>
+</return>
+<msg time="2025-08-04T05:37:06.543797" level="INFO">${TEXTO_ATIVIDADE_SELECIONADA} = Atividade 4</msg>
+<var>${TEXTO_ATIVIDADE_SELECIONADA}</var>
+<arg>${DIV_ATIVIDADE_SELECIONADA}</arg>
+<doc>Obtém o conteúdo da atividade selecionada na lista de tarefas</doc>
+<status status="PASS" start="2025-08-04T05:37:06.472359" elapsed="0.071554"/>
+</kw>
+<kw name="Validar o texto da atividade selecionada" owner="kws_lista_tarefas">
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-04T05:37:06.547716" level="INFO">${INDEX_CORRIGIDO} = 3</msg>
+<var>${INDEX_CORRIGIDO}</var>
+<arg>${NUM_ATIVIDADE} - 1</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.546719" elapsed="0.001143"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:37:06.549287" level="INFO">${TEXTO_ATIVIDADE_LISTA} = Atividade 4</msg>
+<var>${TEXTO_ATIVIDADE_LISTA}</var>
+<arg>${LISTA_ATIVIDADES_GERADA}[${INDEX_CORRIGIDO}]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.548515" elapsed="0.000898"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<kw name="Should Be Equal" owner="BuiltIn">
+<arg>${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<arg>${TEXTO_ATIVIDADE_LISTA}</arg>
+<doc>Fails if the given objects are unequal.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.551084" elapsed="0.000902"/>
+</kw>
+<msg time="2025-08-04T05:37:06.552441" level="INFO">${resultado} = True</msg>
+<var>${resultado}</var>
+<arg>Should Be Equal</arg>
+<arg>${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<arg>${TEXTO_ATIVIDADE_LISTA}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.550123" elapsed="0.002433"/>
+</kw>
+<if>
+<branch type="IF" condition="${resultado}">
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:37:06.554873" level="INFO">A atividade "4" foi validada com sucesso, o texto retornado "Atividade 4", confere com o texto da mesma posição na lista de atividades gerada: "Atividade 4".</msg>
+<arg>A atividade "${NUM_ATIVIDADE}" foi validada com sucesso, o texto retornado "${TEXTO_ATIVIDADE_SELECIONADA}", confere com o texto da mesma posição na lista de atividades gerada: "${TEXTO_ATIVIDADE_LISTA}".</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.553927" elapsed="0.001236"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:37:06.556635" level="INFO">${resultado} = Atividade 4</msg>
+<var>${resultado}</var>
+<arg>${TEXTO_ATIVIDADE_LISTA}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.555916" elapsed="0.000875"/>
+</kw>
+<status status="PASS" start="2025-08-04T05:37:06.553031" elapsed="0.004333"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>Falha ao validar a atividade "${NUM_ATIVIDADE}", o texto retornado "${TEXTO_ATIVIDADE_SELECIONADA}" não confere com o texto da mesma posição na lista de atividades gerada "${TEXTO_ATIVIDADE_LISTA}"</arg>
+<arg>ERROR</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2025-08-04T05:37:06.558168" elapsed="0.000168"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<var>${resultado}</var>
+<arg>Fail</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="NOT RUN" start="2025-08-04T05:37:06.559067" elapsed="0.000184"/>
+</kw>
+<status status="NOT RUN" start="2025-08-04T05:37:06.557577" elapsed="0.001891"/>
+</branch>
+<status status="PASS" start="2025-08-04T05:37:06.552910" elapsed="0.006713"/>
+</if>
+<return>
+<value>${resultado}</value>
+<status status="PASS" start="2025-08-04T05:37:06.559778" elapsed="0.000152"/>
+</return>
+<msg time="2025-08-04T05:37:06.560519" level="INFO">${TEXTO_ATIVIDADE_VALIDADO} = Atividade 4</msg>
+<var>${TEXTO_ATIVIDADE_VALIDADO}</var>
+<arg>${TEXTO_ATIVIDADE_SELECIONADA}</arg>
+<arg>${NUM_ATIVIDADE}</arg>
+<doc>Validar se o texto da atividade selecionada é igual ao texto da mesma posição na lista de atividades gerada</doc>
+<status status="PASS" start="2025-08-04T05:37:06.544957" elapsed="0.015685"/>
+</kw>
+<doc>Marca a atividade selecionada como concluída</doc>
+<status status="PASS" start="2025-08-04T05:37:05.634214" elapsed="0.926746"/>
+</kw>
+<kw name="Limpar as atividades concluídas" owner="kws_lista_tarefas">
+<kw name="Click Element" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:06.564408" level="INFO">Clicking element '//footer[@data-testid='footer']//button[@class='clear-completed']'.</msg>
+<arg>locator=${HOMER_BTN_LIMPAR_ATV_CONCLUÍDAS}</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.563533" elapsed="0.270269"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:07.051030" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-14.png"&gt;&lt;img src="selenium-screenshot-14.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-04T05:37:06.834879" elapsed="0.216712"/>
+</kw>
+<kw name="Verificar se há alguma atividade concluída na lista" owner="kws_lista_tarefas">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-04T05:37:07.054611" level="INFO">${LOCATOR_LISTA_CONCLUIDAS} = //li[@data-testid='todo-item'][contains(@class, 'completed')]</msg>
+<var>${LOCATOR_LISTA_CONCLUIDAS}</var>
+<arg>${HOME_LISTA_TAREFAS}\[contains(@class, 'completed')]</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-04T05:37:07.053747" elapsed="0.001017"/>
+</kw>
+<kw name="Get WebElements" owner="SeleniumLibrary">
+<msg time="2025-08-04T05:37:07.095212" level="INFO">${LISTA_ELEMENTOS_CONCLUIDOS} = []</msg>
+<var>${LISTA_ELEMENTOS_CONCLUIDOS}</var>
+<arg>locator=${LOCATOR_LISTA_CONCLUIDAS}</arg>
+<doc>Returns a list of WebElement objects matching the ``locator``.</doc>
+<status status="PASS" start="2025-08-04T05:37:07.055476" elapsed="0.039907"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:37:07.096812" level="INFO">Quantidade de elementos de atividades concluídas retornados: []</msg>
+<arg>Quantidade de elementos de atividades concluídas retornados: ${LISTA_ELEMENTOS_CONCLUIDOS}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:37:07.096090" elapsed="0.000976"/>
+</kw>
+<kw name="Should Be Empty" owner="BuiltIn">
+<msg time="2025-08-04T05:37:07.098353" level="INFO">Length is 0.</msg>
+<arg>${LISTA_ELEMENTOS_CONCLUIDOS}</arg>
+<doc>Verifies that the given item is empty.</doc>
+<status status="PASS" start="2025-08-04T05:37:07.097736" elapsed="0.000864"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-04T05:37:07.099818" level="INFO">Não há atividades concluídas na lista, após a limpeza!</msg>
+<arg>Não há atividades concluídas na lista, após a limpeza!</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-04T05:37:07.099308" elapsed="0.000771"/>
+</kw>
+<doc>Verifica se existem atividades concluídas na lista de tarefas</doc>
+<status status="PASS" start="2025-08-04T05:37:07.052476" elapsed="0.047981"/>
+</kw>
+<doc>Limpa todas as atividades marcadas como concluídas</doc>
+<status status="PASS" start="2025-08-04T05:37:06.562226" elapsed="0.538480"/>
+</kw>
+<doc>Teste que verifica a adição de 4 atividades, marca a 4ª atividade como concluída e depois limpa as atividades concluídas</doc>
+<tag>ADICIONAR_MARCAR_LIMPAR</tag>
+<tag>CT03</tag>
+<status status="PASS" start="2025-08-04T05:36:57.362252" elapsed="9.739266"/>
+</test>
+<kw name="Fechar o navegador" owner="teardown" type="TEARDOWN">
+<kw name="Close Browser" owner="SeleniumLibrary">
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2025-08-04T05:37:07.106481" elapsed="3.048837"/>
+</kw>
+<doc>Fecha o navegador (Browser)</doc>
+<status status="PASS" start="2025-08-04T05:37:07.105484" elapsed="3.050252"/>
+</kw>
+<doc>Este arquivo contém os casos de teste automatizados para o gerenciador de atividades To-Do MVC (https://todomvc.com/examples/react/dist/), incluindo casos de testes de adição, marcação, exclusão, filtragem e limpeza de atividades da lista de tarefas.</doc>
+<status status="PASS" start="2025-08-04T05:36:36.130654" elapsed="34.025309"/>
+</suite>
+<status status="PASS" start="2025-08-04T05:36:36.000143" elapsed="34.167863"/>
+</suite>
+<statistics>
+<total>
+<stat pass="3" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+<stat pass="1" fail="0" skip="0">ADICIONAR_MARCAR_EXCLUIR_FILTRAR</stat>
+<stat pass="1" fail="0" skip="0">ADICIONAR_MARCAR_FILTRAR</stat>
+<stat pass="1" fail="0" skip="0">ADICIONAR_MARCAR_LIMPAR</stat>
+<stat pass="1" fail="0" skip="0">CT01</stat>
+<stat pass="1" fail="0" skip="0">CT02</stat>
+<stat pass="1" fail="0" skip="0">CT03</stat>
+</tag>
+<suite>
+<stat name="Tests" id="s1" pass="3" fail="0" skip="0">Tests</stat>
+<stat name="Lista Tarefas" id="s1-s1" pass="3" fail="0" skip="0">Tests.Lista Tarefas</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
