@@ -1,7 +1,7 @@
 *** Variables ***
 ${HOME_TITLE}  TodoMVC: React
 
-${HOME_CAMPO_PESQUISAR}  id=todo-input
+${HOME_INPUT_NOVA_TAREFA}  id=todo-input
 
 ${HOME_LISTA_TAREFAS}  //li[@data-testid='todo-item']
 
