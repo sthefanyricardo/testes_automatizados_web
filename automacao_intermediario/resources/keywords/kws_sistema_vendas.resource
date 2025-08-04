@@ -38,10 +38,24 @@ Remover "${POSICAO}" produto adicionado
 
 Acessar carrinho e finalizar o pedido
   [Documentation]  Acessa o carrinho de compras e finaliza o pedido.
+  Na tela de inventário clicar no link do carrinho de compras
+  Na tela do carrinho clicar no botão de checkout
+  Na tela de checkout informações preencher os dados e clicar no botão de continuar
+  Na tela de visão geral do checkout clicar no botão de finalizar pedido
+  Na tela de finalização da compra validar as mensagens de sucesso
+
+Na tela de inventário clicar no link do carrinho de compras
+  [Documentation]  Clica no link do carrinho de compras na tela de inventário.
   Click Link  ${INVENTORY_LINK_CARRINHO}
+  
+Na tela do carrinho clicar no botão de checkout
+  [Documentation]  Clica no botão de checkout na tela do carrinho de compras.
   Wait Until Element Is Visible  ${CART_TITLE}
   Capture Page Screenshot
   Click Button  ${CART_BTN_CHECKOUT}
+
+Na tela de checkout informações preencher os dados e clicar no botão de continuar
+  [Documentation]  Preenche os campos do formulário de checkout com os dados aleatórios e clica no botão de continuar.
   ${FIRST_NAME}  ${LAST_NAME}  ${POSTAL_CODE}  Criar dados de nome, sobrenome e código postal aleatórios
   Input Text  ${CHECKOUT_FIELD_FIRST_NAME}  ${FIRST_NAME}
   Input Text  ${CHECKOUT_FIELD_LAST_NAME}  ${LAST_NAME}
@@ -49,12 +63,24 @@ Acessar carrinho e finalizar o pedido
   Capture Page Screenshot
   Click Button  ${CHECKOUT_BTN_CONTINUE}
   Capture Page Screenshot
+
+Na tela de visão geral do checkout clicar no botão de finalizar pedido
+  [Documentation]  Clica no botão de finalizar pedido na tela de visão geral do checkout.
   Wait Until Element Is Visible  ${SECOND_CHECKOUT_TITLE}
   Click Button  ${CHECKOUT_BTN_FINISH}
   Wait Until Element Is Visible  ${CHECKOUT_LBL_FINISH}
-  Wait Until Element Is Visible  ${CHECKOUT_LBL_ORDER_COMPLETE}
   Capture Page Screenshot
+
+Na tela de finalização da compra validar as mensagens de sucesso
+  [Documentation]  Valida as mensagens de sucesso na tela de finalização do pedido.
+  Element Should Be Visible  ${CHECKOUT_LBL_FINISH}
+  Element Should Be Visible  ${CHECKOUT_LBL_ORDER_COMPLETE}
+  Element Should Be Visible  ${CHECKOUT_BTN_BACK_HOME}
 
 Acessar carrinho e tentar finalizar pedido
   [Documentation]  Acessa o carrinho de compras e tenta finalizar o pedido.
-  Acessar carrinho e finalizar o pedido
+  Na tela de inventário clicar no link do carrinho de compras
+  Na tela do carrinho clicar no botão de checkout
+  Na tela de checkout informações preencher os dados e clicar no botão de continuar
+  Na tela de visão geral do checkout clicar no botão de finalizar pedido
+  Na tela de finalização da compra validar as mensagens de sucesso
