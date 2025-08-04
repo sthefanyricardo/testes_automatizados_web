@@ -51,19 +51,19 @@ Este projeto foi desenvolvido com as seguintes ferramentas e tecnologias. Certif
 ## 📁 Estrutura do Repositório
 Abaixo está a organização dos arquivos e pastas do projeto, com uma breve descrição de suas funções:
 
-```
+```text
 automacao_intermediario/
-├── **`resources/`** → Recursos reutilizáveis do projeto
-│ ├── **`credentials/`** → Dados de acesso (usuários e senhas)
-│ ├── **`environments/`** → Configurações específicas de ambiente
-│ ├── **`keywords/`** → keywords personalizadas para testes
-│ ├── **`keywords_common/`** → Keywords compartilhadas entre testes
-│ ├── **`page_objects/`** → Elementos estruturados com Page Object Model
-│ └── **`main.robot`** → Arquivo principal que centraliza os recursos
-├── **`resultados/`** → Relatórios gerados após a execução dos testes
-├── **`tests/`** → Suítes de teste automatizadas
-├── **`README.md`** → Documentação com instruções de uso e visão geral do projeto
-└── **`requirements.txt`** → Lista de dependências necessárias para executar o projeto
+├── resources/ → Recursos reutilizáveis do projeto
+│ ├── credentials/ → Dados de acesso (usuários e senhas)
+│ ├── environments/ → Configurações específicas de ambiente
+│ ├── keywords/ → keywords personalizadas para testes
+│ ├── keywords_common/ → Keywords compartilhadas entre testes
+│ ├── page_objects/ → Elementos estruturados com Page Object Model
+│ └── main.robot → Arquivo principal que centraliza os recursos
+├── resultados/ → Relatórios gerados após a execução dos testes
+├── tests/ → Suítes de teste automatizadas
+├── README.md → Documentação com instruções de uso e visão geral do projeto
+└── requirements.txt → Lista de dependências necessárias para executar o projeto
 ```
 
 ---
