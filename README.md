@@ -40,27 +40,25 @@ Este projeto demonstra a automação de funcionalidades mais complexas em um sis
 ---
 
 ## 🛠️ Tecnologias, Ferramentas e Requisitos
+Este projeto foi desenvolvido com as seguintes ferramentas e tecnologias. Certifique-se de que sua máquina atende aos requisitos abaixo para executar os testes.
 
-**Linguagem e Framework**
-- Python
-- Robot Framework
-- SeleniumLibrary
-- Faker Library
+- **Linguagem e Frameworks:**
+  - **Python:** Linguagem de programação base para o Robot Framework e suas bibliotecas. [Download Versão 3.13.2 ou superior](https://www.python.org/downloads/)
+  - **Robot Framework:** Framework de automação de testes com sintaxe baseada em palavras-chave [Download Versão 7.3.2 ou superior](https://robotframework.org/?tab=1#getting-started)
+  - **SeleniumLibrary:** Biblioteca essencial para a automação de testes web. [Documentação](https://robotframework.org/?tab=libraries#resources)
+  - **Faker Library:** Biblioteca utilizada para a geração de massa de dados dinâmicos. [Documentação](https://marketsquare.github.io/robotframework-faker/)
 
-**Ambiente de Desenvolvimento**
-- Visual Studio Code
-- Git e GitHub
+- **Ferramentas de Desenvolvimento e Controle de Versão:**
+  - **Visual Studio Code:** IDE utilizada para o desenvolvimento dos testes. [Download VS Code](https://code.visualstudio.com/download)
+  - **Git** Utilizado para o controle de versão. [Download Git](https://git-scm.com/downloads)
+  - **GitHub:** Utilizado para o compartilhamento de código. [GitHub](https://github.com)
 
-**Requisitos**
-- Python 3.13.2 ou superior [Download](https://www.python.org/downloads/)
-- Robot Framework 7.3.2 ou superior [Documentação](https://robotframework.org/?tab=1#getting-started)
-- Git [Download](https://git-scm.com/downloads)
-- Visual Studio Code [VS Code Download](https://code.visualstudio.com/download)
-- Um navegador (como Chrome, Microsoft Edge, Firefox, etc.) instalado
-- WebDriver compatível com a versão do seu navegador e configurado no PATH do sistema:
-  - ChromeDriver para Google Chrome [Download](https://googlechromelabs.github.io/chrome-for-testing/)
-  - EdgeDriver para o Microsoft Edge [Download](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver)
-  - Geckodriver para o FireFox [Download](https://github.com/mozilla/geckodriver/releases)
+- **Configuração do Ambiente de Execução:**
+  - **Navegador:** Um navegador instalado (como Chrome, Microsoft Edge ou Firefox).
+  - **WebDriver:** O WebDriver compatível com a versão do seu navegador deve ser baixado e adicionado ao PATH do sistema.
+    - [ChromeDriver para Google Chrome](https://googlechromelabs.github.io/chrome-for-testing/)
+    - [EdgeDriver para o Microsoft Edge](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver)
+    - [Geckodriver para o Firefox](https://github.com/mozilla/geckodriver/releases)
 
 ---
 
