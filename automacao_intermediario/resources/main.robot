@@ -9,7 +9,7 @@ Library  FakerLibrary  locale=pt_BR
 
 # Importando os arquivos de variáveis de URL
 Resource  ./environments/url_variables.resource
-Resource  ./credentials/credentials.robot
+Resource  ./credentials/credentials.resource
 
 # Importando os arquivos de variáveis de massa de dados
 Resource  ./massa_dados/massa_dados.resource
