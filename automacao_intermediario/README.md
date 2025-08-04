@@ -79,10 +79,11 @@ Abaixo está a organização dos arquivos e pastas do projeto, com uma breve des
 ```text
 automacao_intermediario/
 ├── resources/ → Recursos reutilizáveis do projeto
-│ ├── credentials/ → Dados de acesso (usuários e senhas)
+│ ├── credentials/ → Variáveis com dados de acesso (usuários e senhas)
 │ ├── environments/ → Configurações específicas de ambiente
 │ ├── keywords/ → keywords personalizadas para testes
 │ ├── keywords_common/ → Keywords compartilhadas entre testes
+│ ├── massa_dados/ → Variáveis com dados utilizados para fornecer informações dinâmicas aos testes
 │ ├── page_objects/ → Elementos estruturados com Page Object Model
 │ └── main.robot → Arquivo principal que centraliza os recursos
 ├── resultados/ → Relatórios gerados após a execução dos testes
