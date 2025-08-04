@@ -74,10 +74,7 @@ O repositório está organizado em pastas, cada uma correspondente a um nível d
 ---
 
 ## 🙋‍♀️ Autora
-Feito com ❤️ por **Sthefany A. Ricardo**. 
-
-📧 sthefannyricardo@gmail.com 
-
-🔗 [LinkedIn](https://www.linkedin.com/in/sthefanyricardo/) 
-
-📅 Última atualização: **Agosto de 2025**. 
+Feito com ❤️ por **Sthefany A. Ricardo**.  
+📧 sthefannyricardo@gmail.com  
+🔗 [LinkedIn](https://www.linkedin.com/in/sthefanyricardo/)  
+📅 Última atualização: **Agosto de 2025**.  

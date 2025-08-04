@@ -104,4 +104,4 @@ automacao_avancado/
 
 ## 🙋‍♀️ Autora
 Feito com ❤️ por **Sthefany A. Ricardo**.  
-📅 Última atualização: **Agosto de 2025**.  
+📅 Última atualização: **Agosto de 2025**.    
