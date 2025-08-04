@@ -31,7 +31,7 @@ Este projeto foi desenvolvido com as seguintes ferramentas e tecnologias. Certif
   - **WebDriver:** O WebDriver compatível com a versão do seu navegador deve ser baixado e adicionado ao PATH do sistema.
     - [ChromeDriver para Google Chrome](https://googlechromelabs.github.io/chrome-for-testing/)
     - [EdgeDriver para o Microsoft Edge](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver)
-    - [Geckodriver para o Firefox](https://github.com/mozilla/geckodriver/releases)
+    - [GeckoDriver para o Firefox](https://github.com/mozilla/geckodriver/releases)
 
 ---
 
@@ -41,7 +41,7 @@ Abaixo está a organização dos arquivos e pastas do projeto, com uma breve des
 automacao_avancado/
 ├── **`resources/`** → Recursos reutilizáveis do projeto
 │ ├── **`environments/`** → Configurações específicas de ambiente
-│ ├── **`keywords/`** → Keywords customizadas para testes
+│ ├── **`keywords/`** → keywords personalizadas para testes
 │ ├── **`keywords_common/`** → Keywords compartilhadas entre testes
 │ ├── **`page_objects/`** → Elementos estruturados com Page Object Model
 │ └── **`main.robot`** → Arquivo principal que centraliza os recursos
@@ -57,7 +57,7 @@ automacao_avancado/
   1. **Instalação do Python:**
      - Certifique-se de ter o Python instalado (versão 3.7 ou superior). [Download do Python](https://www.python.org/downloads/)
   2. **Instalação do WebDriver:**
-     - Baixe o WebDriver correspondente ao seu navegador (ex: [ChromeDriver para Google Chrome](https://googlechromelabs.github.io/chrome-for-testing/) ou [EdgeDriver para o Microsoft Edge](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver) ou [Geckodriver para o Firefox](https://github.com/mozilla/geckodriver/releases)).
+     - Baixe o WebDriver correspondente ao seu navegador (ex: [ChromeDriver para Google Chrome](https://googlechromelabs.github.io/chrome-for-testing/) ou [EdgeDriver para o Microsoft Edge](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver) ou [GeckoDriver para o Firefox](https://github.com/mozilla/geckodriver/releases)).
      - Certifique-se de que o caminho para as pastas e/ou arquivos do WebDriver, esteja no PATH do sistema. 
   3. **Instalação das dependências do projeto:**
      - Abra o terminal na pasta raiz do projeto e execute o seguinte comando:
