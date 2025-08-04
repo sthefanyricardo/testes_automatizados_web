@@ -21,6 +21,15 @@ Implementação dos scripts de testes automatizados com **Robot Framework** e o 
 
 ---
 
+## 🧪 Casos de Teste Implementados
+| ID   | Título                                                           | Objetivo                                                                                                             | Tags                               |
+| ---- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| CT01 | Adicionar atividades, marcar como concluída e filtrar concluídas | Verifica a adição de 3 atividades, marca a 2ª como concluída e filtra todas as atividades concluídas.                | `ADICIONAR_MARCAR_FILTRAR`         |
+| CT02 | Adicionar, concluir, excluir atividade e filtrar concluídas      | Adiciona 4 atividades, marca a 3ª como concluída, exclui essa atividade e filtra as atividades concluídas restantes. | `ADICIONAR_MARCAR_EXCLUIR_FILTRAR` |
+| CT03 | Adicionar atividades, concluir uma e limpar concluídas           | Adiciona 4 atividades, marca a 4ª como concluída e executa a limpeza das atividades concluídas.                      | `ADICIONAR_MARCAR_LIMPAR`          |
+
+---
+
 ## 🛠️ Tecnologias, Ferramentas e Requisitos
 Este projeto foi desenvolvido com as seguintes ferramentas e tecnologias. Certifique-se de que sua máquina atende aos requisitos abaixo para executar os testes.
 
@@ -56,7 +65,7 @@ automacao_basico/
 │ ├── page_objects/ → Elementos estruturados com Page Object Model
 │ └── main.robot → Arquivo principal que centraliza os recursos
 ├── resultados/ → Relatórios gerados após a execução dos testes
-├── tests/ → Suítes de teste automatizadas
+├── tests/ → Suítes de testes automatizados
 ├── README.md → Documentação com instruções de uso e visão geral do projeto
 └── requirements.txt → Lista de dependências necessárias para executar o projeto
 ```
@@ -66,7 +75,7 @@ automacao_basico/
 ## 🤖 Como Executar os Testes
 ### 🔧 Pré-requisitos (Configuração do Ambiente)
   1. **Instalação do Python:**
-     - Certifique-se de ter o Python instalado (versão 3.7 ou superior). [Download do Python](https://www.python.org/downloads/)
+     - Certifique-se de ter o Python instalado (versão 3.13.2 ou superior). [Download do Python](https://www.python.org/downloads/)
   2. **Instalação do WebDriver:**
      - Baixe o WebDriver correspondente ao seu navegador (ex: [ChromeDriver para Google Chrome](https://googlechromelabs.github.io/chrome-for-testing/) ou [EdgeDriver para o Microsoft Edge](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver) ou [GeckoDriver para o Firefox](https://github.com/mozilla/geckodriver/releases)).
      - Certifique-se de que o caminho para as pastas e/ou arquivos do WebDriver, esteja no PATH do sistema. 
