@@ -2,24 +2,14 @@
 
 Implementação dos scripts de testes automatizados com **Robot Framework** e o padrão de projeto **Page Object Model (POM)**, para validar as funcionalidades essenciais do gerenciador de tarefas [To-Do MVC (React)](https://todomvc.com/examples/react/dist/).
 
-## 🎯 Cenários de Teste
-- **CT01: Adição, conclusão e filtragem de atividades**  
-  - Adicionar três atividades
-  - Marcar a segunda atividade como Concluído
-  - Filtrar pelas atividades Concluídas
+## ✅ Funcionalidades Testadas
+As funcionalidades testadas automatizam interações típicas de um usuário final com a aplicação ToDoMVC:
 
-- **CT02: Adição, filtragem, conclusão e exclusão de atividade concluída**  
-  - Adicionar quatro atividades
-  - Marcar a terceira atividade como Concluído
-  - Excluir a terceira atividade
-  - Filtrar pelas atividades Concluídas
-
-- **CT03: Adição, conclusão e limpeza de atividades concluídas**  
-  - Adicionar quatro atividades
-  - Marcar a quarta atividade como Concluído
-  - Limpar as atividades Concluídas
-
----
+- Adição de novas tarefas
+- Marcação de tarefas como concluídas
+- Filtro por tarefas concluídas
+- Exclusão de tarefas
+- Limpeza de todas as tarefas concluídas
 
 ## 🧪 Casos de Teste Implementados
 | ID   | Título                                                           | Objetivo                                                                                                             | Tags                               |
@@ -27,6 +17,26 @@ Implementação dos scripts de testes automatizados com **Robot Framework** e o 
 | CT01 | Adicionar atividades, marcar como concluída e filtrar concluídas | Verifica a adição de 3 atividades, marca a 2ª como concluída e filtra todas as atividades concluídas.                | CT01, ADICIONAR_MARCAR_FILTRAR         |
 | CT02 | Adicionar, concluir, excluir atividade e filtrar concluídas      | Adiciona 4 atividades, marca a 3ª como concluída, exclui essa atividade e filtra as atividades concluídas restantes. | CT02, ADICIONAR_MARCAR_EXCLUIR_FILTRAR |
 | CT03 | Adicionar atividades, concluir uma e limpar concluídas           | Adiciona 4 atividades, marca a 4ª como concluída e executa a limpeza das atividades concluídas.                      | CT03, ADICIONAR_MARCAR_LIMPAR          |
+
+💡 *Use as tags com `--include` para executar testes específicos.*
+
+---
+
+## 💡 Boas Práticas Aplicadas
+
+### ✅ Organização e Manutenção
+- **DRY (Don't Repeat Yourself)**: Reutilização de keywords para reduzir código duplicado.
+- **Page Object Model (POM)**: Separação das interações por página para facilitar manutenção.
+- **Separação de Responsabilidades**: Estrutura modular dividida entre testes, localizadores e lógica de negócio.
+
+### ⚙️ Eficiência e Robustez
+- **Suite Setup/Teardown**: Gerenciamento da abertura e fechamento do navegador de forma automática.
+- **Uso de Tags**: Segmentação inteligente de testes para execução seletiva.
+- **Controle de Dados Dinâmicos**: Geração e armazenamento de atividades com nomes únicos a cada execução, evitando conflitos e repetição de dados.
+
+### 🔧 Recursos Auxiliares
+- **Listas**: Armazenamento e reaproveitamento de dados ao longo do fluxo de teste.
+- **Validações claras** e assertivas com `Should Be Equal`, `Element Attribute Value Should Be`, `comparação de conteudos`, entre outras
 
 ---
 
