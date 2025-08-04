@@ -1,3 +1,6 @@
+*** Settings ***
+Documentation  Este arquivo contém as variáveis de configuração e elementos da página de checkout do sistema de vendas (https://www.saucedemo.com/).
+
 *** Variables ***
 ${FIRST_CHECKOUT_TITLE}  //span[@data-test='title'][contains(text(), 'Checkout: Your Information')]
 

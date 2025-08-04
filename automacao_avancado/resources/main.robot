@@ -5,6 +5,7 @@ Documentation  Arquivo principal de importação de todos os arquivos de recurso
 Library  SeleniumLibrary
 Library  Collections
 Library  String
+Library  DateTime
 Library  FakerLibrary  locale=pt_BR
 
 # Importando os arquivos de variáveis de URL
@@ -14,8 +15,9 @@ Resource  ./credentials/credentials.resource
 Resource  ./massa_dados/massa_dados.resource
 
 # Importando os arquivos de keywords comuns
-Resource  ./keywords_common/setup.robot
-Resource  ./keywords_common/teardown.robot
+Resource  ./keywords_common/setup.resource
+Resource  ./keywords_common/teardown.resource
+Resource  ./keywords_common/kws_shared.resource
 
 # Importando os arquivos de variáveis de URL
 Resource  ./environments/url_variables.resource

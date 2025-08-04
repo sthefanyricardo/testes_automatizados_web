@@ -1,3 +1,6 @@
+*** Settings ***
+Documentation  Este arquivo contém os elementos da página de resumo da conta do sistema bancário.
+
 *** Variables ***
 ${ACCOUNT_HISTORY_TITLE}  //h1[contains(text(), 'Account History - ')]
 

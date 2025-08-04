@@ -1,3 +1,6 @@
+*** Settings ***
+Documentation  Este arquivo contém os elementos da página inicial do sistema bancário.
+
 *** Variables ***
 ${HOME_TITLE}  Altoro Mutual
 

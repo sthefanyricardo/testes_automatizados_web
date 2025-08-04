@@ -1,3 +1,6 @@
+*** Settings ***
+Documentation  Este arquivo contém os dados de acesso de usuários e senha para o sistema de vendas (https://www.saucedemo.com/).
+
 *** Variables ***
 ${LOGIN_PASSWORD}  secret_sauce
 

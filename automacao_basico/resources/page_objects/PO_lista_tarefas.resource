@@ -1,3 +1,6 @@
+*** Settings ***
+Documentation  Este arquivo contém as variáveis de configuração e elementos da página do gerenciador de tarefas To-Do MVC (https://todomvc.com/examples/react/dist/).
+
 *** Variables ***
 ${HOME_TITLE}  TodoMVC: React
 
