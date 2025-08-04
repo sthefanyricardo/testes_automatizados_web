@@ -3,13 +3,6 @@ Documentation  Este arquivo contém as keywords para o gerenciador de atividades
 Resource  ../main.robot
 
 *** Keywords ***
-Acessar página home do site
-  [Documentation]  Acessa a página inicial do site de testes (https://todomvc.com/examples/react/dist/)
-  [Arguments]  ${URL_HOME}=${TODO_MVC_URL}
-  Go To  ${URL_HOME} 
-  Title Should Be  ${HOME_TITLE}
-  Capture Page Screenshot
-
 Adicionar "${QUANT_ATIVIDADES}" atividade(s)
   [Documentation]  Cria uma lista de atividades com o número de atividades especificado e insere cada atividade na lista
   @{LISTA_ATIVIDADES}  Create List

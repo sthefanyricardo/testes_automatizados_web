@@ -3,6 +3,13 @@ Documentation  Este arquivo contém as keywords compartilhadas para o gerenciame
 Resource  ../main.robot
 
 *** Keywords ***
+Acessar página home do site
+  [Documentation]  Acessa a página inicial do site de testes (https://todomvc.com/examples/react/dist/)
+  [Arguments]  ${URL_HOME}=${TODO_MVC_URL}
+  Go To  ${URL_HOME} 
+  Title Should Be  ${HOME_TITLE}
+  Capture Page Screenshot
+  
 Verificar se a atividade "${NUM_ATIVIDADE}" está concluída
   [Documentation]  Verifica se a atividade selecionada está marcada como concluída
   ${ATIVIDADE_SELECIONADA}  Set Variable  (${HOME_LISTA_TAREFAS})[${NUM_ATIVIDADE}]
