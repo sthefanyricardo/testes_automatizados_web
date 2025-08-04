@@ -1,3 +1,6 @@
+*** Settings ***
+Documentation  Este arquivo contém os elementos da página principal do sistema bancário.
+
 *** Variables ***
 ${MAIN_TITLE}  //h1[contains(text(), 'Hello Admin User')]
 

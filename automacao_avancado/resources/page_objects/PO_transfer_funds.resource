@@ -1,3 +1,6 @@
+*** Settings ***
+Documentation  Este arquivo contém os elementos da página de transferência de fundos do sistema bancário.
+
 *** Variables ***
 ${TRANSFER_TITLE}  //h1[text()="Transfer Funds"]
 

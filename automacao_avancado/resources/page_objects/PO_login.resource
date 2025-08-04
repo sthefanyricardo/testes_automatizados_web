@@ -1,3 +1,6 @@
+*** Settings ***
+Documentation  Este arquivo contém os elementos da página de login do sistema bancário.
+
 *** Variables ***
 ${LOGIN_TITLE}  //h1[text()="Online Banking Login"]
 
