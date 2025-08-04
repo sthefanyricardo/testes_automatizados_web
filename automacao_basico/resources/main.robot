@@ -8,8 +8,9 @@ Library  String
 Library  FakerLibrary  locale=pt_BR
 
 # Importando os arquivos de keywords comuns
-Resource  ./keywords_common/setup.robot
-Resource  ./keywords_common/teardown.robot
+Resource  ./keywords_common/setup.resource
+Resource  ./keywords_common/teardown.resource
+Resource  ./keywords_common/kws_shered.resource
 
 # Importando os arquivos de variáveis de URL
 Resource  ./environments/url_variables.resource
