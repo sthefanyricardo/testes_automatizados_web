@@ -1,4 +1,4 @@
-# Testes Automatizados Web – Nível Básica
+# Testes Automatizados Web – Nível Básico
 
 Implementação dos scripts de testes automatizados com **Robot Framework** e o padrão de projeto **Page Object Model (POM)**, para validar as funcionalidades essenciais do gerenciador de tarefas [To-Do MVC (React)](https://todomvc.com/examples/react/dist/).
 
