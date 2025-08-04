@@ -39,24 +39,25 @@ Este projeto demonstra a automação de funcionalidades mais complexas em um sis
 
 ---
 
-## 🛠️ Tecnologias e ferramentas utilizadas
+## 🛠️ Tecnologias, Ferramentas e Requisitos
 
-- **Python:** Linguagem utilizada como base do projeto e suporte para bibliotecas do Robot Framework.
-- **Git e GitHub:** Para controle de versão e compartilhamento de código.
-- **Visual Studio Code:** IDE utilizada para o desenvolvimento dos testes.
-- **Robot Framework:** Framework de automação de testes com sintaxe baseada em palavras-chave.
-- **SeleniumLibrary:** Biblioteca essencial para a automação de testes web.
-- **Faker Library:** Biblioteca utilizada para a geração de massa de dados dinâmicos.
+**Linguagem e Framework**
+- Python
+- Robot Framework
+- SeleniumLibrary
+- Faker Library
 
----
+**Ambiente de Desenvolvimento**
+- Visual Studio Code
+- Git e GitHub
 
-## 🔧 Requisitos
+**Requisitos**
 - Python 3.13.2 ou superior [Download](https://www.python.org/downloads/)
 - Robot Framework 7.3.2 ou superior [Documentação](https://robotframework.org/?tab=1#getting-started)
 - Git [Download](https://git-scm.com/downloads)
-- Visual Studio Code [Download](https://code.visualstudio.com/download)
+- Visual Studio Code [VS Code Download](https://code.visualstudio.com/download)
 - Um navegador (como Chrome, Microsoft Edge, Firefox, etc.) instalado
-- WebDriver compatível com a versão do seu navegador e adicionado ao PATH:
+- WebDriver compatível com a versão do seu navegador e configurado no PATH do sistema:
   - ChromeDriver para Google Chrome [Download](https://googlechromelabs.github.io/chrome-for-testing/)
   - EdgeDriver para o Microsoft Edge [Download](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver)
   - Geckodriver para o FireFox [Download](https://github.com/mozilla/geckodriver/releases)
