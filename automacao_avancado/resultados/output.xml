@@ -1,0 +1,677 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.3.2 (Python 3.13.2 on win32)" generated="2025-08-05T05:41:32.288134" rpa="false" schemaversion="5">
+<suite id="s1" name="Tests" source="C:\workspace\testes_automatizados_web\automacao_avancado\tests">
+<suite id="s1-s1" name="Sistema Bancario" source="C:\workspace\testes_automatizados_web\automacao_avancado\tests\sistema_bancario.robot">
+<kw name="Abrir o navegador" owner="setup" type="SETUP">
+<if>
+<branch type="IF" condition="'${HEADLESS}' == 'True' or '${HEADLESS}' == 'true'">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<arg>about:blank</arg>
+<arg>${BROWSER}</arg>
+<arg>options=add_argument("--headless=new")</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="NOT RUN" start="2025-08-05T05:41:35.523523" elapsed="0.000191"/>
+</kw>
+<status status="NOT RUN" start="2025-08-05T05:41:35.519067" elapsed="0.004980"/>
+</branch>
+<branch type="ELSE">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:35.525756" level="INFO">Opening browser 'chrome' to base url 'about:blank'.</msg>
+<arg>about:blank</arg>
+<arg>${BROWSER}</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2025-08-05T05:41:35.524952" elapsed="2.614309"/>
+</kw>
+<status status="PASS" start="2025-08-05T05:41:35.524252" elapsed="2.615347"/>
+</branch>
+<status status="PASS" start="2025-08-05T05:41:35.518960" elapsed="2.620840"/>
+</if>
+<kw name="Maximize Browser Window" owner="SeleniumLibrary">
+<doc>Maximizes current browser window.</doc>
+<status status="PASS" start="2025-08-05T05:41:38.140463" elapsed="0.144372"/>
+</kw>
+<doc>Abre o navegador (Browser) com as opções definidas</doc>
+<status status="PASS" start="2025-08-05T05:41:35.518263" elapsed="2.767724"/>
+</kw>
+<test id="s1-s1-t1" name="CT01: Transferência bancária com validação de saldo e extrato" line="8">
+<kw name="Run Keywords" owner="BuiltIn" type="SETUP">
+<kw name="Acessar página home do site" owner="kws_shared">
+<kw name="Go To" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:38.294524" level="INFO">Opening url 'https://demo.testfire.net/index.jsp'</msg>
+<arg>${URL_HOME}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<status status="PASS" start="2025-08-05T05:41:38.293859" elapsed="3.988101"/>
+</kw>
+<kw name="Title Should Be" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:42.305123" level="INFO">Page title is 'Altoro Mutual'.</msg>
+<arg>${HOME_TITLE}</arg>
+<doc>Verifies that the current page title equals ``title``.</doc>
+<status status="PASS" start="2025-08-05T05:41:42.282834" elapsed="0.022664"/>
+</kw>
+<arg>${DEMO_TEST_FIRE_URL}</arg>
+<doc>Acessa a página inicial do site de testes (https://demo.testfire.net/login.jsp)</doc>
+<status status="PASS" start="2025-08-05T05:41:38.291835" elapsed="4.014127"/>
+</kw>
+<kw name="Verificar o saldo atual da conta" owner="kws_shared">
+<kw name="Realizar o login" owner="kws_sistema_bancario">
+<kw name="Ir para a página de login do sistema bancário" owner="kws_sistema_bancario">
+<kw name="Click Link" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:42.313658" level="INFO">Clicking link '//a[@id='AccountLink']'.</msg>
+<arg>${HOME_LINK_LOGIN}</arg>
+<doc>Clicks a link identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:42.312271" elapsed="0.870624"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${LOGIN_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-05T05:41:43.184266" elapsed="0.117861"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:43.566362" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-1.png"&gt;&lt;img src="selenium-screenshot-1.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-05T05:41:43.302908" elapsed="0.263781"/>
+</kw>
+<doc>Clicar no link "ONLINE BANKING LOGIN" na página inicial do sistema bancário.</doc>
+<status status="PASS" start="2025-08-05T05:41:42.310840" elapsed="1.257401"/>
+</kw>
+<kw name="Preencher o formulário de login com os dados fornecidos" owner="kws_sistema_bancario">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:43.571848" level="INFO">Typing text 'admin' into text field 'id=uid'.</msg>
+<arg>${LOGIN_CAMPO_USER}</arg>
+<arg>${USER}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:43.571019" elapsed="0.210839"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:43.783753" level="INFO">Typing text 'admin' into text field 'id=passw'.</msg>
+<arg>${LOGIN_CAMPO_PASSWORD}</arg>
+<arg>${PASSWORD}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:43.782649" elapsed="0.209999"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:44.209110" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-2.png"&gt;&lt;img src="selenium-screenshot-2.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-05T05:41:43.993443" elapsed="0.216020"/>
+</kw>
+<arg>${USER}</arg>
+<arg>${PASSWORD}</arg>
+<doc>Preenche o formulário de login com os dados fornecidos.</doc>
+<status status="PASS" start="2025-08-05T05:41:43.569225" elapsed="0.640664"/>
+</kw>
+<kw name="Clicar no botão e aguardar elemento" owner="kws_shared">
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:44.213229" level="INFO">Clicking button 'name=btnSubmit'.</msg>
+<arg>${LOCATOR_ELEMENT_BUTTON}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:44.212502" elapsed="0.201297"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${LOCATOR_ELEMENT_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-05T05:41:44.414684" elapsed="1.108380"/>
+</kw>
+<arg>${LOGIN_BUTTON}</arg>
+<arg>${MAIN_TITLE}</arg>
+<doc>Clica no botão para enviar o formulário e aguarda a página principal carregar.</doc>
+<status status="PASS" start="2025-08-05T05:41:44.210884" elapsed="1.312630"/>
+</kw>
+<doc>Realiza o login na página inicial do sistema bancário.</doc>
+<status status="PASS" start="2025-08-05T05:41:42.308986" elapsed="3.214959"/>
+</kw>
+<kw name="Acessar resumo da conta &quot;${ACCOUNT_ID}&quot;" owner="kws_sistema_bancario" source_name="Acessar resumo da conta &quot;${ACCOUNT_ID}&quot;">
+<kw name="Escolher uma opção no menu da página principal e aguardar a página carregar" owner="kws_sistema_bancario">
+<kw name="Click Link" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:45.531703" level="INFO">Clicking link 'id=MenuHyperLink1'.</msg>
+<arg>${MAIN_MENU_LINKS.${OPTION}}</arg>
+<doc>Clicks a link identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:45.528819" elapsed="0.919679"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${LOCATOR_ELEMENT_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-05T05:41:46.449250" elapsed="0.059263"/>
+</kw>
+<arg>account_summary</arg>
+<arg>${MAIN_TITLE}</arg>
+<doc>Escolhe uma opção no menu da página principal do sistema bancário e aguarda a página carregar.</doc>
+<status status="PASS" start="2025-08-05T05:41:45.527107" elapsed="0.981830"/>
+</kw>
+<kw name="Select From List By Label" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:46.510671" level="INFO">Selecting options from selection list '//select[@id='listAccounts']' by label 800001 Checking.</msg>
+<arg>${MAIN_FIELD_LIST_ACCOUNTS}</arg>
+<arg>${ACCOUNT_ID}</arg>
+<doc>Selects options from selection list ``locator`` by ``labels``.</doc>
+<status status="PASS" start="2025-08-05T05:41:46.509797" elapsed="0.347932"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:47.313288" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-3.png"&gt;&lt;img src="selenium-screenshot-3.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-05T05:41:46.858805" elapsed="0.454822"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:47.315297" level="INFO">Clicking button 'id=btnGetAccount'.</msg>
+<arg>${MAIN_BUTTON_GET_ACCOUNT}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:47.314443" elapsed="2.081130"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${ACCOUNT_HISTORY_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-05T05:41:49.397010" elapsed="0.077619"/>
+</kw>
+<doc>Acessa o resumo da conta bancária especificada.</doc>
+<status status="PASS" start="2025-08-05T05:41:45.525271" elapsed="3.949764"/>
+</kw>
+<kw name="Verificar e obter o saldo da conta" owner="kws_shared">
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${ACCOUNT_HISTORY_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-05T05:41:49.477309" elapsed="0.039734"/>
+</kw>
+<kw name="Get Text" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:49.617750" level="INFO">${CURRENT_AVAILABLE_BALANCE} = $115368810213.73</msg>
+<var>${CURRENT_AVAILABLE_BALANCE}</var>
+<arg>${TABLE_BALANCE_DETAIL}</arg>
+<doc>Returns the text value of the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:49.517979" elapsed="0.099963"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-05T05:41:49.620217" level="INFO">Saldo atual da conta 800001 Checking: $115368810213.73</msg>
+<arg>Saldo atual da conta ${ACCOUNT_ID}: ${CURRENT_AVAILABLE_BALANCE}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-05T05:41:49.619004" elapsed="0.001570"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:49.842067" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-4.png"&gt;&lt;img src="selenium-screenshot-4.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-05T05:41:49.621576" elapsed="0.220851"/>
+</kw>
+<kw name="Set Test Variable" owner="BuiltIn">
+<msg time="2025-08-05T05:41:49.847598" level="INFO">${AVAILABLE_BALANCE} = $115368810213.73</msg>
+<arg>${AVAILABLE_BALANCE}</arg>
+<arg>${CURRENT_AVAILABLE_BALANCE}</arg>
+<doc>Makes a variable available everywhere within the scope of the current test.</doc>
+<status status="PASS" start="2025-08-05T05:41:49.843323" elapsed="0.004600"/>
+</kw>
+<arg>${ACCOUNT_ID}</arg>
+<doc>Verifica e captura o saldo da conta bancária especificada.</doc>
+<status status="PASS" start="2025-08-05T05:41:49.475933" elapsed="0.372434"/>
+</kw>
+<kw name="Realizar o logoff do sistema bancário" owner="kws_shared">
+<kw name="Click Link" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:49.852301" level="INFO">Clicking link '//a[@id='LoginLink']'.</msg>
+<arg>${HOME_LINK_LOGOFF}</arg>
+<doc>Clicks a link identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:49.851423" elapsed="0.680417"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${HOME_LINK_LOGIN}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-05T05:41:50.532758" elapsed="0.142796"/>
+</kw>
+<doc>Realiza o logoff do sistema bancário.</doc>
+<status status="PASS" start="2025-08-05T05:41:49.849364" elapsed="0.826623"/>
+</kw>
+<arg>${CONTA_DESTINO}</arg>
+<doc>Verifica o saldo atual da conta bancária especificada.</doc>
+<status status="PASS" start="2025-08-05T05:41:42.307113" elapsed="8.369236"/>
+</kw>
+<arg>Acessar página home do site</arg>
+<arg>${DEMO_TEST_FIRE_URL}</arg>
+<arg>AND</arg>
+<arg>Verificar o saldo atual da conta</arg>
+<arg>${CONTA_DESTINO}</arg>
+<doc>Executes all the given keywords in a sequence.</doc>
+<status status="PASS" start="2025-08-05T05:41:38.290005" elapsed="12.386722"/>
+</kw>
+<kw name="Dado que realizo o login com usuário &quot;${LOGIN_USER}&quot; e senha &quot;${LOGIN_PASSWORD}&quot; na página inicial do sistema bancário" owner="kws_sistema_bancario" source_name="Dado que realizo o login com usuário &quot;${USER}&quot; e senha &quot;${PASSWORD}&quot; na página inicial do sistema bancário">
+<kw name="Realizar o login" owner="kws_sistema_bancario">
+<kw name="Ir para a página de login do sistema bancário" owner="kws_sistema_bancario">
+<kw name="Click Link" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:50.687088" level="INFO">Clicking link '//a[@id='AccountLink']'.</msg>
+<arg>${HOME_LINK_LOGIN}</arg>
+<doc>Clicks a link identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:50.686232" elapsed="0.910734"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${LOGIN_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-05T05:41:51.597977" elapsed="0.181416"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:52.042582" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-5.png"&gt;&lt;img src="selenium-screenshot-5.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-05T05:41:51.780254" elapsed="0.262686"/>
+</kw>
+<doc>Clicar no link "ONLINE BANKING LOGIN" na página inicial do sistema bancário.</doc>
+<status status="PASS" start="2025-08-05T05:41:50.684458" elapsed="1.358873"/>
+</kw>
+<kw name="Preencher o formulário de login com os dados fornecidos" owner="kws_sistema_bancario">
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:52.047117" level="INFO">Typing text 'admin' into text field 'id=uid'.</msg>
+<arg>${LOGIN_CAMPO_USER}</arg>
+<arg>${USER}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:52.046131" elapsed="0.258100"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:52.307136" level="INFO">Typing text 'admin' into text field 'id=passw'.</msg>
+<arg>${LOGIN_CAMPO_PASSWORD}</arg>
+<arg>${PASSWORD}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:52.306122" elapsed="0.360067"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:52.921569" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-6.png"&gt;&lt;img src="selenium-screenshot-6.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-05T05:41:52.670546" elapsed="0.251347"/>
+</kw>
+<arg>${USER}</arg>
+<arg>${PASSWORD}</arg>
+<doc>Preenche o formulário de login com os dados fornecidos.</doc>
+<status status="PASS" start="2025-08-05T05:41:52.044250" elapsed="0.878151"/>
+</kw>
+<kw name="Clicar no botão e aguardar elemento" owner="kws_shared">
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:52.926255" level="INFO">Clicking button 'name=btnSubmit'.</msg>
+<arg>${LOCATOR_ELEMENT_BUTTON}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:52.925464" elapsed="0.269588"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${LOCATOR_ELEMENT_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-05T05:41:53.195938" elapsed="0.557324"/>
+</kw>
+<arg>${LOGIN_BUTTON}</arg>
+<arg>${MAIN_TITLE}</arg>
+<doc>Clica no botão para enviar o formulário e aguarda a página principal carregar.</doc>
+<status status="PASS" start="2025-08-05T05:41:52.923766" elapsed="0.829957"/>
+</kw>
+<arg>${USER}</arg>
+<arg>${PASSWORD}</arg>
+<doc>Realiza o login na página inicial do sistema bancário.</doc>
+<status status="PASS" start="2025-08-05T05:41:50.681704" elapsed="3.072438"/>
+</kw>
+<doc>Realiza o login na página inicial do sistema bancário com os dados fornecidos.</doc>
+<status status="PASS" start="2025-08-05T05:41:50.679744" elapsed="3.074800"/>
+</kw>
+<kw name="Quando realizo uma transferência da conta &quot;${CONTA_ORIGEM}&quot; para a conta &quot;${CONTA_DESTINO}&quot;" owner="kws_sistema_bancario" source_name="Quando realizo uma transferência da conta &quot;${FROM_ACCOUNT}&quot; para a conta &quot;${TO_ACCOUNT}&quot;">
+<kw name="Realizar transferência entre contas" owner="kws_sistema_bancario">
+<kw name="Escolher uma opção no menu da página principal e aguardar a página carregar" owner="kws_sistema_bancario">
+<kw name="Click Link" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:53.763509" level="INFO">Clicking link 'id=MenuHyperLink3'.</msg>
+<arg>${MAIN_MENU_LINKS.${OPTION}}</arg>
+<doc>Clicks a link identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:53.761231" elapsed="0.617461"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${LOCATOR_ELEMENT_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-05T05:41:54.379571" elapsed="0.235097"/>
+</kw>
+<arg>transfer_funds</arg>
+<arg>${TRANSFER_TITLE}</arg>
+<doc>Escolhe uma opção no menu da página principal do sistema bancário e aguarda a página carregar.</doc>
+<status status="PASS" start="2025-08-05T05:41:53.759733" elapsed="0.855440"/>
+</kw>
+<kw name="Preencher os campos do formulário de transferência e enviar" owner="kws_sistema_bancario">
+<kw name="Select From List By Label" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:54.619953" level="INFO">Selecting options from selection list 'id=fromAccount' by label 800000 Corporate.</msg>
+<arg>${TRANSFER_FIELD_FROM_ACCOUNT}</arg>
+<arg>${FROM_ACCOUNT}</arg>
+<doc>Selects options from selection list ``locator`` by ``labels``.</doc>
+<status status="PASS" start="2025-08-05T05:41:54.618953" elapsed="0.577410"/>
+</kw>
+<kw name="Select From List By Label" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:55.198106" level="INFO">Selecting options from selection list 'id=toAccount' by label 800001 Checking.</msg>
+<arg>${TRANSFER_FIELD_TO_ACCOUNT}</arg>
+<arg>${TO_ACCOUNT}</arg>
+<doc>Selects options from selection list ``locator`` by ``labels``.</doc>
+<status status="PASS" start="2025-08-05T05:41:55.197201" elapsed="0.444237"/>
+</kw>
+<kw name="Gerar valor aleatório para transferência" owner="kws_sistema_bancario">
+<kw name="Evaluate" owner="BuiltIn">
+<msg time="2025-08-05T05:41:55.645224" level="INFO">${RANDOM_VALUE} = 3115684.84</msg>
+<var>${RANDOM_VALUE}</var>
+<arg>round(random.uniform(1000000, 9999999), 2)</arg>
+<arg>modules=random</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<status status="PASS" start="2025-08-05T05:41:55.643917" elapsed="0.001480"/>
+</kw>
+<return>
+<value>${RANDOM_VALUE}</value>
+<status status="PASS" start="2025-08-05T05:41:55.645756" elapsed="0.000277"/>
+</return>
+<msg time="2025-08-05T05:41:55.647302" level="INFO">${RANDOM_VALUE_GENERATED} = 3115684.84</msg>
+<var>${RANDOM_VALUE_GENERATED}</var>
+<doc>Gera um valor aleatório para a transferência.</doc>
+<status status="PASS" start="2025-08-05T05:41:55.642450" elapsed="0.005116"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:55.649479" level="INFO">Typing text '3115684.84' into text field 'id=transferAmount'.</msg>
+<arg>${TRANSFER_FIELD_AMOUNT_TRANSFER}</arg>
+<arg>${RANDOM_VALUE_GENERATED}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:55.648406" elapsed="0.249754"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:56.142298" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-7.png"&gt;&lt;img src="selenium-screenshot-7.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-05T05:41:55.899388" elapsed="0.243220"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:56.144140" level="INFO">Clicking button 'id=transfer'.</msg>
+<arg>${TRANSFER_BUTTON_TRANSFER_MONEY}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:56.143334" elapsed="0.521233"/>
+</kw>
+<kw name="Set Test Variable" owner="BuiltIn">
+<msg time="2025-08-05T05:41:56.673660" level="INFO">${TRANSFERRED_AMOUNT} = 3115684.84</msg>
+<arg>${TRANSFERRED_AMOUNT}</arg>
+<arg>${RANDOM_VALUE_GENERATED}</arg>
+<doc>Makes a variable available everywhere within the scope of the current test.</doc>
+<status status="PASS" start="2025-08-05T05:41:56.665616" elapsed="0.008502"/>
+</kw>
+<arg>${FROM_ACCOUNT}</arg>
+<arg>${TO_ACCOUNT}</arg>
+<doc>Preenche os campos do formulário de transferência e envia o formulário.</doc>
+<status status="PASS" start="2025-08-05T05:41:54.616846" elapsed="2.057847"/>
+</kw>
+<kw name="Verificar se a transferência foi realizada com sucesso" owner="kws_sistema_bancario">
+<kw name="Format String" owner="String">
+<msg time="2025-08-05T05:41:56.679536" level="INFO">${MENSAGEM_SUCESSO_VALIDACAO} = //span[contains(text(),'3115684.84 was successfully transferred')]</msg>
+<var>${MENSAGEM_SUCESSO_VALIDACAO}</var>
+<arg>${TRANSFER_SUCCESS_MESSAGE}</arg>
+<arg>valor_transferencia=${TRANSFERRED_AMOUNT}</arg>
+<doc>Formats a ``template`` using the given ``positional`` and ``named`` arguments.</doc>
+<status status="PASS" start="2025-08-05T05:41:56.678186" elapsed="0.001534"/>
+</kw>
+<kw name="Element Should Be Visible" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:56.759511" level="INFO">Element '//span[contains(text(),'3115684.84 was successfully transferred')]' is displayed.</msg>
+<arg>${MENSAGEM_SUCESSO_VALIDACAO}</arg>
+<doc>Verifies that the element identified by ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-05T05:41:56.680750" elapsed="0.079113"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-05T05:41:56.761985" level="INFO">Transferência de 800000 Corporate para 800001 Checking, no valor de 3115684.84, realizada com sucesso!</msg>
+<arg>Transferência de ${FROM_ACCOUNT} para ${TO_ACCOUNT}, no valor de ${TRANSFERRED_AMOUNT}, realizada com sucesso!</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-05T05:41:56.760768" elapsed="0.001490"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:56.969965" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-8.png"&gt;&lt;img src="selenium-screenshot-8.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-05T05:41:56.763239" elapsed="0.207057"/>
+</kw>
+<arg>${FROM_ACCOUNT}</arg>
+<arg>${TO_ACCOUNT}</arg>
+<doc>Verifica se a transferência foi realizada com sucesso.</doc>
+<status status="PASS" start="2025-08-05T05:41:56.675713" elapsed="0.294968"/>
+</kw>
+<arg>${FROM_ACCOUNT}</arg>
+<arg>${TO_ACCOUNT}</arg>
+<doc>Realiza a transferência de uma conta para outra no sistema bancário.</doc>
+<status status="PASS" start="2025-08-05T05:41:53.758052" elapsed="3.213446"/>
+</kw>
+<doc>Realiza a transferência de uma conta para outra no sistema bancário.</doc>
+<status status="PASS" start="2025-08-05T05:41:53.756387" elapsed="3.215445"/>
+</kw>
+<kw name="Então acesso o resumo da conta &quot;${CONTA_DESTINO}&quot;" owner="kws_sistema_bancario" source_name="Então acesso o resumo da conta &quot;${ACCOUNT_ID}&quot;">
+<kw name="Acessar resumo da conta &quot;${ACCOUNT_ID}&quot;" owner="kws_sistema_bancario" source_name="Acessar resumo da conta &quot;${ACCOUNT_ID}&quot;">
+<kw name="Escolher uma opção no menu da página principal e aguardar a página carregar" owner="kws_sistema_bancario">
+<kw name="Click Link" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:56.980792" level="INFO">Clicking link 'id=MenuHyperLink1'.</msg>
+<arg>${MAIN_MENU_LINKS.${OPTION}}</arg>
+<doc>Clicks a link identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:56.978336" elapsed="0.682831"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${LOCATOR_ELEMENT_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-05T05:41:57.662036" elapsed="0.426267"/>
+</kw>
+<arg>account_summary</arg>
+<arg>${MAIN_TITLE}</arg>
+<doc>Escolhe uma opção no menu da página principal do sistema bancário e aguarda a página carregar.</doc>
+<status status="PASS" start="2025-08-05T05:41:56.976869" elapsed="1.111803"/>
+</kw>
+<kw name="Select From List By Label" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:58.090353" level="INFO">Selecting options from selection list '//select[@id='listAccounts']' by label 800001 Checking.</msg>
+<arg>${MAIN_FIELD_LIST_ACCOUNTS}</arg>
+<arg>${ACCOUNT_ID}</arg>
+<doc>Selects options from selection list ``locator`` by ``labels``.</doc>
+<status status="PASS" start="2025-08-05T05:41:58.089404" elapsed="0.675721"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:59.114532" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-9.png"&gt;&lt;img src="selenium-screenshot-9.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-05T05:41:58.766903" elapsed="0.348017"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:41:59.116605" level="INFO">Clicking button 'id=btnGetAccount'.</msg>
+<arg>${MAIN_BUTTON_GET_ACCOUNT}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:41:59.115655" elapsed="1.195497"/>
+</kw>
+<kw name="Wait Until Element Is Visible" owner="SeleniumLibrary">
+<arg>${ACCOUNT_HISTORY_TITLE}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" start="2025-08-05T05:42:00.311940" elapsed="0.243093"/>
+</kw>
+<doc>Acessa o resumo da conta bancária especificada.</doc>
+<status status="PASS" start="2025-08-05T05:41:56.975343" elapsed="3.580083"/>
+</kw>
+<doc>Acessa o resumo da conta bancária especificada.</doc>
+<status status="PASS" start="2025-08-05T05:41:56.973338" elapsed="3.582385"/>
+</kw>
+<kw name="E verifico se a transferência foi listada corretamente" owner="kws_sistema_bancario">
+<kw name="Verificar se a transferência foi listada corretamente" owner="kws_sistema_bancario">
+<kw name="Page Should Contain Element" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:42:00.613740" level="INFO">Current page contains element '//b[text()="10 Most Recent Transactions"]'.</msg>
+<arg>${TITLE_TABLE_RECENT_TRANSACTIONS}</arg>
+<doc>Verifies that element ``locator`` is found on the current page.</doc>
+<status status="PASS" start="2025-08-05T05:42:00.563907" elapsed="0.050139"/>
+</kw>
+<kw name="Capture Page Screenshot" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:42:00.919945" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-10.png"&gt;&lt;img src="selenium-screenshot-10.png" width="800px"&gt;&lt;/a&gt;</msg>
+<doc>Takes a screenshot of the current page and embeds it into a log file.</doc>
+<status status="PASS" start="2025-08-05T05:42:00.614877" elapsed="0.305402"/>
+</kw>
+<kw name="Buscar a transferência recente na tabela 10 transações mais recentes" owner="kws_sistema_bancario">
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-05T05:42:00.923835" level="INFO">${encontrado} = False</msg>
+<var>${encontrado}</var>
+<arg>False</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-05T05:42:00.923167" elapsed="0.000815"/>
+</kw>
+<kw name="Catenate" owner="BuiltIn">
+<msg time="2025-08-05T05:42:00.925511" level="INFO">${FRASE_BUSCA} = $3115684.84</msg>
+<var>${FRASE_BUSCA}</var>
+<arg>$${TRANSFERRED_AMOUNT}</arg>
+<doc>Catenates the given items together and returns the resulted string.</doc>
+<status status="PASS" start="2025-08-05T05:42:00.924723" elapsed="0.000943"/>
+</kw>
+<kw name="Get WebElements" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:42:01.088554" level="INFO">@{LINHAS_RETORNADAS_TABELA} = [ &lt;selenium.webdriver.remote.webelement.WebElement (session="d374a8927865e8959d02644640f6c22e", element="f.381D7DCD80BE592512FD5600B02A79AD.d.56352F1E11FCD392F357D6985E82B59E.e.206")&gt; | &lt;selenium.webd...</msg>
+<var>@{LINHAS_RETORNADAS_TABELA}</var>
+<arg>${TABLE_RECENT_TRANSACTIONS}//tr</arg>
+<doc>Returns a list of WebElement objects matching the ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:42:00.926402" elapsed="0.162343"/>
+</kw>
+<for flavor="IN">
+<iter>
+<kw name="Get Text" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:42:01.124784" level="INFO">${texto_retornado} = 2025-08-05 Deposit $3115684.84</msg>
+<var>${texto_retornado}</var>
+<arg>${index_linha}</arg>
+<doc>Returns the text value of the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.091319" elapsed="0.033650"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-05T05:42:01.126560" level="INFO">Conteúdo da linha atual da tabela: 2025-08-05 Deposit $3115684.84</msg>
+<arg>Conteúdo da linha atual da tabela: ${texto_retornado}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.125868" elapsed="0.000970"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<kw name="Should Contain" owner="BuiltIn">
+<arg>${texto_retornado}</arg>
+<arg>${FRASE_BUSCA}</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.128738" elapsed="0.000960"/>
+</kw>
+<msg time="2025-08-05T05:42:01.130231" level="INFO">${result} = True</msg>
+<var>${result}</var>
+<arg>Should Contain</arg>
+<arg>${texto_retornado}</arg>
+<arg>${FRASE_BUSCA}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.127717" elapsed="0.002675"/>
+</kw>
+<if>
+<branch type="IF" condition="${result}">
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-05T05:42:01.133216" level="INFO">Os dados "$3115684.84", foram encontrados na linha: 2025-08-05 Deposit $3115684.84!</msg>
+<arg>Os dados "${FRASE_BUSCA}", foram encontrados na linha: ${texto_retornado}!</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.131903" elapsed="0.001612"/>
+</kw>
+<kw name="Set Variable" owner="BuiltIn">
+<msg time="2025-08-05T05:42:01.135596" level="INFO">${encontrado} = True</msg>
+<var>${encontrado}</var>
+<arg>True</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.134860" elapsed="0.000916"/>
+</kw>
+<kw name="Exit For Loop" owner="BuiltIn">
+<msg time="2025-08-05T05:42:01.137222" level="INFO">Exiting for loop altogether.</msg>
+<doc>Stops executing the enclosing FOR loop.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.136588" elapsed="0.000934"/>
+</kw>
+<status status="PASS" start="2025-08-05T05:42:01.130938" elapsed="0.006841"/>
+</branch>
+<branch type="ELSE">
+<kw name="Log" owner="BuiltIn">
+<arg>Os dados "${FRASE_BUSCA}", não foram encontrados na linha: ${texto_retornado}!</arg>
+<arg>WARN</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="NOT RUN" start="2025-08-05T05:42:01.138751" elapsed="0.000176"/>
+</kw>
+<status status="NOT RUN" start="2025-08-05T05:42:01.138042" elapsed="0.001135"/>
+</branch>
+<status status="PASS" start="2025-08-05T05:42:01.130815" elapsed="0.008560"/>
+</if>
+<var name="${index_linha}">&lt;selenium.webdriver.remote.webelement.WebElement (session="d374a8927865e8959d02644640f6c22e", element="f.381D7DCD80BE592512FD5600B02A79AD.d.56352F1E11FCD392F357D6985E82B59E.e.206")&gt;</var>
+<status status="PASS" start="2025-08-05T05:42:01.090448" elapsed="0.049089"/>
+</iter>
+<var>${index_linha}</var>
+<value>@{LINHAS_RETORNADAS_TABELA}</value>
+<status status="PASS" start="2025-08-05T05:42:01.089238" elapsed="0.050591"/>
+</for>
+<if>
+<branch type="IF" condition="not ${encontrado}">
+<kw name="Fail" owner="BuiltIn">
+<arg>Os dados "${FRASE_BUSCA}", não foram encontrados na tabela de transações recentes!</arg>
+<doc>Fails the test with the given message and optionally alters its tags.</doc>
+<status status="NOT RUN" start="2025-08-05T05:42:01.141392" elapsed="0.000162"/>
+</kw>
+<status status="NOT RUN" start="2025-08-05T05:42:01.140322" elapsed="0.001470"/>
+</branch>
+<status status="PASS" start="2025-08-05T05:42:01.140219" elapsed="0.001760"/>
+</if>
+<doc>Busca a transferência recente na tabela de transações recentes.</doc>
+<status status="PASS" start="2025-08-05T05:42:00.921865" elapsed="0.220360"/>
+</kw>
+<doc>Verifica se a transferência foi listada corretamente no resumo da conta.</doc>
+<status status="PASS" start="2025-08-05T05:42:00.562454" elapsed="0.580094"/>
+</kw>
+<doc>Verifica se a transferência foi listada corretamente no resumo da conta.</doc>
+<status status="PASS" start="2025-08-05T05:42:00.560757" elapsed="0.582194"/>
+</kw>
+<kw name="E verifico se o saldo da conta &quot;${CONTA_DESTINO}&quot; foi atualizado corretamente" owner="kws_sistema_bancario" source_name="E verifico se o saldo da conta &quot;${ACCOUNT_ID}&quot; foi atualizado corretamente">
+<kw name="Verificar se o saldo da conta foi atualizado corretamente" owner="kws_sistema_bancario">
+<kw name="Get Text" owner="SeleniumLibrary">
+<msg time="2025-08-05T05:42:01.213440" level="INFO">${CURRENT_AVAILABLE_BALANCE} = $115371925898.57</msg>
+<var>${CURRENT_AVAILABLE_BALANCE}</var>
+<arg>${TABLE_BALANCE_DETAIL}</arg>
+<doc>Returns the text value of the element identified by ``locator``.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.147962" elapsed="0.065620"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-05T05:42:01.215225" level="INFO">Novo saldo na conta 800001 Checking: $115371925898.57.</msg>
+<arg>Novo saldo na conta ${ACCOUNT_ID}: ${CURRENT_AVAILABLE_BALANCE}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.214384" elapsed="0.001114"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-05T05:42:01.218244" level="INFO">Antigo saldo da conta 800001 Checking: $115368810213.73.</msg>
+<arg>Antigo saldo da conta ${ACCOUNT_ID}: ${AVAILABLE_BALANCE}.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.216915" elapsed="0.001631"/>
+</kw>
+<kw name="Run Keyword And Return Status" owner="BuiltIn">
+<kw name="Should Not Be Equal As Numbers" owner="BuiltIn">
+<msg time="2025-08-05T05:42:01.221783" level="FAIL">'$115371925898.57' cannot be converted to a floating point number: ValueError: could not convert string to float: '$115371925898.57'</msg>
+<arg>${CURRENT_AVAILABLE_BALANCE}</arg>
+<arg>${AVAILABLE_BALANCE}</arg>
+<doc>Fails if objects are equal after converting them to real numbers.</doc>
+<status status="FAIL" start="2025-08-05T05:42:01.220428" elapsed="0.002298">'$115371925898.57' cannot be converted to a floating point number: ValueError: could not convert string to float: '$115371925898.57'</status>
+</kw>
+<msg time="2025-08-05T05:42:01.223359" level="INFO">${result} = False</msg>
+<var>${result}</var>
+<arg>Should Not Be Equal As Numbers</arg>
+<arg>${CURRENT_AVAILABLE_BALANCE}</arg>
+<arg>${AVAILABLE_BALANCE}</arg>
+<doc>Runs the given keyword with given arguments and returns the status as a Boolean value.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.219432" elapsed="0.004102"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2025-08-05T05:42:01.225169" level="INFO">Saldo da conta 800001 Checking atualizado corretamente após a transferência de 3115684.84!.</msg>
+<arg>Saldo da conta ${ACCOUNT_ID} atualizado corretamente após a transferência de ${TRANSFERRED_AMOUNT}!.</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.224376" elapsed="0.001032"/>
+</kw>
+<arg>${ACCOUNT_ID}</arg>
+<doc>Verifica se o saldo da conta foi atualizado corretamente após a transferência.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.146270" elapsed="0.079541"/>
+</kw>
+<doc>Verifica se o saldo da conta foi atualizado corretamente após a transferência.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.144555" elapsed="0.081624"/>
+</kw>
+<doc>Teste que verifica a realização de uma transferência bancária entre contas cadastradas, validando o saldo e o extrato da transação.</doc>
+<tag>CT01</tag>
+<tag>LOGIN_TRANSFERENCIA</tag>
+<status status="PASS" start="2025-08-05T05:41:38.286499" elapsed="22.940644"/>
+</test>
+<kw name="Fechar o navegador" owner="teardown" type="TEARDOWN">
+<kw name="Close Browser" owner="SeleniumLibrary">
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2025-08-05T05:42:01.233540" elapsed="2.619829"/>
+</kw>
+<doc>Fecha o navegador (Browser)</doc>
+<status status="PASS" start="2025-08-05T05:42:01.231648" elapsed="2.622149"/>
+</kw>
+<doc>Este arquivo contém os casos de teste automatizados para o sistema bancário (https://demo.testfire.net/login.jsp) com os dados de acesso usuário e senha: admin, incluindo casos de testes de login, transferência, consulta de extratos e verificação de saldo.</doc>
+<status status="PASS" start="2025-08-05T05:41:32.665720" elapsed="31.188338"/>
+</suite>
+<status status="PASS" start="2025-08-05T05:41:32.315248" elapsed="31.544920"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+<stat pass="1" fail="0" skip="0">CT01</stat>
+<stat pass="1" fail="0" skip="0">LOGIN_TRANSFERENCIA</stat>
+</tag>
+<suite>
+<stat name="Tests" id="s1" pass="1" fail="0" skip="0">Tests</stat>
+<stat name="Sistema Bancario" id="s1-s1" pass="1" fail="0" skip="0">Tests.Sistema Bancario</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
