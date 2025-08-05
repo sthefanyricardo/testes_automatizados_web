@@ -12,7 +12,7 @@ Acessar página home do site
 Verificar o saldo atual da conta
   [Documentation]  Verifica o saldo atual da conta bancária especificada.
   [Arguments]  ${ACCOUNT_ID}
-  Realizar login na página inicial do sistema bancário
+  Realizar o login
   Acessar resumo da conta "${ACCOUNT_ID}"
   Verificar e obter o saldo da conta  ${ACCOUNT_ID}
   Realizar o logoff do sistema bancário
@@ -30,3 +30,9 @@ Realizar o logoff do sistema bancário
   [Documentation]  Realiza o logoff do sistema bancário.
   Click Link  ${HOME_LINK_LOGOFF}
   Wait Until Page Contains Element  ${HOME_LINK_LOGIN}
+
+Clicar no botão e aguardar elemento
+  [Documentation]  Clica no botão para enviar o formulário e aguarda a página principal carregar.
+  [Arguments]  ${LOCATOR_ELEMENT_BUTTON}  ${LOCATOR_ELEMENT_TITLE}
+  Click Button  ${LOCATOR_ELEMENT_BUTTON} 
+  Wait Until Element Is Visible  ${LOCATOR_ELEMENT_TITLE}

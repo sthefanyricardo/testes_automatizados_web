@@ -5,11 +5,11 @@ Resource  ../main.robot
 *** Keywords ***
 Dado que realizo o login com usuário "${USER}" e senha "${PASSWORD}" na página inicial do sistema bancário
   [Documentation]  Realiza o login na página inicial do sistema bancário com os dados fornecidos.
-  Realizar login na página inicial do sistema bancário  ${USER}  ${PASSWORD}
+  Realizar o login  ${USER}  ${PASSWORD}
 
 Quando realizo uma transferência da conta "${FROM_ACCOUNT}" para a conta "${TO_ACCOUNT}"
   [Documentation]  Realiza a transferência de uma conta para outra no sistema bancário.
-  Realizar transferência da conta "${FROM_ACCOUNT}" para a conta "${TO_ACCOUNT}"
+  Realizar transferência entre contas  ${FROM_ACCOUNT}  ${TO_ACCOUNT}
 
 Então acesso o resumo da conta "${ACCOUNT_ID}"
   [Documentation]  Acessa o resumo da conta bancária especificada.
@@ -23,12 +23,12 @@ E verifico se o saldo da conta "${ACCOUNT_ID}" foi atualizado corretamente
   [Documentation]  Verifica se o saldo da conta foi atualizado corretamente após a transferência.
   Verificar se o saldo da conta foi atualizado corretamente  ${ACCOUNT_ID}
 
-Realizar login na página inicial do sistema bancário
+Realizar o login
   [Documentation]  Realiza o login na página inicial do sistema bancário.
   [Arguments]  ${USER}=${LOGIN_USER}  ${PASSWORD}=${LOGIN_PASSWORD}
   Ir para a página de login do sistema bancário
   Preencher o formulário de login com os dados fornecidos  ${USER}  ${PASSWORD}
-  Clicar no botão para enviar o formulário e aguardar a página principal carregar  ${LOGIN_BUTTON}  ${MAIN_TITLE}
+  Clicar no botão e aguardar elemento  ${LOGIN_BUTTON}  ${MAIN_TITLE}
 
 Ir para a página de login do sistema bancário
   [Documentation]  Clicar no link "ONLINE BANKING LOGIN" na página inicial do sistema bancário.
@@ -43,14 +43,9 @@ Preencher o formulário de login com os dados fornecidos
   Input Text  ${LOGIN_CAMPO_PASSWORD}  ${PASSWORD}
   Capture Page Screenshot
 
-Clicar no botão para enviar o formulário e aguardar a página principal carregar
-  [Documentation]  Clica no botão para enviar o formulário e aguarda a página principal carregar.
-  [Arguments]  ${LOCATOR_ELEMENT_BUTTON}  ${LOCATOR_ELEMENT_TITLE}
-  Click Button  ${LOCATOR_ELEMENT_BUTTON} 
-  Wait Until Element Is Visible  ${LOCATOR_ELEMENT_TITLE}
-
-Realizar transferência da conta "${FROM_ACCOUNT}" para a conta "${TO_ACCOUNT}"
+Realizar transferência entre contas
   [Documentation]  Realiza a transferência de uma conta para outra no sistema bancário.
+  [Arguments]  ${FROM_ACCOUNT}  ${TO_ACCOUNT}
   Escolher uma opção no menu da página principal e aguardar a página carregar  transfer_funds  ${TRANSFER_TITLE}
   Preencher os campos do formulário de transferência e enviar  ${FROM_ACCOUNT}  ${TO_ACCOUNT}
   Verificar se a transferência foi realizada com sucesso  ${FROM_ACCOUNT}  ${TO_ACCOUNT}
@@ -126,5 +121,5 @@ Verificar se o saldo da conta foi atualizado corretamente
   ${CURRENT_AVAILABLE_BALANCE}  Get Text  ${TABLE_BALANCE_DETAIL} 
   Log  Novo saldo na conta ${ACCOUNT_ID}: ${CURRENT_AVAILABLE_BALANCE}.
   Log  Antigo saldo da conta ${ACCOUNT_ID}: ${AVAILABLE_BALANCE}.
-  ${result}  Run Keyword And Return Status  Should Not Be Equal  ${CURRENT_AVAILABLE_BALANCE}  ${AVAILABLE_BALANCE}
+  ${result}  Run Keyword And Return Status  Should Not Be Equal As Numbers  ${CURRENT_AVAILABLE_BALANCE}  ${AVAILABLE_BALANCE}
   Log  Saldo da conta ${ACCOUNT_ID} atualizado corretamente após a transferência de ${TRANSFERRED_AMOUNT}!.
