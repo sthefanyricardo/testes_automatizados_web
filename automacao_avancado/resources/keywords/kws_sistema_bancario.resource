@@ -3,9 +3,9 @@ Documentation  Este arquivo contém os passos para realizar uma transferência b
 Resource  ../main.robot
 
 *** Keywords ***
-Dado que realizo o login com usuário "${LOGIN_USER}" e senha "${LOGIN_PASSWORD}" na página inicial do sistema bancário
+Dado que realizo o login com usuário "${USER}" e senha "${PASSWORD}" na página inicial do sistema bancário
   [Documentation]  Realiza o login na página inicial do sistema bancário com os dados fornecidos.
-  Realizar login na página inicial do sistema bancário  ${LOGIN_USER}  ${LOGIN_PASSWORD}
+  Realizar login na página inicial do sistema bancário  ${USER}  ${PASSWORD}
 
 Quando realizo uma transferência da conta "${FROM_ACCOUNT}" para a conta "${TO_ACCOUNT}"
   [Documentation]  Realiza a transferência de uma conta para outra no sistema bancário.
@@ -25,47 +25,87 @@ E verifico se o saldo da conta "${ACCOUNT_ID}" foi atualizado corretamente
 
 Realizar login na página inicial do sistema bancário
   [Documentation]  Realiza o login na página inicial do sistema bancário.
-  [Arguments]  ${LOGIN_USER}=${LOGIN_USER}  ${LOGIN_PASSWORD}=${LOGIN_PASSWORD}
+  [Arguments]  ${USER}=${LOGIN_USER}  ${PASSWORD}=${LOGIN_PASSWORD}
+  Ir para a página de login do sistema bancário
+  Preencher o formulário de login com os dados fornecidos  ${USER}  ${PASSWORD}
+  Clicar no botão para enviar o formulário e aguardar a página principal carregar  ${LOGIN_BUTTON}  ${MAIN_TITLE}
+
+Ir para a página de login do sistema bancário
+  [Documentation]  Clicar no link "ONLINE BANKING LOGIN" na página inicial do sistema bancário.
   Click Link  ${HOME_LINK_LOGIN}
-  Wait Until Page Contains Element  ${LOGIN_TITLE}
+  Wait Until Element Is Visible  ${LOGIN_TITLE}
   Capture Page Screenshot
-  Input Text  ${LOGIN_CAMPO_USER}  ${LOGIN_USER}
-  Input Text  ${LOGIN_CAMPO_PASSWORD}  ${LOGIN_PASSWORD}
+
+Preencher o formulário de login com os dados fornecidos
+  [Documentation]  Preenche o formulário de login com os dados fornecidos.
+  [Arguments]  ${USER}=${LOGIN_USER}  ${PASSWORD}=${LOGIN_PASSWORD}
+  Input Text  ${LOGIN_CAMPO_USER}  ${USER}
+  Input Text  ${LOGIN_CAMPO_PASSWORD}  ${PASSWORD}
   Capture Page Screenshot
-  Click Button  ${LOGIN_BUTTON} 
-  Wait Until Page Contains Element  ${MAIN_TITLE}
+
+Clicar no botão para enviar o formulário e aguardar a página principal carregar
+  [Documentation]  Clica no botão para enviar o formulário e aguarda a página principal carregar.
+  [Arguments]  ${LOCATOR_ELEMENT_BUTTON}  ${LOCATOR_ELEMENT_TITLE}
+  Click Button  ${LOCATOR_ELEMENT_BUTTON} 
+  Wait Until Element Is Visible  ${LOCATOR_ELEMENT_TITLE}
 
 Realizar transferência da conta "${FROM_ACCOUNT}" para a conta "${TO_ACCOUNT}"
   [Documentation]  Realiza a transferência de uma conta para outra no sistema bancário.
-  Click Link  ${MAIN_LINK_TRANSFER_FUNDS}
-  Wait Until Page Contains Element  ${TRANSFER_TITLE}
+  Escolher uma opção no menu da página principal e aguardar a página carregar  transfer_funds  ${TRANSFER_TITLE}
+  Preencher os campos do formulário de transferência e enviar  ${FROM_ACCOUNT}  ${TO_ACCOUNT}
+  Verificar se a transferência foi realizada com sucesso  ${FROM_ACCOUNT}  ${TO_ACCOUNT}
+
+Escolher uma opção no menu da página principal e aguardar a página carregar
+  [Documentation]  Escolhe uma opção no menu da página principal do sistema bancário e aguarda a página carregar.
+  [Arguments]  ${OPTION}  ${LOCATOR_ELEMENT_TITLE}
+  Click Link  ${MAIN_MENU_LINKS.${OPTION}}
+  Wait Until Element Is Visible  ${LOCATOR_ELEMENT_TITLE}
+
+Preencher os campos do formulário de transferência e enviar
+  [Documentation]  Preenche os campos do formulário de transferência e envia o formulário.
+  [Arguments]  ${FROM_ACCOUNT}  ${TO_ACCOUNT}
   Select From List By Label  ${TRANSFER_FIELD_FROM_ACCOUNT}  ${FROM_ACCOUNT}
   Select From List By Label  ${TRANSFER_FIELD_TO_ACCOUNT}  ${TO_ACCOUNT}
-  ${RANDOM_VALUE}  Evaluate  round(random.uniform(10000000000, 99999999999), 2)    modules=random
-  Input Text  ${TRANSFER_FIELD_AMOUNT_TRANSFER}  ${RANDOM_VALUE}
-  Click Button  ${TRANSFER_BUTTON_TRANSFER_MONEY}
+  ${RANDOM_VALUE_GENERATED}  Gerar valor aleatório para transferência
+  Input Text  ${TRANSFER_FIELD_AMOUNT_TRANSFER}  ${RANDOM_VALUE_GENERATED}
   Capture Page Screenshot
-  Log  Transferência de ${FROM_ACCOUNT} para ${TO_ACCOUNT}, no valor de ${RANDOM_VALUE}, realizada com sucesso!
-  Wait Until Page Contains Element  ${TRANSFER_SUCCESS_MESSAGE}
-  Set Test Variable  ${TRANSFERRED_AMOUNT}  ${RANDOM_VALUE}
+  Click Button  ${TRANSFER_BUTTON_TRANSFER_MONEY}
+  Set Test Variable  ${TRANSFERRED_AMOUNT}  ${RANDOM_VALUE_GENERATED}
+
+Verificar se a transferência foi realizada com sucesso
+  [Documentation]  Verifica se a transferência foi realizada com sucesso.
+  [Arguments]  ${FROM_ACCOUNT}  ${TO_ACCOUNT}
+  ${MENSAGEM_SUCESSO_VALIDACAO}  Format String  ${TRANSFER_SUCCESS_MESSAGE}  account_from=${FROM_ACCOUNT}  account_to=${TO_ACCOUNT}
+  Element Should Be Visible  ${MENSAGEM_SUCESSO_VALIDACAO}
+  Log  Transferência de ${FROM_ACCOUNT} para ${TO_ACCOUNT}, no valor de ${TRANSFERRED_AMOUNT}, realizada com sucesso!
+  Capture Page Screenshot
+
+Gerar valor aleatório para transferência
+  [Documentation]  Gera um valor aleatório para a transferência.
+  ${RANDOM_VALUE}  Evaluate  round(random.uniform(10000000000, 99999999999), 2)  modules=random
+  RETURN  ${RANDOM_VALUE}
 
 Acessar resumo da conta "${ACCOUNT_ID}"
   [Documentation]  Acessa o resumo da conta bancária especificada.
-  Click Link  ${MAIN_LINK_ACCOUNT_SUMMARY}
+  Escolher uma opção no menu da página principal e aguardar a página carregar  account_summary  ${MAIN_TITLE}
   Select From List By Label  ${MAIN_FIELD_LIST_ACCOUNTS}  ${ACCOUNT_ID}
   Capture Page Screenshot
   Click Button  ${MAIN_BUTTON_GET_ACCOUNT}
+  Wait Until Element Is Visible  ${ACCOUNT_HISTORY_TITLE}
 
 Verificar se a transferência foi listada corretamente
   [Documentation]  Verifica se a transferência foi listada corretamente no resumo da conta.
   Page Should Contain Element  ${TITLE_TABLE_RECENT_TRANSACTIONS}
   Capture Page Screenshot
+  Buscar a transferência recente na tabela 10 transações mais recentes
+
+Buscar a transferência recente na tabela 10 transações mais recentes
+  [Documentation]  Busca a transferência recente na tabela de transações recentes.
   ${encontrado}  Set Variable  False
-  #${current_date}  Get Current Date  result_format=%Y-%m-%d
-  ${FRASE_BUSCA}  Catenate  Deposit $${TRANSFERRED_AMOUNT}
-  @{linhas}  Get WebElements  ${TABLE_RECENT_TRANSACTIONS}//tr
-  FOR  ${linha}  IN  @{linhas}
-    ${texto_retornado}  Get Text  ${linha}
+  ${FRASE_BUSCA}  Catenate  $${TRANSFERRED_AMOUNT}
+  @{LINHAS_RETORNADAS_TABELA}  Get WebElements  ${TABLE_RECENT_TRANSACTIONS}//tr
+  FOR  ${index_linha}  IN  @{LINHAS_RETORNADAS_TABELA}
+    ${texto_retornado}  Get Text  ${index_linha}
     Log  Conteúdo da linha atual da tabela: ${texto_retornado}
     ${result}  Run Keyword And Return Status  Should Contain  ${texto_retornado}  ${FRASE_BUSCA}
     IF  ${result}
@@ -84,5 +124,7 @@ Verificar se o saldo da conta foi atualizado corretamente
   [Documentation]  Verifica se o saldo da conta foi atualizado corretamente após a transferência.
   [Arguments]  ${ACCOUNT_ID}
   ${CURRENT_AVAILABLE_BALANCE}  Get Text  ${TABLE_BALANCE_DETAIL} 
-  Log  Novo saldo na conta ${ACCOUNT_ID}: ${CURRENT_AVAILABLE_BALANCE}
-  ${result}  Run Keyword And Return Status  Should Not Be Equal  ${CURRENT_AVAILABLE_BALANCE}    ${AVAILABLE_BALANCE}
+  Log  Novo saldo na conta ${ACCOUNT_ID}: ${CURRENT_AVAILABLE_BALANCE}.
+  Log  Antigo saldo da conta ${ACCOUNT_ID}: ${AVAILABLE_BALANCE}.
+  ${result}  Run Keyword And Return Status  Should Not Be Equal  ${CURRENT_AVAILABLE_BALANCE}  ${AVAILABLE_BALANCE}
+  Log  Saldo da conta ${ACCOUNT_ID} atualizado corretamente após a transferência de ${TRANSFERRED_AMOUNT}!.
