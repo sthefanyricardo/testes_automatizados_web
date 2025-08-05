@@ -20,7 +20,7 @@ Verificar o saldo atual da conta
 Verificar e obter o saldo da conta
   [Documentation]  Verifica e captura o saldo da conta bancária especificada.
   [Arguments]  ${ACCOUNT_ID}
-  Wait Until Page Contains Element  ${ACCOUNT_HISTORY_TITLE}
+  Wait Until Element Is Visible  ${ACCOUNT_HISTORY_TITLE}
   ${CURRENT_AVAILABLE_BALANCE}  Get Text  ${TABLE_BALANCE_DETAIL} 
   Log  Saldo atual da conta ${ACCOUNT_ID}: ${CURRENT_AVAILABLE_BALANCE}
   Capture Page Screenshot
@@ -29,7 +29,7 @@ Verificar e obter o saldo da conta
 Realizar o logoff do sistema bancário
   [Documentation]  Realiza o logoff do sistema bancário.
   Click Link  ${HOME_LINK_LOGOFF}
-  Wait Until Page Contains Element  ${HOME_LINK_LOGIN}
+  Wait Until Element Is Visible  ${HOME_LINK_LOGIN}
 
 Clicar no botão e aguardar elemento
   [Documentation]  Clica no botão para enviar o formulário e aguarda a página principal carregar.

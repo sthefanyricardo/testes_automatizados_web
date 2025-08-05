@@ -77,7 +77,7 @@ Verificar se a transferência foi realizada com sucesso
 
 Gerar valor aleatório para transferência
   [Documentation]  Gera um valor aleatório para a transferência.
-  ${RANDOM_VALUE}  Evaluate  round(random.uniform(10000000000, 99999999999), 2)  modules=random
+  ${RANDOM_VALUE}  Evaluate  round(random.uniform(1000000, 9999999), 2)  modules=random
   RETURN  ${RANDOM_VALUE}
 
 Acessar resumo da conta "${ACCOUNT_ID}"
