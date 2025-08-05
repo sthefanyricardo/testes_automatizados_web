@@ -70,7 +70,7 @@ Preencher os campos do formulário de transferência e enviar
 Verificar se a transferência foi realizada com sucesso
   [Documentation]  Verifica se a transferência foi realizada com sucesso.
   [Arguments]  ${FROM_ACCOUNT}  ${TO_ACCOUNT}
-  ${MENSAGEM_SUCESSO_VALIDACAO}  Format String  ${TRANSFER_SUCCESS_MESSAGE}  account_from=${FROM_ACCOUNT}  account_to=${TO_ACCOUNT}
+  ${MENSAGEM_SUCESSO_VALIDACAO}  Format String  ${TRANSFER_SUCCESS_MESSAGE}  valor_transferencia=${TRANSFERRED_AMOUNT}
   Element Should Be Visible  ${MENSAGEM_SUCESSO_VALIDACAO}
   Log  Transferência de ${FROM_ACCOUNT} para ${TO_ACCOUNT}, no valor de ${TRANSFERRED_AMOUNT}, realizada com sucesso!
   Capture Page Screenshot
