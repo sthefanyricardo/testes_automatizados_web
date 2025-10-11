@@ -44,8 +44,6 @@ Implementação de testes automatizados com Robot Framework em 3 níveis de comp
 
 ---
 
----
-
 <div align="center">
 
 ### Sthefany A. Ricardo
