@@ -1,5 +1,3 @@
----
-
 ## 📄 Sobre o Desafio Técnico
 
 Este projeto foi desenvolvido a partir de uma avaliação técnica real para vaga de **Analista de QA Pleno**, que contemplou:
