@@ -1,0 +1,169 @@
+name: E2E Tests - Selenium + Robot Framework
+run-name: Testes E2E (${{ github.ref_name }}) - ${{ github.actor }}
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: "Em qual navegador os testes devem ser executados?"
+        required: false
+        default: "Todos"
+        type: choice
+        options:
+          - Todos
+          - Chrome
+          - Firefox
+          - Edge
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        browser: ${{
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'Todos' && fromJSON(format('["{0}"]', github.event.inputs.browser))) 
+          || fromJSON('["Chrome", "Firefox", "Edge"]')}}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install selenium webdriver-manager
+
+      - name: Create results directory
+        run: mkdir -p ./tests-results-CI/${{ matrix.browser }}
+          
+      - name: Run E2E Tests
+        run: |
+          echo "🚀 Executando testes para o navegador: ${{ matrix.browser }}"
+          
+          # Converter nome do navegador para lowercase (necessário para SeleniumLibrary)
+          BROWSER=$(echo "${{ matrix.browser }}" | tr '[:upper:]' '[:lower:]')
+          
+          echo "🌐 Navegador configurado: $BROWSER"
+  
+          robot \
+            --name "Tests no navegador: ${{ matrix.browser }}" \
+            --outputdir ./tests-results-CI/${{ matrix.browser }} \
+            --variable BROWSER:$BROWSER \
+            --variable HEADLESS:true \
+            --variable TIMEOUT:30 \
+            --loglevel INFO \
+            tests/
+        continue-on-error: true
+
+      - name: Check Test Results
+        if: always()
+        run: |
+          echo "Verificando resultados dos testes..."
+          if [ -f "./tests-results-CI/${{ matrix.browser }}/output.xml" ]; then
+            echo "Arquivo output.xml encontrado!"
+            ls -la "./tests-results-CI/${{ matrix.browser }}/"
+          else
+            echo "Arquivo output.xml não encontrado."
+          fi
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.browser }}
+          path: tests-results-CI/${{ matrix.browser }}/
+          retention-days: 30
+
+      - name: Robot Framework Reporter
+        uses: joonvena/robotframework-reporter-action@v2.5
+        if: always()
+        with:
+          gh_access_token: ${{ secrets.GITHUB_TOKEN }}
+          report_path: tests-results-CI/${{ matrix.browser }}
+
+  # Job para consolidar resultados e publicar no GitHub Pages
+  publish-results:
+    needs: tests
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Robot Framework
+        run: |
+          python -m pip install --upgrade pip
+          pip install robotframework
+
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          path: ./all-results
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Create consolidated report with rebot
+        run: |
+          python -m robot.rebot \
+            --merge ./all-results/test-results-*/*.xml \
+            --outputdir ./gh-pages \
+            --report index.html \
+            --reporttitle "Relatório Consolidado E2E" \
+            --name "Robot Framework CI"
+        continue-on-error: true
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./gh-pages
+
+  # Job para deploy no GitHub Pages
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: publish-results
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
