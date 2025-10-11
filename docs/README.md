@@ -44,23 +44,29 @@ Implementação de testes automatizados com Robot Framework em 3 níveis de comp
 
 ---
 
+---
+
 <div align="center">
 
 ### Sthefany A. Ricardo
 
-**Analista de QA** | **Especialista em Automação de Testes**
+**Analista de QA** | **Analista de Automação de Testes**
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/sthefanyricardo/)
 [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:sthefannyricardo@gmail.com)
 [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sthefanyricardo)
-[![Portfolio](https://img.shields.io/badge/Portfolio-FF5722?style=for-the-badge&logo=todoist&logoColor=white)](https://sthefanyricardo.github.io/robot-actions/)
+[![Portfolio](https://img.shields.io/badge/Portfolio-D14836?style=for-the-badge&logo=todoist&logoColor=white)](https://sthefanyricardo.github.io/robot-actions/)
+
+</div>
 
 ---
 
+<div align="center">
+
 **Feito com ❤️ e muito ☕**
 
-*Última atualização: Outubro de 2025*
+*Última atualização: ![Último commit](https://img.shields.io/github/last-commit/sthefanyricardo/robot-actions?label=Último%20commit&style=flat&logo=git&color=orange)*
 
-⭐ **Se este projeto foi útil para você, considere dar uma estrela!** ⭐
+⭐ Se este projeto foi útil para você, considere dar uma estrela!
 
 </div>
