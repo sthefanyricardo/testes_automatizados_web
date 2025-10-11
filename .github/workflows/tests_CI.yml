@@ -86,7 +86,7 @@ jobs:
           INSTALLED_MODULES=()
           
           # Instalar requirements.txt de cada módulo (evitando duplicatas)
-          for module in testes_automatizados_web/automacao_basico testes_automatizados_web/automacao_intermediario testes_automatizados_web/automacao_avancado; do
+          for module in automacao_basico automacao_intermediario automacao_avancado; do
             if [ -f "$module/requirements.txt" ]; then
               echo "🔧 Instalando dependências de $module..."
               pip install -r "$module/requirements.txt"
@@ -98,9 +98,9 @@ jobs:
           done
           
           # Verificar se existe um requirements.txt global
-          if [ -f "testes_automatizados_web/requirements.txt" ]; then
+          if [ -f "requirements.txt" ]; then
             echo "🔧 Instalando dependências globais..."
-            pip install -r "testes_automatizados_web/requirements.txt"
+            pip install -r "requirements.txt"
             echo "✅ Dependências globais instaladas"
           fi
           
@@ -145,7 +145,7 @@ jobs:
       - name: Discover test directory structure
         run: |
           echo "🔍 Verificando estrutura fixa do projeto"
-          echo "Pasta raiz fixa: testes_automatizados_web"
+          echo "Pasta raiz fixa: . (raiz do repositório)"
           echo "=========================================="
           echo ""
           
@@ -153,56 +153,40 @@ jobs:
           ls -la
           echo ""
           
-          echo "🎯 Verificando pasta raiz fixa: testes_automatizados_web"
-          if [ -d "testes_automatizados_web" ]; then
-            echo "✅ Pasta raiz encontrada: testes_automatizados_web"
-            echo ""
-            echo "📂 Conteúdo da pasta testes_automatizados_web:"
-            ls -la testes_automatizados_web/
-            echo ""
+          echo "🎯 Verificando estrutura fixa na raiz do repositório"
+          echo "✅ Usando raiz do repositório como base"
+          echo ""
+          
+          echo "🔍 Verificando módulos de automação:"
+          for module in automacao_basico automacao_intermediario automacao_avancado; do
+            MODULE_PATH="$module"
+            TESTS_PATH="$MODULE_PATH/tests"
             
-            echo "🔍 Verificando módulos de automação:"
-            for module in automacao_basico automacao_intermediario automacao_avancado; do
-              MODULE_PATH="testes_automatizados_web/$module"
-              TESTS_PATH="$MODULE_PATH/tests"
-              
-              echo "  📂 Verificando: $module"
-              if [ -d "$MODULE_PATH" ]; then
-                echo "    ✅ Diretório do módulo existe: $MODULE_PATH"
-                if [ -d "$TESTS_PATH" ]; then
-                  echo "    ✅ Diretório tests existe: $TESTS_PATH"
-                  ROBOT_COUNT=$(find "$TESTS_PATH" -name "*.robot" -type f 2>/dev/null | wc -l)
-                  echo "    � Arquivos .robot encontrados: $ROBOT_COUNT"
-                  if [ $ROBOT_COUNT -gt 0 ]; then
-                    echo "    📁 Arquivos .robot:"
-                    find "$TESTS_PATH" -name "*.robot" -type f 2>/dev/null | head -5 | while read file; do
-                      echo "      - $(basename "$file")"
-                    done
-                  fi
-                else
-                  echo "    ❌ Diretório tests NÃO existe: $TESTS_PATH"
+            echo "  📂 Verificando: $module"
+            if [ -d "$MODULE_PATH" ]; then
+              echo "    ✅ Diretório do módulo existe: $MODULE_PATH"
+              if [ -d "$TESTS_PATH" ]; then
+                echo "    ✅ Diretório tests existe: $TESTS_PATH"
+                ROBOT_COUNT=$(find "$TESTS_PATH" -name "*.robot" -type f 2>/dev/null | wc -l)
+                echo "    📊 Arquivos .robot encontrados: $ROBOT_COUNT"
+                if [ $ROBOT_COUNT -gt 0 ]; then
+                  echo "    📁 Primeiros arquivos .robot:"
+                  find "$TESTS_PATH" -name "*.robot" -type f 2>/dev/null | head -3 | while read file; do
+                    echo "      - $(basename "$file")"
+                  done
                 fi
               else
-                echo "    ❌ Diretório do módulo NÃO existe: $MODULE_PATH"
+                echo "    ❌ Diretório tests NÃO existe: $TESTS_PATH"
               fi
-              echo ""
-            done
-            
-            echo "📊 RESUMO FINAL:"
-            TOTAL_ROBOTS=$(find testes_automatizados_web -name "*.robot" -type f 2>/dev/null | wc -l)
-            echo "  Total de arquivos .robot encontrados: $TOTAL_ROBOTS"
-            
-          else
-            echo "❌ ERRO: Pasta raiz 'testes_automatizados_web' NÃO ENCONTRADA!"
-            echo "Estrutura esperada:"
-            echo "  testes_automatizados_web/"
-            echo "  ├── automacao_basico/tests/"
-            echo "  ├── automacao_intermediario/tests/"
-            echo "  └── automacao_avancado/tests/"
+            else
+              echo "    ❌ Diretório do módulo NÃO existe: $MODULE_PATH"
+            fi
             echo ""
-            echo "Estrutura atual encontrada:"
-            ls -la
-          fi
+          done
+          
+          echo "📊 RESUMO FINAL:"
+          TOTAL_ROBOTS=$(find . -name "*.robot" -type f 2>/dev/null | wc -l)
+          echo "  Total de arquivos .robot encontrados: $TOTAL_ROBOTS"
 
       - name: Run E2E Tests
         run: |
@@ -216,12 +200,12 @@ jobs:
           # Configurar display para execução headless
           export DISPLAY=:99
           
-          # Usar estrutura FIXA com pasta raiz testes_automatizados_web
+          # Usar estrutura FIXA do projeto (raiz do repositório)
           echo "🎯 Usando estrutura FIXA do projeto" 
-          echo "Pasta raiz: testes_automatizados_web (FIXO)"
+          echo "Pasta raiz: . (raiz do repositório - FIXO)"
           
           # Definir módulos com caminho FIXO - NÃO MUDA NUNCA
-          BASE_PATH="testes_automatizados_web"
+          BASE_PATH="."
           TEST_MODULES=(automacao_basico automacao_intermediario automacao_avancado)
           EXISTING_MODULES=()
           
