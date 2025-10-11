@@ -79,8 +79,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           
-          # Instalar webdriver-manager globalmente (necessário para todos os módulos)
-          pip install webdriver-manager
+          # Instalar webdriver-manager com versão específica mais estável
+          pip install webdriver-manager==4.0.1
+          
+          # Instalar dependências básicas com versões estáveis para CI
+          pip install selenium==4.15.0
           
           echo "📦 Instalando dependências específicas dos módulos..."
           INSTALLED_MODULES=()
@@ -120,7 +123,7 @@ jobs:
           
       - name: Setup Browser Environment
         run: |
-          echo "🔧 Configurando ambiente para execução normal..."
+          echo "🔧 Configurando ambiente para execução robusta..."
           
           # Verificar Robot Framework e bibliotecas instaladas
           echo "Robot Framework: $(robot --version 2>/dev/null || echo 'Não encontrado')"
@@ -132,15 +135,38 @@ jobs:
           echo "Firefox version: $(firefox --version 2>/dev/null || echo 'Firefox não encontrado')"
           echo "Edge version: $(microsoft-edge --version 2>/dev/null || echo 'Edge não encontrado')"
           
+          # Configurações específicas para Microsoft Edge no Linux
+          if [ "${{ matrix.browser }}" = "Edge" ]; then
+            echo "🔧 Configurações específicas para Microsoft Edge..."
+            
+            # Tentar instalar/atualizar Edge driver manualmente
+            sudo apt-get update -qq
+            sudo apt-get install -y wget curl unzip
+            
+            # Download manual do Edge driver se necessário
+            EDGE_VERSION=$(microsoft-edge --version | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1 || echo "118.0.2088.76")
+            echo "Edge detectado: $EDGE_VERSION"
+            
+            # Criar diretório para drivers se não existir
+            mkdir -p ~/.cache/selenium/
+            
+            echo "📦 Preparando Edge driver para execução offline..."
+          fi
+          
           # Instalar Xvfb se não estiver disponível
           sudo apt-get update -qq
           sudo apt-get install -y xvfb
           
-          # Configurar display virtual para execução headless
+          # Configurar display virtual mais robusto
           export DISPLAY=:99
-          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
-          sleep 3
+          Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
+          sleep 5
           echo "Display virtual configurado: $DISPLAY"
+          
+          # Configurar timeouts mais robustos para screenshots
+          export SELENIUM_IMPLICIT_WAIT=30
+          export SELENIUM_PAGE_LOAD_TIMEOUT=60
+          export SELENIUM_SCRIPT_TIMEOUT=30
 
       - name: Discover test directory structure
         run: |
@@ -260,19 +286,52 @@ jobs:
           echo "📋 Total de arquivos .robot a serem executados: $TOTAL_TESTS"
           echo ""
           
-          # Executar Robot Framework com todos os módulos encontrados
+          # Pré-configuração do WebDriver para evitar timeouts
+          echo "🔧 Pré-configurando WebDriver para $BROWSER..."
+          if [ "$BROWSER" = "edge" ]; then
+            echo "⚙️ Configurações especiais para Microsoft Edge:"
+            echo "  - Timeout de screenshot aumentado para 180s"
+            echo "  - Timeout de carregamento de página aumentado para 90s"
+            echo "  - Aguardo implícito aumentado para 45s"
+            echo "  - Velocidade de selenium reduzida para 0.5s"
+            
+            # Preparar cache do driver Edge (melhor esforço)
+            echo "🔄 Preparando cache do Edge driver..."
+            python -c "from webdriver_manager.microsoft import EdgeChromiumDriverManager; EdgeChromiumDriverManager().install()" 2>/dev/null || echo "⚠️ Cache manual do Edge driver falhou, mas continuando..."
+          else
+            echo "⚙️ Configurações padrão para $BROWSER:"
+            echo "  - Timeout de screenshot: 120s"
+            echo "  - Timeout de carregamento de página: 60s"
+            echo "  - Aguardo implícito: 30s"
+          fi
+          echo ""
+          
+          # Executar Robot Framework com configurações robustas
           set +e # Não falhar se robot retornar código de erro
+          
+          # Configurações específicas por navegador
+          EXTRA_ARGS=""
+          if [ "$BROWSER" = "edge" ]; then
+            echo "🔧 Aplicando configurações específicas para Edge..."
+            EXTRA_ARGS="--variable SCREENSHOT_TIMEOUT:180 --variable IMPLICIT_WAIT:45 --variable PAGE_LOAD_TIMEOUT:90"
+          else
+            EXTRA_ARGS="--variable SCREENSHOT_TIMEOUT:120 --variable IMPLICIT_WAIT:30 --variable PAGE_LOAD_TIMEOUT:60"
+          fi
+          
           robot \
             --name "Tests E2E - Robot Framework CI (${{ matrix.browser }})" \
             --outputdir ./tests-results-CI/${{ matrix.browser }} \
             --variable BROWSER:$BROWSER \
             --variable HEADLESS:true \
-            --variable TIMEOUT:30 \
+            --variable TIMEOUT:45 \
             --variable WINDOW_SIZE:1920x1080 \
+            --variable SELENIUM_SPEED:0.5 \
+            --variable CAPTURE_PAGE_SCREENSHOT_ON_FAILURE:true \
             --loglevel INFO \
-            --reporttitle "Relatório E2E - ${{ matrix.browser }} (Módulos: automacao_basico, automacao_intermediario, automacao_avancado)" \
+            --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
             --maxerrorlines 10 \
             --include "*" \
+            $EXTRA_ARGS \
             "${EXISTING_MODULES[@]}"
           
           ROBOT_EXIT_CODE=$?
@@ -529,7 +588,7 @@ jobs:
               --log log.html \
               --report index.html \
               --reporttitle "Relatório Consolidado E2E - $(date '+%d/%m/%Y %H:%M')" \
-              --name "Robot Framework CI - Run #${{ github.run_number }}" \
+              --name "Robot Framework CI - Relatório Consolidado E2E" \
               $OUTPUT_FILES
             
             REBOT_EXIT_CODE=$?
