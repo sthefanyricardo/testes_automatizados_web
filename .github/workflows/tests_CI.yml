@@ -239,25 +239,54 @@ jobs:
             exit 1  # Só falha em erro crítico real
           fi
 
-      - name: Capture Screenshots on Failure
-        if: failure()
+      - name: Capture Screenshots and Evidence
+        if: always()  # Sempre capturar, não apenas em falha
         run: |
-          echo "📸 Coletando evidências de falha..."
+          echo "📸 Coletando evidências e screenshots..."
+          RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
+          
           # Criar diretório para screenshots se não existir
-          mkdir -p ./tests-results-CI/${{ matrix.browser }}/screenshots
+          mkdir -p "$RESULTS_DIR/screenshots"
           
-          # Copiar screenshots gerados pelo Robot Framework (se existirem)
-          find ./tests-results-CI/${{ matrix.browser }} -name "*.png" -exec cp {} ./tests-results-CI/${{ matrix.browser }}/screenshots/ \; 2>/dev/null || true
+          # Procurar por todos os PNGs gerados pelo Robot Framework
+          echo "🔍 Procurando por imagens geradas..."
+          IMAGES_FOUND=0
           
-          # Listar arquivos de evidência encontrados
-          echo "📁 Arquivos de evidência coletados:"
-          ls -la ./tests-results-CI/${{ matrix.browser }}/screenshots/ 2>/dev/null || echo "Nenhum screenshot encontrado"
+          # Copiar PNGs do diretório principal
+          if find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
+            find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "$RESULTS_DIR/screenshots/" \;
+            MAIN_IMAGES=$(find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
+            echo "  ✅ $MAIN_IMAGES imagens encontradas no diretório principal"
+            IMAGES_FOUND=$((IMAGES_FOUND + MAIN_IMAGES))
+          fi
           
-          # Informações do ambiente para debug
-          echo "�️ Informações do ambiente:"
-          echo "Display: $DISPLAY"
-          echo "Processos ativos:"
-          ps aux | grep -E "(Xvfb|chrome|firefox|edge)" | head -5 || echo "Nenhum processo de navegador ativo"
+          # Procurar por PNGs em subdiretórios (exceto screenshots para evitar duplicação)
+          if find "$RESULTS_DIR" -name "*.png" -type f -not -path "*/screenshots/*" | grep -q .; then
+            find "$RESULTS_DIR" -name "*.png" -type f -not -path "*/screenshots/*" -exec cp {} "$RESULTS_DIR/screenshots/" \;
+            SUB_IMAGES=$(find "$RESULTS_DIR" -name "*.png" -type f -not -path "*/screenshots/*" | wc -l)
+            echo "  ✅ $SUB_IMAGES imagens encontradas em subdiretórios"
+            IMAGES_FOUND=$((IMAGES_FOUND + SUB_IMAGES))
+          fi
+          
+          # Listar evidências coletadas
+          echo "� Resumo da coleta de evidências:"
+          echo "  📁 Total de imagens coletadas: $IMAGES_FOUND"
+          if [ $IMAGES_FOUND -gt 0 ]; then
+            echo "  🖼️ Screenshots disponíveis:"
+            ls -la "$RESULTS_DIR/screenshots/" | head -10
+            echo "  📋 Nomes dos arquivos de screenshot:"
+            ls "$RESULTS_DIR/screenshots/" | head -5
+          else
+            echo "  ⚠️ Nenhuma imagem encontrada"
+          fi
+          
+          # Informações do ambiente para debug (apenas se houver falha)
+          if [ "${{ job.status }}" = "failure" ]; then
+            echo "🛠️ Informações do ambiente para debug:"
+            echo "  Display: $DISPLAY"
+            echo "  Processos ativos:"
+            ps aux | grep -E "(Xvfb|chrome|firefox|edge)" | head -5 || echo "  Nenhum processo de navegador ativo"
+          fi
         continue-on-error: true
 
       - name: Check Test Results
@@ -309,6 +338,8 @@ jobs:
             tests-results-CI/${{ matrix.browser }}/output.xml
             tests-results-CI/${{ matrix.browser }}/report.html
             tests-results-CI/${{ matrix.browser }}/log.html
+            tests-results-CI/${{ matrix.browser }}/*.png
+            tests-results-CI/${{ matrix.browser }}/screenshots/
           retention-days: 7  # Reduzido de 30 para 7 dias
           if-no-files-found: warn
 
@@ -375,8 +406,27 @@ jobs:
             echo ""
           done
           
-          echo "� Resumo de arquivos XML para consolidação:"
+          echo "📋 Resumo de arquivos XML para consolidação:"
           find ./all-results -name "output.xml" -exec echo "  ✅ {}" \; || echo "  ❌ Nenhum arquivo output.xml encontrado"
+          echo ""
+          
+          echo "🖼️ Verificando imagens (screenshots) baixadas:"
+          TOTAL_IMAGES=0
+          for browser in Chrome Firefox Edge; do
+            if [ -d "./all-results/test-results-$browser" ]; then
+              BROWSER_IMAGES=$(find "./all-results/test-results-$browser" -name "*.png" -type f | wc -l)
+              if [ $BROWSER_IMAGES -gt 0 ]; then
+                echo "  📷 $browser: $BROWSER_IMAGES imagens encontradas"
+                find "./all-results/test-results-$browser" -name "*.png" -type f | head -3 | while read img; do
+                  echo "    - $(basename "$img") ($(stat -c%s "$img" 2>/dev/null || echo "?") bytes)"
+                done
+              else
+                echo "  📷 $browser: Nenhuma imagem encontrada"
+              fi
+              TOTAL_IMAGES=$((TOTAL_IMAGES + BROWSER_IMAGES))
+            fi
+          done
+          echo "📊 Total de imagens encontradas: $TOTAL_IMAGES"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -463,10 +513,170 @@ jobs:
 
       - name: Copy additional assets
         run: |
-          # Copiar assets adicionais se existirem
-          find ./all-results -name "*.png" -exec cp {} ./gh-pages/ \; 2>/dev/null || true
-          find ./all-results -name "*.html" -not -name "index.html" -exec cp {} ./gh-pages/ \; 2>/dev/null || true
-          echo "📁 Assets adicionais copiados"
+          echo "📁 Copiando assets adicionais..."
+          
+          # Criar diretórios para organizar assets
+          mkdir -p ./gh-pages/screenshots
+          mkdir -p ./gh-pages/assets
+          
+          # Copiar todas as imagens (screenshots) encontradas
+          echo "🖼️ Procurando e copiando imagens..."
+          IMAGES_FOUND=0
+          for browser in Chrome Firefox Edge; do
+            BROWSER_DIR="./all-results/test-results-$browser"
+            if [ -d "$BROWSER_DIR" ]; then
+              echo "  📂 Verificando imagens em $browser..."
+              
+              # Copiar PNGs do diretório raiz do navegador
+              if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
+                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} ./gh-pages/screenshots/ \;
+                PNG_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
+                echo "    ✅ $PNG_COUNT imagens copiadas do diretório raiz"
+                IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT))
+              fi
+              
+              # Copiar PNGs do diretório screenshots (se existir)
+              if [ -d "$BROWSER_DIR/screenshots" ] && find "$BROWSER_DIR/screenshots" -name "*.png" -type f | grep -q .; then
+                find "$BROWSER_DIR/screenshots" -name "*.png" -type f -exec cp {} ./gh-pages/screenshots/ \;
+                SCREENSHOT_COUNT=$(find "$BROWSER_DIR/screenshots" -name "*.png" -type f | wc -l)
+                echo "    ✅ $SCREENSHOT_COUNT screenshots copiados da pasta screenshots"
+                IMAGES_FOUND=$((IMAGES_FOUND + SCREENSHOT_COUNT))
+              fi
+            fi
+          done
+          
+          echo "📊 Total de imagens encontradas e copiadas: $IMAGES_FOUND"
+          
+          # Copiar relatórios HTML individuais para acesso direto
+          echo "📄 Copiando relatórios HTML individuais..."
+          for browser in Chrome Firefox Edge; do
+            BROWSER_DIR="./all-results/test-results-$browser"
+            if [ -f "$BROWSER_DIR/report.html" ]; then
+              cp "$BROWSER_DIR/report.html" "./gh-pages/report-$browser.html"
+              echo "  ✅ report-$browser.html copiado"
+            fi
+            if [ -f "$BROWSER_DIR/log.html" ]; then
+              cp "$BROWSER_DIR/log.html" "./gh-pages/log-$browser.html"
+              echo "  ✅ log-$browser.html copiado"
+            fi
+          done
+          
+          # Listar assets finais copiados
+          echo "📋 Assets finais disponíveis:"
+          if [ -d "./gh-pages/screenshots" ]; then
+            FINAL_IMAGES=$(find ./gh-pages/screenshots -name "*.png" -type f | wc -l)
+            echo "  🖼️ Screenshots: $FINAL_IMAGES arquivos"
+            if [ $FINAL_IMAGES -gt 0 ]; then
+              echo "  📁 Amostras de screenshots:"
+              find ./gh-pages/screenshots -name "*.png" -type f | head -3 | while read img; do
+                echo "    - $(basename "$img")"
+              done
+            fi
+          fi
+          
+          echo "✅ Assets adicionais processados com sucesso!"
+        continue-on-error: true
+
+      - name: Create asset index page
+        run: |
+          echo "📋 Criando página de índice de assets..."
+          
+          # Criar página com links para todos os relatórios e assets
+          cat > ./gh-pages/assets.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="pt-BR">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Assets dos Testes E2E</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+              .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+              h1 { color: #333; text-align: center; }
+              h2 { color: #555; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+              .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+              .asset-card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: #fafafa; }
+              .asset-card h3 { margin-top: 0; color: #333; }
+              .asset-list { list-style: none; padding: 0; }
+              .asset-list li { padding: 5px 0; }
+              .asset-list a { text-decoration: none; color: #007acc; }
+              .asset-list a:hover { text-decoration: underline; }
+              .screenshot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+              .screenshot-card { text-align: center; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: white; }
+              .screenshot-card img { max-width: 100%; height: auto; border-radius: 4px; }
+              .screenshot-card p { margin: 10px 0 0 0; font-size: 12px; color: #666; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>📊 Assets dos Testes E2E</h1>
+              
+              <h2>📄 Relatórios</h2>
+              <div class="asset-grid">
+                <div class="asset-card">
+                  <h3>🎯 Relatório Consolidado</h3>
+                  <ul class="asset-list">
+                    <li><a href="index.html">📊 Relatório Principal</a></li>
+                  </ul>
+                </div>
+          EOF
+          
+          # Adicionar links para relatórios individuais por navegador
+          for browser in Chrome Firefox Edge; do
+            if [ -f "./gh-pages/report-$browser.html" ]; then
+              cat >> ./gh-pages/assets.html << EOF
+                <div class="asset-card">
+                  <h3>🌐 $browser</h3>
+                  <ul class="asset-list">
+                    <li><a href="report-$browser.html">📊 Relatório $browser</a></li>
+                    <li><a href="log-$browser.html">📋 Log $browser</a></li>
+                  </ul>
+                </div>
+          EOF
+            fi
+          done
+          
+          # Seção de screenshots
+          cat >> ./gh-pages/assets.html << 'EOF'
+              </div>
+              
+              <h2>📸 Screenshots</h2>
+          EOF
+          
+          # Adicionar screenshots se existirem
+          if [ -d "./gh-pages/screenshots" ] && [ "$(find ./gh-pages/screenshots -name "*.png" | wc -l)" -gt 0 ]; then
+            echo '<div class="screenshot-grid">' >> ./gh-pages/assets.html
+            find ./gh-pages/screenshots -name "*.png" -type f | sort | while read screenshot; do
+              filename=$(basename "$screenshot")
+              cat >> ./gh-pages/assets.html << EOF
+                <div class="screenshot-card">
+                  <a href="screenshots/$filename" target="_blank">
+                    <img src="screenshots/$filename" alt="$filename" style="max-height: 150px;">
+                  </a>
+                  <p>$filename</p>
+                </div>
+          EOF
+            done
+            echo '</div>' >> ./gh-pages/assets.html
+          else
+            echo '<p>⚠️ Nenhum screenshot encontrado para esta execução.</p>' >> ./gh-pages/assets.html
+          fi
+          
+          # Finalizar HTML
+          cat >> ./gh-pages/assets.html << 'EOF'
+              
+              <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+                <p style="color: #666; font-size: 14px;">
+                  🤖 Gerado automaticamente pelo GitHub Actions • 
+                  <a href="index.html">Voltar ao Relatório Principal</a>
+                </p>
+              </div>
+            </div>
+          </body>
+          </html>
+          EOF
+          
+          echo "✅ Página de assets criada: assets.html"
         continue-on-error: true
 
       - name: Upload Pages artifact
