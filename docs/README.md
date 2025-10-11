@@ -1,18 +1,50 @@
+<div align="center">
+
+# 📋 Avaliação Técnica QA - Documentação Completa
+
+</div>
+
 ## 📄 Sobre o Desafio Técnico
 
-Este projeto foi desenvolvido a partir de uma avaliação técnica real para vaga de **Analista de QA Pleno**, que contemplou:
+Este repositório contém a **resolução completa** de uma avaliação técnica real para a posição de **Analista de QA Pleno**. O desafio foi estruturado em três seções progressivas que avaliam desde conceitos fundamentais até implementação prática de automação.
 
-- ✅ **Seção 1:** Conceitos fundamentais de QA (testes de regressão, exploratórios, automação)
-- ✅ **Seção 2:** Elaboração de cenários de teste em Gherkin/BDD
-- ✅ **Seção 3:** Implementação prática de automação com Robot Framework
+### 🎯 Estrutura da Avaliação
+
+<table>
+<tr>
+<td width="33%" align="center">
+
+### 📚 Seção 1
+**Conceitos Fundamentais**
+
+Questões sobre testes de regressão, exploratórios, automação, metodologias ágeis e boas práticas de QA
+
+</td>
+<td width="33%" align="center">
+
+### 🎭 Seção 2
+**Cenários de Teste**
+
+Elaboração de casos de teste em formato BDD/Gherkin para sistema de gerenciamento de estoque
+
+</td>
+<td width="33%" align="center">
+
+### 🤖 Seção 3
+**Automação Prática**
+
+Implementação de testes automatizados com Robot Framework em 3 níveis de complexidade
+
+</td>
+</tr>
+</table>
+
 
 > 💡 O arquivo inclui minhas respostas conceituais e a elaboração dos cenários de teste que serviram de base para as automações implementadas neste repositório.
 
 ---
 
 <div align="center">
-
-## 👩‍💻 Autora
 
 ### Sthefany A. Ricardo
 
