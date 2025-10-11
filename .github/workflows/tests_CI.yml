@@ -69,9 +69,33 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          # Instala todas as dependências básicas necessárias
-          pip install robotframework robotframework-seleniumlibrary selenium webdriver-manager
-          echo "✅ Dependências básicas instaladas"
+          
+          # Instalar webdriver-manager globalmente (necessário para todos os módulos)
+          pip install webdriver-manager
+          
+          echo "📦 Instalando dependências específicas dos módulos..."
+          INSTALLED_MODULES=()
+          
+          # Instalar requirements.txt de cada módulo (evitando duplicatas)
+          for module in automacao_basico automacao_intermediario automacao_avancado; do
+            if [ -f "$module/requirements.txt" ]; then
+              echo "🔧 Instalando dependências de $module..."
+              pip install -r "$module/requirements.txt"
+              INSTALLED_MODULES+=("$module")
+              echo "✅ Dependências de $module instaladas"
+            else
+              echo "⚠️ requirements.txt não encontrado em $module"
+            fi
+          done
+          
+          echo "📋 Módulos com dependências instaladas: ${INSTALLED_MODULES[*]}"
+          
+          # Verificar versões instaladas
+          echo "🔍 Verificando versões instaladas:"
+          echo "Robot Framework: $(robot --version 2>/dev/null || echo 'Não encontrado')"
+          echo "Selenium: $(python -c 'import selenium; print(selenium.__version__)' 2>/dev/null || echo 'Não encontrado')"
+          echo "SeleniumLibrary: $(python -c 'import SeleniumLibrary; print(SeleniumLibrary.__version__)' 2>/dev/null || echo 'Não encontrada')"
+          echo "Faker: $(python -c 'import robot.libraries.FakerLibrary; print(\"Faker instalado\")' 2>/dev/null || echo 'Faker não encontrado')"
 
       - name: Create results directory
         run: |
@@ -116,16 +140,6 @@ jobs:
             if [ -d "$module" ]; then
               echo "📂 Módulo: $module"
               find "$module" -name "*.robot" -type f 2>/dev/null | head -5 || echo "  Nenhum arquivo .robot encontrado"
-            fi
-          done
-
-      - name: Install project dependencies
-        run: |
-          echo "📦 Instalando dependências dos módulos..."
-          for module in automacao_*/; do
-            if [ -f "$module/requirements.txt" ]; then
-              echo "Instalando dependências de $module"
-              pip install -r "$module/requirements.txt" || echo "Falha ao instalar dependências de $module"
             fi
           done
 
