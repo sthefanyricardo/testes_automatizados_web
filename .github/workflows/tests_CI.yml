@@ -44,6 +44,7 @@ permissions:
 env:
   PYTHON_VERSION: "3.12"
   CACHE_VERSION: "v1" # Incrementar para invalidar cache se necessário
+  NODE_VERSION: "22"
 
 jobs:
   tests:
@@ -255,55 +256,17 @@ jobs:
           retention-days: 7  # Reduzido de 30 para 7 dias
           if-no-files-found: warn
       
-      - name: Generate Test Summary
-        if: always() && hashFiles('tests-results-CI/${{ matrix.browser }}/output.xml') != ''
-        run: |
-          echo "## 📊 Resultados E2E - ${{ matrix.browser }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Extrair estatísticas reais dos testes do Robot Framework
-          if [ -f "./tests-results-CI/${{ matrix.browser }}/output.xml" ]; then
-            # Contar testes reais (elementos <test>)
-            TOTAL_TESTS=$(grep -c '<test ' "./tests-results-CI/${{ matrix.browser }}/output.xml" || echo "0")
-            
-            # Contar apenas testes que passaram (não keywords)
-            PASSED_TESTS=$(grep '<test ' "./tests-results-CI/${{ matrix.browser }}/output.xml" | grep -c 'status="PASS"' || echo "0")
-            
-            # Contar apenas testes que falharam (não keywords)  
-            FAILED_TESTS=$(grep '<test ' "./tests-results-CI/${{ matrix.browser }}/output.xml" | grep -c 'status="FAIL"' || echo "0")
-            
-            # Extrair estatísticas de keywords/steps executados
-            TOTAL_KEYWORDS=$(grep -o 'status="PASS"\|status="FAIL"' "./tests-results-CI/${{ matrix.browser }}/output.xml" | wc -l || echo "0")
-            PASSED_KEYWORDS=$(grep -o 'status="PASS"' "./tests-results-CI/${{ matrix.browser }}/output.xml" | wc -l || echo "0")
-            FAILED_KEYWORDS=$(grep -o 'status="FAIL"' "./tests-results-CI/${{ matrix.browser }}/output.xml" | wc -l || echo "0")
-            
-            echo "### 🎯 Estatísticas:" >> $GITHUB_STEP_SUMMARY
-            echo "- **Total de Testes:** $TOTAL_TESTS" >> $GITHUB_STEP_SUMMARY
-            echo "- **✅ Passou:** $PASSED_TESTS" >> $GITHUB_STEP_SUMMARY
-            echo "- **❌ Falhou:** $FAILED_TESTS" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### 📈 Detalhes de Execução:" >> $GITHUB_STEP_SUMMARY
-            echo "- **Total de Keywords/Steps:** $TOTAL_KEYWORDS" >> $GITHUB_STEP_SUMMARY
-            echo "- **✅ Keywords Executadas:** $PASSED_KEYWORDS" >> $GITHUB_STEP_SUMMARY
-            echo "- **❌ Keywords Falharam:** $FAILED_KEYWORDS" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            
-            if [ $FAILED_TESTS -gt 0 ]; then
-              echo "### ⚠️ Testes com Falha:" >> $GITHUB_STEP_SUMMARY
-              # Extrair nomes dos testes que falharam
-              grep -B2 'status="FAIL"' "./tests-results-CI/${{ matrix.browser }}/output.xml" | grep 'name=' | head -5 | while read line; do
-                TEST_NAME=$(echo "$line" | sed 's/.*name="\([^"]*\)".*/\1/')
-                echo "- ❌ $TEST_NAME" >> $GITHUB_STEP_SUMMARY
-              done 2>/dev/null || echo "- Detalhes nos artefatos" >> $GITHUB_STEP_SUMMARY
-              echo "" >> $GITHUB_STEP_SUMMARY
-            fi
-            
-            echo "### 📁 Relatórios Disponíveis:" >> $GITHUB_STEP_SUMMARY
-            echo "- 📊 [Baixar Relatórios](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
-            echo "- 🌐 Relatórios HTML serão publicados no GitHub Pages" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ Arquivo output.xml não encontrado" >> $GITHUB_STEP_SUMMARY
-          fi
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Robot Framework Reporter
+        uses: joonvena/robotframework-reporter-action@v2.5
+        if: always()
+        with:
+          gh_access_token: ${{ secrets.GITHUB_TOKEN }}
+          report_path: tests-results-CI/${{ matrix.browser }}
 
   # Job para consolidar resultados e publicar no GitHub Pages
   publish-results:
@@ -343,36 +306,53 @@ jobs:
           echo "📋 Gerando relatório consolidado..."
           
           # Verificar se existem arquivos XML
-          if ls ./all-results/test-results-*/output.xml 1> /dev/null 2>&1; then
+          if find ./all-results -name "output.xml" -type f | grep -q .; then
             echo "🎯 Arquivos de resultado encontrados!"
-            ls -la ./all-results/test-results-*/output.xml
+            find ./all-results -name "output.xml" -type f -exec ls -la {} \;
             
             # Contar arquivos XML disponíveis
-            XML_COUNT=$(ls ./all-results/test-results-*/output.xml | wc -l)
+            XML_COUNT=$(find ./all-results -name "output.xml" -type f | wc -l)
             echo "📊 Total de arquivos XML encontrados: $XML_COUNT"
+            
+            # Verificar se temos pelo menos um arquivo XML
+            if [ "$XML_COUNT" -eq 0 ]; then
+              echo "❌ Nenhum arquivo XML válido encontrado"
+              mkdir -p ./gh-pages
+              echo "<html><body><h1>❌ Nenhum resultado encontrado</h1><p>Verifique os artefatos individuais.</p></body></html>" > ./gh-pages/index.html
+              exit 0
+            fi
             
             # Gerar relatório consolidado usando approach mais robusto
             set +e # Não falhar se rebot der erro
             
             # Comando rebot correto para consolidação cross-browser
             echo "🔄 Executando comando rebot com sintaxe correta..."
-            python -m robot.rebot \
+            REPORT_DATE=$(date '+%d/%m/%Y %H:%M')
+            COMMIT_SHORT=$(echo '${{ github.sha }}' | cut -c1-7)
+            
+            # Criar array com todos os arquivos XML encontrados
+            mapfile -t XML_FILES < <(find ./all-results -name "output.xml" -type f)
+            
+            echo "🔄 Executando rebot com ${#XML_FILES[@]} arquivo(s) XML..."
+            
+            rebot \
               --outputdir ./gh-pages \
               --report index.html \
               --log log.html \
               --output output.xml \
               --merge \
-              --reporttitle "🤖 Relatórios E2E Consolidados - $(date '+%d/%m/%Y %H:%M')" \
-              --logtitle "🔍 Logs Detalhados E2E - $(date '+%d/%m/%Y %H:%M')" \
-              --metadata "Execução:$(date '+%d/%m/%Y %H:%M')" \
+              --reporttitle "🤖 Relatórios E2E Consolidados - ${REPORT_DATE}" \
+              --logtitle "🔍 Logs Detalhados E2E - ${REPORT_DATE}" \
+              --metadata "Execução:${REPORT_DATE}" \
               --metadata "Branch:${{ github.ref_name }}" \
               --metadata "Executor:${{ github.actor }}" \
               --metadata "Navegadores:Chrome_Firefox_Edge" \
-              --metadata "Commit:$(echo '${{ github.sha }}' | cut -c1-7)" \
+              --metadata "Commit:${COMMIT_SHORT}" \
               --metadata "Workflow:${{ github.run_id }}" \
-              ./all-results/test-results-*/output.xml
+              "${XML_FILES[@]}"
             
             REBOT_EXIT_CODE=$?
+            set -e # Reativar exit on error após rebot
             
             if [ $REBOT_EXIT_CODE -eq 0 ]; then
               echo "🎉 SUCESSO! Relatório consolidado gerado com rebot!"
@@ -393,6 +373,7 @@ jobs:
               mkdir -p ./gh-pages
               
               # Criar página simples e funcional
+              CURRENT_DATE=$(date "+%d/%m/%Y às %H:%M")
               cat > ./gh-pages/index.html << 'HTML_END'
           <!DOCTYPE html>
           <html lang="pt-BR">
@@ -415,9 +396,9 @@ jobs:
                   <h1>🤖 Relatórios de Teste E2E</h1>
                   <div class="info">
                       <strong>📊 Status:</strong> Testes executados com sucesso em múltiplos navegadores<br>
-                      <strong>📅 Data:</strong> $(date '+%d/%m/%Y às %H:%M')<br>
-                      <strong>🌿 Branch:</strong> ${{ github.ref_name }}<br>
-                      <strong>👤 Executado por:</strong> ${{ github.actor }}
+                      <strong>📅 Data:</strong> \${CURRENT_DATE}<br>
+                      <strong>🌿 Branch:</strong> BRANCH_PLACEHOLDER<br>
+                      <strong>👤 Executado por:</strong> ACTOR_PLACEHOLDER
                   </div>
                   
                   <h2>📦 Relatórios por Navegador</h2>
@@ -439,8 +420,8 @@ jobs:
                   </div>
                   
                   <h2>🔗 Links Úteis</h2>
-                  <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" class="download-btn">📥 Baixar Todos os Relatórios</a>
-                  <a href="https://github.com/${{ github.repository }}" class="download-btn">� Ver Repositório</a>
+                  <a href="https://github.com/REPO_PLACEHOLDER/actions/runs/RUN_ID_PLACEHOLDER" class="download-btn">📥 Baixar Todos os Relatórios</a>
+                  <a href="https://github.com/REPO_PLACEHOLDER" class="download-btn">� Ver Repositório</a>
                   
                   <div class="info">
                       <strong>💡 Dica:</strong> Baixe os artefatos individuais para acessar os relatórios HTML detalhados de cada navegador.
@@ -448,7 +429,15 @@ jobs:
               </div>
           </body>
           </html>
-          ERROR_END
+          HTML_END
+              
+              # Substituir placeholders com valores reais
+              sed -i "s/\${CURRENT_DATE}/${CURRENT_DATE}/g" ./gh-pages/index.html
+              sed -i "s/BRANCH_PLACEHOLDER/${{ github.ref_name }}/g" ./gh-pages/index.html
+              sed -i "s/ACTOR_PLACEHOLDER/${{ github.actor }}/g" ./gh-pages/index.html
+              sed -i "s/REPO_PLACEHOLDER/${{ github.repository }}/g" ./gh-pages/index.html
+              sed -i "s/RUN_ID_PLACEHOLDER/${{ github.run_id }}/g" ./gh-pages/index.html
+              
               echo "⚠️ Página de erro criada para casos onde rebot falha"
             fi
           else
@@ -484,16 +473,30 @@ jobs:
             
             # Adicionar header de navegação ao início do report
             if grep -q "<body" ./gh-pages/index.html; then
-              sed -i '/<body/a\
-          <div class="header-info">\
-            <h2>🤖 Relatórios E2E Consolidados</h2>\
-            <p><strong>Branch:</strong> ${{ github.ref_name }} | <strong>Executado por:</strong> ${{ github.actor }} | <strong>Data:</strong> '"$(date '+%d/%m/%Y às %H:%M')"'</p>\
-          </div>\
-          <div class="nav-reports">\
-            <a href="index.html">📊 Relatório Principal</a>\
-            <a href="log.html">🔍 Logs Detalhados</a>\
-            <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">📥 Artefatos</a>\
-          </div>' ./gh-pages/index.html
+              CURRENT_DATE=$(date '+%d/%m/%Y às %H:%M')
+              
+              # Criar conteúdo temporário para inserção
+              cat > /tmp/nav_header.html << 'NAV_EOF'
+          <div class="header-info">
+            <h2>🤖 Relatórios E2E Consolidados</h2>
+            <p><strong>Branch:</strong> BRANCH_PLACEHOLDER | <strong>Executado por:</strong> ACTOR_PLACEHOLDER | <strong>Data:</strong> DATE_PLACEHOLDER</p>
+          </div>
+          <div class="nav-reports">
+            <a href="index.html">📊 Relatório Principal</a>
+            <a href="log.html">🔍 Logs Detalhados</a>
+            <a href="https://github.com/REPO_PLACEHOLDER/actions/runs/RUN_ID_PLACEHOLDER">📥 Artefatos</a>
+          </div>
+          NAV_EOF
+              
+              # Substituir placeholders
+              sed -i "s/BRANCH_PLACEHOLDER/${{ github.ref_name }}/g" /tmp/nav_header.html
+              sed -i "s/ACTOR_PLACEHOLDER/${{ github.actor }}/g" /tmp/nav_header.html
+              sed -i "s/DATE_PLACEHOLDER/${CURRENT_DATE}/g" /tmp/nav_header.html
+              sed -i "s/REPO_PLACEHOLDER/${{ github.repository }}/g" /tmp/nav_header.html
+              sed -i "s/RUN_ID_PLACEHOLDER/${{ github.run_id }}/g" /tmp/nav_header.html
+              
+              # Inserir após tag body
+              sed -i '/<body/r /tmp/nav_header.html' ./gh-pages/index.html
               
               # Adicionar CSS ao head
               sed -i 's/<head>/<head><link rel="stylesheet" href="custom.css">/' ./gh-pages/index.html
@@ -501,21 +504,24 @@ jobs:
             
             # Adicionar navegação também ao log.html se existir
             if [ -f "./gh-pages/log.html" ] && grep -q "<body" ./gh-pages/log.html; then
-              sed -i '/<body/a\
-          <div class="nav-reports">\
-            <a href="index.html">📊 Voltar ao Relatório</a>\
-            <a href="log.html">🔍 Logs Detalhados</a>\
-          </div>' ./gh-pages/log.html
+              cat > /tmp/log_nav.html << 'LOG_NAV_EOF'
+          <div class="nav-reports">
+            <a href="index.html">📊 Voltar ao Relatório</a>
+            <a href="log.html">🔍 Logs Detalhados</a>
+          </div>
+          LOG_NAV_EOF
               
+              sed -i '/<body/r /tmp/log_nav.html' ./gh-pages/log.html
               sed -i 's/<head>/<head><link rel="stylesheet" href="custom.css">/' ./gh-pages/log.html
             fi
+            
+            # Limpar arquivos temporários
+            rm -f /tmp/nav_header.html /tmp/log_nav.html
             
             echo "🎨 Navegação adicionada aos relatórios Robot Framework!"
           else
             echo "ℹ️ Página HTML personalizada detectada (não é relatório Robot Framework)"
           fi
-
-
 
       - name: Verify gh-pages directory
         run: |
@@ -541,7 +547,7 @@ jobs:
         with:
           path: ./gh-pages
 
-  # Job para deploy no GitHub Pages
+   # Job para deploy no GitHub Pages
   deploy:
     environment:
       name: github-pages
@@ -558,54 +564,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        continue-on-error: true
-        
-      - name: Display Pages URL
-        if: always()
-        run: |
-          if [ "${{ steps.deployment.outputs.page_url }}" != "" ]; then
-            echo "🌐 GitHub Pages URL: ${{ steps.deployment.outputs.page_url }}"
-            echo "📊 Relatórios disponíveis em: ${{ steps.deployment.outputs.page_url }}"
-            echo "### 🎉 Deploy Realizado com Sucesso!" >> $GITHUB_STEP_SUMMARY
-            echo "🌐 **URL dos Relatórios:** [${{ steps.deployment.outputs.page_url }}](${{ steps.deployment.outputs.page_url }})" >> $GITHUB_STEP_SUMMARY
-            echo "📊 **Acesse seus relatórios E2E consolidados clicando no link acima**" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ GitHub Pages não configurado - Relatórios disponíveis nos artefatos"
-            echo "### 📦 Relatórios nos Artefatos" >> $GITHUB_STEP_SUMMARY
-            echo "🔗 **Baixar Relatórios:** [Ver Artefatos](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
-          fi
-        
-      - name: Comment PR with results
-        if: github.event_name == 'pull_request'
-        continue-on-error: true
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const reportUrl = '${{ steps.deployment.outputs.page_url }}';
-            const artifactsUrl = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
-            
-            let reportSection = '';
-            if (reportUrl && reportUrl !== '' && reportUrl !== 'undefined') {
-              reportSection = `🌐 **Relatórios Online:** [🔗 Ver Relatórios E2E](${reportUrl})
-            📊 **Relatórios Consolidados:** Disponíveis online no GitHub Pages`;
-            } else {
-              reportSection = `📦 **Relatórios:** Disponíveis nos artefatos para download`;
-            }
-            
-            const comment = `## 🎉 Testes E2E Executados com Sucesso!
-            
-            ${reportSection}
-            🔗 **Todos os artefatos:** [Ver Downloads](${artifactsUrl})
-            
-            ### 📋 Detalhes da Execução:
-            - **Branch:** \`${{ github.ref_name }}\`
-            - **Commit:** \`${{ github.sha }}\`
-            - **Executado por:** ${{ github.actor }}
-            - **Data:** ${new Date().toLocaleString('pt-BR')}
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
