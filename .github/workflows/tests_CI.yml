@@ -291,8 +291,13 @@ jobs:
         run: |
           echo "🔍 Verificando artefatos baixados..."
           ls -la ./all-results/ || echo "Diretório all-results não encontrado"
-          find ./all-results -name "*.xml" -type f || echo "Nenhum arquivo XML encontrado"
-          find ./all-results -name "output.xml" -type f || echo "Nenhum arquivo output.xml encontrado"
+          echo ""
+          echo "📂 Estrutura completa dos artefatos:"
+          find ./all-results -type f -name "*.xml" -exec echo "XML encontrado: {}" \; || echo "Nenhum arquivo XML encontrado"
+          find ./all-results -type f -name "*.html" -exec echo "HTML encontrado: {}" \; || echo "Nenhum arquivo HTML encontrado"
+          echo ""
+          echo "📊 Detalhes dos arquivos output.xml:"
+          find ./all-results -name "output.xml" -exec ls -la {} \; || echo "Nenhum arquivo output.xml encontrado"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -326,9 +331,16 @@ jobs:
           else
             echo "✅ Arquivos output.xml encontrados:"
             echo "$OUTPUT_FILES"
+            echo ""
+            echo "📋 Lista detalhada dos arquivos que serão consolidados:"
+            for file in $OUTPUT_FILES; do
+              echo "  - $file ($(stat -c%s "$file" 2>/dev/null || echo "?" ) bytes)"
+            done
+            echo ""
             
             # Executar rebot com tratamento de falhas
             set +e
+            echo "🔧 Executando rebot com os arquivos encontrados..."
             python -m robot.rebot \
               --outputdir ./gh-pages \
               --report index.html \
@@ -339,6 +351,10 @@ jobs:
             
             REBOT_EXIT_CODE=$?
             echo "📊 Rebot finalizado com código: $REBOT_EXIT_CODE"
+            
+            # Verificar arquivos gerados
+            echo "📁 Arquivos gerados pelo rebot:"
+            ls -la ./gh-pages/ || echo "Diretório gh-pages não encontrado"
             
             if [ $REBOT_EXIT_CODE -eq 0 ]; then
               echo "🎉 Relatório consolidado gerado com sucesso!"
