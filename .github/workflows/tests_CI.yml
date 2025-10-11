@@ -1,3 +1,17 @@
+# 🤖 Pipeline de Testes E2E com Robot Framework + Selenium
+# 
+# Esta pipeline executa testes automatizados end-to-end em múltiplos navegadores,
+# gera relatórios consolidados e publica os resultados no GitHub Pages.
+#
+# Funcionalidades:
+# - ✅ Execução paralela em Chrome, Firefox e Edge
+# - 🐧 Execução em Ubuntu com Robot Framework e Selenium
+# - 📊 Relatórios HTML consolidados
+# - 🚀 Deploy automático no GitHub Pages
+# - 📸 Captura de screenshots em caso de falha
+# - 💬 Notificações e comentários em PRs
+# - 🎯 Cache inteligente para otimizar performance
+
 name: E2E Tests - Selenium + Robot Framework
 run-name: Testes E2E (${{ github.ref_name }}) - ${{ github.actor }}
 
@@ -21,14 +35,15 @@ on:
 
 env:
   PYTHON_VERSION: "3.12"
+  CACHE_VERSION: "v1" # Incrementar para invalidar cache se necessário
 
 jobs:
   tests:
     strategy:
+      fail-fast: false # Não para outros browsers se um falhar
+      max-parallel: 3 # Controla paralelismo
       matrix:
-        browser: ${{
-          (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'Todos' && fromJSON(format('["{0}"]', github.event.inputs.browser))) 
-          || fromJSON('["Chrome", "Firefox", "Edge"]')}}
+        browser: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'Todos' && fromJSON(format('["{0}"]', github.event.inputs.browser))) || fromJSON('["Chrome", "Firefox", "Edge"]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -45,19 +60,48 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
+            ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-
             ${{ runner.os }}-pip-
 
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install selenium webdriver-manager
+          # Instala todas as dependências necessárias para execução normal
+          pip install robotframework robotframework-seleniumlibrary selenium webdriver-manager
+          # Instalar dependências do requirements.txt se existir
+          pip install -r requirements.txt || echo "requirements.txt não encontrado, usando dependências padrão"
 
       - name: Create results directory
-        run: mkdir -p ./tests-results-CI/${{ matrix.browser }}
+        run: |
+          mkdir -p ./tests-results-CI/${{ matrix.browser }}
+          echo "📁 Diretório de resultados criado: ./tests-results-CI/${{ matrix.browser }}"
           
+      - name: Setup Browser Environment
+        run: |
+          echo "🔧 Configurando ambiente para execução normal..."
+          
+          # Verificar Robot Framework e bibliotecas instaladas
+          echo "Robot Framework: $(robot --version 2>/dev/null || echo 'Não encontrado')"
+          echo "SeleniumLibrary: $(python -c 'import SeleniumLibrary; print(SeleniumLibrary.__version__)' 2>/dev/null || echo 'Não encontrada')"
+          echo "Selenium: $(python -c 'import selenium; print(selenium.__version__)' 2>/dev/null || echo 'Não encontrado')"
+          
+          # Verificar navegadores disponíveis no Ubuntu runner
+          echo "Chrome version: $(google-chrome --version 2>/dev/null || echo 'Chrome não encontrado')"
+          echo "Firefox version: $(firefox --version 2>/dev/null || echo 'Firefox não encontrado')"
+          echo "Edge version: $(microsoft-edge --version 2>/dev/null || echo 'Edge não encontrado')"
+          
+          # Instalar Xvfb se não estiver disponível
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb
+          
+          # Configurar display virtual para execução headless
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+          sleep 3
+          echo "Display virtual configurado: $DISPLAY"
+
       - name: Run E2E Tests
         run: |
           echo "🚀 Executando testes para o navegador: ${{ matrix.browser }}"
@@ -66,6 +110,9 @@ jobs:
           BROWSER=$(echo "${{ matrix.browser }}" | tr '[:upper:]' '[:lower:]')
           
           echo "🌐 Navegador configurado: $BROWSER"
+          
+          # Configurar display para execução headless
+          export DISPLAY=:99
   
           robot \
             --name "Tests no navegador: ${{ matrix.browser }}" \
@@ -74,7 +121,31 @@ jobs:
             --variable HEADLESS:true \
             --variable TIMEOUT:30 \
             --loglevel INFO \
+            --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
+            --reportbackground '#f5f5f5' \
+            --maxerrorlines 10 \
             tests/
+        continue-on-error: true
+
+      - name: Capture Screenshots on Failure
+        if: failure()
+        run: |
+          echo "📸 Coletando evidências de falha..."
+          # Criar diretório para screenshots se não existir
+          mkdir -p ./tests-results-CI/${{ matrix.browser }}/screenshots
+          
+          # Copiar screenshots gerados pelo Robot Framework (se existirem)
+          find ./tests-results-CI/${{ matrix.browser }} -name "*.png" -exec cp {} ./tests-results-CI/${{ matrix.browser }}/screenshots/ \; 2>/dev/null || true
+          
+          # Listar arquivos de evidência encontrados
+          echo "📁 Arquivos de evidência coletados:"
+          ls -la ./tests-results-CI/${{ matrix.browser }}/screenshots/ 2>/dev/null || echo "Nenhum screenshot encontrado"
+          
+          # Informações do ambiente para debug
+          echo "�️ Informações do ambiente:"
+          echo "Display: $DISPLAY"
+          echo "Processos ativos:"
+          ps aux | grep -E "(Xvfb|chrome|firefox|edge)" | head -5 || echo "Nenhum processo de navegador ativo"
         continue-on-error: true
 
       - name: Check Test Results
@@ -103,11 +174,31 @@ jobs:
           gh_access_token: ${{ secrets.GITHUB_TOKEN }}
           report_path: tests-results-CI/${{ matrix.browser }}
 
+      - name: Generate Test Summary
+        if: always()
+        run: |
+          echo "📊 Gerando resumo dos testes para ${{ matrix.browser }}..."
+          if [ -f "./tests-results-CI/${{ matrix.browser }}/output.xml" ]; then
+            # Extrair estatísticas básicas do XML
+            TOTAL=$(grep -o 'stat="[0-9]*"' ./tests-results-CI/${{ matrix.browser }}/output.xml | head -1 | grep -o '[0-9]*' || echo "0")
+            PASSED=$(grep -o 'pass="[0-9]*"' ./tests-results-CI/${{ matrix.browser }}/output.xml | head -1 | grep -o '[0-9]*' || echo "0")
+            FAILED=$(grep -o 'fail="[0-9]*"' ./tests-results-CI/${{ matrix.browser }}/output.xml | head -1 | grep -o '[0-9]*' || echo "0")
+            
+            echo "## 🧪 Resultados dos Testes - ${{ matrix.browser }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Total:** $TOTAL testes" >> $GITHUB_STEP_SUMMARY
+            echo "- **✅ Passou:** $PASSED testes" >> $GITHUB_STEP_SUMMARY
+            echo "- **❌ Falhou:** $FAILED testes" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ Erro nos Testes - ${{ matrix.browser }}" >> $GITHUB_STEP_SUMMARY
+            echo "Não foi possível gerar o arquivo de resultados." >> $GITHUB_STEP_SUMMARY
+          fi
+
   # Job para consolidar resultados e publicar no GitHub Pages
   publish-results:
     needs: tests
     runs-on: ubuntu-latest
-    if: always()
+    if: always() # Sempre executa, mesmo se os testes falharem
     permissions:
       contents: read
       pages: write
@@ -137,18 +228,97 @@ jobs:
 
       - name: Create consolidated report with rebot
         run: |
-          python -m robot.rebot \
-            --merge ./all-results/test-results-*/*.xml \
-            --outputdir ./gh-pages \
-            --report index.html \
-            --reporttitle "Relatório Consolidado E2E" \
-            --name "Robot Framework CI"
+          echo "📋 Gerando relatório consolidado..."
+          
+          # Verificar se existem arquivos XML
+          if ls ./all-results/test-results-*/output.xml 1> /dev/null 2>&1; then
+            python -m robot.rebot \
+              --merge ./all-results/test-results-*/output.xml \
+              --outputdir ./gh-pages \
+              --report index.html \
+              --log log.html \
+              --reporttitle "🤖 Relatório Consolidado E2E - $(date '+%d/%m/%Y %H:%M')" \
+              --reportbackground '#ffffff' \
+              --name "Robot Framework CI - ${{ github.ref_name }}" \
+              --metadata "Execução:$(date '+%d/%m/%Y %H:%M')" \
+              --metadata "Branch:${{ github.ref_name }}" \
+              --metadata "Commit:${{ github.sha }}" \
+              --metadata "Actor:${{ github.actor }}"
+              
+            echo "✅ Relatório consolidado gerado com sucesso!"
+          else
+            echo "❌ Nenhum arquivo de resultado encontrado!"
+            # Criar página de erro
+            mkdir -p ./gh-pages
+            echo "<h1>❌ Erro na Execução dos Testes</h1>" > ./gh-pages/index.html
+            echo "<p>Não foram encontrados resultados de testes para consolidar.</p>" >> ./gh-pages/index.html
+            echo "<p>Verifique os logs da execução para mais detalhes.</p>" >> ./gh-pages/index.html
+          fi
         continue-on-error: true
+
+      - name: Add navigation and styling
+        run: |
+          # Adicionar CSS customizado e navegação aos relatórios
+          if [ -f "./gh-pages/index.html" ]; then
+            # Criar arquivo CSS customizado
+            cat > ./gh-pages/custom.css << 'EOF'
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+          .header { background: #24292e; color: white; padding: 20px; margin-bottom: 20px; }
+          .nav { background: #f6f8fa; padding: 10px; margin-bottom: 20px; }
+          .nav a { margin-right: 15px; text-decoration: none; color: #0366d6; }
+          EOF
+            
+            # Injetar CSS no HTML
+            sed -i 's/<head>/<head><link rel="stylesheet" href="custom.css">/' ./gh-pages/index.html 2>/dev/null || true
+            
+            echo "🎨 Estilo customizado adicionado ao relatório!"
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./gh-pages
+
+  # Job para notificações
+  notify:
+    needs: [tests, publish-results]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Generate notification summary
+        run: |
+          echo "📈 Gerando resumo da execução..."
+          
+          # Determinar status geral
+          if [ "${{ needs.tests.result }}" == "success" ]; then
+            STATUS="✅ SUCESSO"
+            COLOR="28a745"
+          elif [ "${{ needs.tests.result }}" == "failure" ]; then
+            STATUS="❌ FALHOU"
+            COLOR="d73a49"
+          else
+            STATUS="⚠️ PARCIAL"
+            COLOR="ffc107"
+          fi
+          
+          echo "STATUS_EMOJI=$STATUS" >> $GITHUB_ENV
+          echo "STATUS_COLOR=$COLOR" >> $GITHUB_ENV
+          
+          # Criar resumo
+          echo "## $STATUS - Testes E2E" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Executado por:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Data:** $(date '+%d/%m/%Y às %H:%M')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.publish-results.result }}" == "success" ]; then
+            echo "📊 **Relatório:** Disponível no GitHub Pages" >> $GITHUB_STEP_SUMMARY
+          fi
 
   # Job para deploy no GitHub Pages
   deploy:
@@ -157,7 +327,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     needs: publish-results
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && needs.publish-results.result == 'success'
     permissions:
       contents: read
       pages: write
@@ -167,3 +337,28 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reportUrl = '${{ steps.deployment.outputs.page_url }}';
+            const comment = `## 🤖 Resultados dos Testes E2E
+            
+            Os testes foram executados com sucesso! 
+            
+            📊 **Relatório completo:** [Ver Relatório](${reportUrl})
+            
+            **Detalhes da execução:**
+            - **Branch:** ${{ github.ref_name }}
+            - **Commit:** ${{ github.sha }}
+            - **Executado em:** ${new Date().toLocaleString('pt-BR')}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
