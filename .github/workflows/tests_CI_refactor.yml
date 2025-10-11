@@ -51,12 +51,11 @@ jobs:
   tests:
     strategy:
       fail-fast: false
-      max-parallel: 9
+      max-parallel: 3
       matrix:
         browser: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'Todos' && fromJSON(format('["{0}"]', github.event.inputs.browser))) || fromJSON('["Chrome", "Firefox", "Edge"]') }}
-        module: [automacao_basico, automacao_intermediario, automacao_avancado]
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -169,6 +168,44 @@ jobs:
           export SELENIUM_PAGE_LOAD_TIMEOUT=60
           export SELENIUM_SCRIPT_TIMEOUT=30
 
+      - name: Discover test directory structure
+        run: |
+          echo "🔍 Verificando estrutura do projeto"
+          echo "Pasta raiz: RAIZ DO REPOSITÓRIO (corrigido)"
+          echo "=========================================="
+          echo ""
+          
+          echo "📁 Conteúdo do diretório raiz:"
+          ls -la
+          echo ""
+          
+          echo "🔍 Verificando módulos de automação:"
+          for module in automacao_basico automacao_intermediario automacao_avancado; do
+            if [ -d "$module" ]; then
+              echo "✅ Módulo encontrado: $module"
+              echo "   📂 Conteúdo de $module:"
+              ls -la "$module/" | head -10
+              
+              if [ -d "$module/tests" ]; then
+                echo "   📋 Arquivos .robot em $module/tests:"
+                find "$module/tests" -name "*.robot" -type f | head -5 | while read robot_file; do
+                  echo "     🤖 $(basename "$robot_file")"
+                done
+                ROBOT_COUNT=$(find "$module/tests" -name "*.robot" -type f | wc -l)
+                echo "   📊 Total de arquivos .robot: $ROBOT_COUNT"
+              else
+                echo "   ⚠️ Diretório tests não encontrado em $module"
+              fi
+            else
+              echo "❌ Módulo não encontrado: $module"
+            fi
+            echo ""
+          done
+          
+          echo "📊 RESUMO FINAL:"
+          TOTAL_ROBOTS=$(find . -name "*.robot" -type f -path "*/tests/*" 2>/dev/null | wc -l)
+          echo "  Total de arquivos .robot encontrados: $TOTAL_ROBOTS"
+
       - name: Run E2E Tests
         run: |
           echo "🚀 Executando testes para o navegador: ${{ matrix.browser }}"
@@ -181,7 +218,64 @@ jobs:
           # Configurar display para execução headless
           export DISPLAY=:99
           
-          MODULE_PATH="${{ matrix.module }}/tests"
+          # ✅ CORRIGIDO: Usar estrutura REAL do repositório (raiz, não testes_automatizados_web)
+          echo "🎯 Usando estrutura REAL do projeto" 
+          echo "Pasta raiz: RAIZ DO REPOSITÓRIO (não testes_automatizados_web)"
+          
+          # ✅ CORRIGIDO: Definir módulos com caminho correto (raiz)
+          BASE_PATH="."
+          TEST_MODULES=(automacao_basico automacao_intermediario automacao_avancado)
+          EXISTING_MODULES=()
+          
+          echo "📋 Verificando módulos na estrutura do repositório:"
+          for module in "${TEST_MODULES[@]}"; do
+            MODULE_TESTS_PATH="$BASE_PATH/$module/tests"
+            if [ -d "$MODULE_TESTS_PATH" ]; then
+              echo "✅ $module - Diretório de testes encontrado: $MODULE_TESTS_PATH"
+              
+              # Verificar se há arquivos .robot
+              ROBOT_FILES=$(find "$MODULE_TESTS_PATH" -name "*.robot" -type f | wc -l)
+              if [ $ROBOT_FILES -gt 0 ]; then
+                echo "   🤖 $ROBOT_FILES arquivos .robot encontrados"
+                EXISTING_MODULES+=("$MODULE_TESTS_PATH")
+              else
+                echo "   ⚠️ Nenhum arquivo .robot encontrado em $MODULE_TESTS_PATH"
+              fi
+            else
+              echo "❌ $module - Diretório de testes NÃO encontrado: $MODULE_TESTS_PATH"
+            fi
+            echo ""
+          done
+          
+          # Validação dos módulos encontrados
+          echo "📋 RESUMO DA DESCOBERTA DE MÓDULOS:"
+          echo "   🎯 Estrutura base utilizada: RAIZ DO REPOSITÓRIO"
+          echo "   📊 Total de módulos encontrados: ${#EXISTING_MODULES[@]}"
+          
+          if [ ${#EXISTING_MODULES[@]} -eq 0 ]; then
+            echo ""
+            echo "❌ ERRO: Nenhum módulo de teste válido encontrado!"
+            echo "🔍 Estrutura esperada:"
+            echo "   - automacao_basico/tests/*.robot"
+            echo "   - automacao_intermediario/tests/*.robot"
+            echo "   - automacao_avancado/tests/*.robot"
+            echo ""
+            echo "📁 Estrutura atual encontrada:"
+            find . -name "*.robot" -type f | head -10 || echo "Nenhum arquivo .robot encontrado"
+            exit 1
+          fi
+          
+          echo "📂 Executando testes dos módulos: ${EXISTING_MODULES[*]}"
+          echo ""
+          echo "📊 Resumo dos módulos que serão executados:"
+          TOTAL_TESTS=0
+          for module in "${EXISTING_MODULES[@]}"; do
+            TEST_COUNT=$(find "$module" -name "*.robot" -type f | wc -l)
+            TOTAL_TESTS=$((TOTAL_TESTS + TEST_COUNT))
+            echo "  - $module: $TEST_COUNT arquivos .robot"
+          done
+          echo "📋 Total de arquivos .robot a serem executados: $TOTAL_TESTS"
+          echo ""
           
           # Pré-configuração do WebDriver para evitar timeouts
           echo "🔧 Pré-configurando WebDriver para $BROWSER..."
@@ -229,7 +323,7 @@ jobs:
             --maxerrorlines 10 \
             --include "*" \
             $EXTRA_ARGS \
-            $MODULE_PATH
+            ${EXISTING_MODULES[*]}
           
           ROBOT_EXIT_CODE=$?
           echo "Robot Framework finalizado com código: $ROBOT_EXIT_CODE"
@@ -340,7 +434,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results-${{ matrix.browser }}-${{ matrix.module }}
+          name: test-results-${{ matrix.browser }}
           path: |
             tests-results-CI/${{ matrix.browser }}/output.xml
             tests-results-CI/${{ matrix.browser }}/report.html
@@ -383,8 +477,50 @@ jobs:
         run: |
           echo "🔍 Verificando artefatos baixados..."
           echo "📂 Estrutura do diretório all-results:"
-          ls -laR ./all-results/ || echo "Diretório all-results não encontrado"
+          ls -la ./all-results/ || echo "Diretório all-results não encontrado"
           echo ""
+          
+          echo "🌐 Verificando artefatos por navegador:"
+          for browser in Chrome Firefox Edge; do
+            BROWSER_DIR="./all-results/test-results-$browser"
+            if [ -d "$BROWSER_DIR" ]; then
+              echo "✅ Artefatos encontrados para $browser:"
+              echo "   📂 Conteúdo:"
+              ls -la "$BROWSER_DIR/" | head -10
+              
+              # Verificar arquivos essenciais
+              [ -f "$BROWSER_DIR/output.xml" ] && echo "   ✅ output.xml: $(stat -c%s "$BROWSER_DIR/output.xml" 2>/dev/null || echo "?") bytes"
+              [ -f "$BROWSER_DIR/report.html" ] && echo "   ✅ report.html: $(stat -c%s "$BROWSER_DIR/report.html" 2>/dev/null || echo "?") bytes"
+              [ -f "$BROWSER_DIR/log.html" ] && echo "   ✅ log.html: $(stat -c%s "$BROWSER_DIR/log.html" 2>/dev/null || echo "?") bytes"
+              
+              # Contar imagens
+              PNG_COUNT=$(find "$BROWSER_DIR" -name "*.png" -type f 2>/dev/null | wc -l)
+              echo "   🖼️ Screenshots: $PNG_COUNT arquivos"
+            else
+              echo "❌ Artefatos NÃO encontrados para $browser"
+            fi
+            echo ""
+          done
+          
+          echo "📋 Resumo de arquivos XML para consolidação:"
+          find ./all-results -name "output.xml" -exec echo "  ✅ {}" \; || echo "  ❌ Nenhum arquivo output.xml encontrado"
+          echo ""
+          
+          echo "🖼️ Verificando imagens (screenshots) baixadas:"
+          TOTAL_IMAGES=0
+          for browser in Chrome Firefox Edge; do
+            BROWSER_DIR="./all-results/test-results-$browser"
+            if [ -d "$BROWSER_DIR" ]; then
+              BROWSER_IMAGES=$(find "$BROWSER_DIR" -name "*.png" -type f 2>/dev/null | wc -l)
+              if [ $BROWSER_IMAGES -gt 0 ]; then
+                echo "  🖼️ $browser: $BROWSER_IMAGES imagens"
+                TOTAL_IMAGES=$((TOTAL_IMAGES + BROWSER_IMAGES))
+              else
+                echo "  ⚪ $browser: sem imagens"
+              fi
+            fi
+          done
+          echo "📊 Total de imagens encontradas: $TOTAL_IMAGES"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
