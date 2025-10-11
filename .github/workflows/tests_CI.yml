@@ -68,10 +68,9 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          # Instala todas as dependências necessárias para execução normal
+          # Instala todas as dependências básicas necessárias
           pip install robotframework robotframework-seleniumlibrary selenium webdriver-manager
-          # Instalar dependências do requirements.txt se existir
-          pip install -r requirements.txt || echo "requirements.txt não encontrado, usando dependências padrão"
+          echo "✅ Dependências básicas instaladas"
 
       - name: Create results directory
         run: |
@@ -102,6 +101,33 @@ jobs:
           sleep 3
           echo "Display virtual configurado: $DISPLAY"
 
+      - name: Discover test directory structure
+        run: |
+          echo "🔍 Investigando estrutura do projeto..."
+          echo "Conteúdo do diretório raiz:"
+          ls -la
+          echo ""
+          echo "Módulos de automação encontrados:"
+          ls -d automacao_*/ 2>/dev/null || echo "Nenhum módulo de automação encontrado"
+          echo ""
+          echo "Procurando arquivos .robot em cada módulo:"
+          for module in automacao_*/; do
+            if [ -d "$module" ]; then
+              echo "📂 Módulo: $module"
+              find "$module" -name "*.robot" -type f 2>/dev/null | head -5 || echo "  Nenhum arquivo .robot encontrado"
+            fi
+          done
+
+      - name: Install project dependencies
+        run: |
+          echo "📦 Instalando dependências dos módulos..."
+          for module in automacao_*/; do
+            if [ -f "$module/requirements.txt" ]; then
+              echo "Instalando dependências de $module"
+              pip install -r "$module/requirements.txt" || echo "Falha ao instalar dependências de $module"
+            fi
+          done
+
       - name: Run E2E Tests
         run: |
           echo "🚀 Executando testes para o navegador: ${{ matrix.browser }}"
@@ -113,17 +139,39 @@ jobs:
           
           # Configurar display para execução headless
           export DISPLAY=:99
-  
+          
+          # Descobrir todos os diretórios de teste dos módulos
+          TEST_MODULES=(automacao_basico automacao_intermediario automacao_avancado)
+          EXISTING_MODULES=()
+          
+          for module in "${TEST_MODULES[@]}"; do
+            if [ -d "$module/tests" ] && [ -n "$(find "$module/tests" -name "*.robot" -type f 2>/dev/null)" ]; then
+              EXISTING_MODULES+=("$module/tests")
+              echo "✅ Módulo encontrado: $module/tests"
+            else
+              echo "⚠️ Módulo não encontrado ou sem testes: $module"
+            fi
+          done
+          
+          if [ ${#EXISTING_MODULES[@]} -eq 0 ]; then
+            echo "❌ Nenhum módulo de teste encontrado!"
+            exit 1
+          fi
+          
+          echo "📂 Executando testes dos módulos: ${EXISTING_MODULES[*]}"
+          
+          # Executar Robot Framework com todos os módulos encontrados
           robot \
-            --name "Tests no navegador: ${{ matrix.browser }}" \
+            --name "Tests E2E - ${{ matrix.browser }}" \
             --outputdir ./tests-results-CI/${{ matrix.browser }} \
             --variable BROWSER:$BROWSER \
             --variable HEADLESS:true \
             --variable TIMEOUT:30 \
             --loglevel INFO \
-            --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
+            --reporttitle "Relatório E2E - ${{ matrix.browser }} (Todos os Módulos)" \
             --maxerrorlines 10 \
-            tests/
+            --include "*" \
+            "${EXISTING_MODULES[@]}"
         continue-on-error: true
 
       - name: Capture Screenshots on Failure
