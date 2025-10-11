@@ -144,24 +144,65 @@ jobs:
 
       - name: Discover test directory structure
         run: |
-          echo "🔍 Investigando estrutura do projeto..."
-          echo "Conteúdo do diretório raiz:"
+          echo "🔍 Verificando estrutura fixa do projeto"
+          echo "Pasta raiz fixa: testes_automatizados_web"
+          echo "=========================================="
+          echo ""
+          
+          echo "📁 Conteúdo do diretório raiz:"
           ls -la
           echo ""
-          echo "Procurando diretório testes_automatizados_web:"
-          ls -la testes_automatizados_web/ 2>/dev/null || echo "Diretório testes_automatizados_web não encontrado"
-          echo ""
-          echo "Módulos de automação encontrados:"
-          ls -d testes_automatizados_web/automacao_*/ 2>/dev/null || echo "Nenhum módulo de automação encontrado"
-          echo ""
-          echo "Procurando arquivos .robot em cada módulo:"
-          for module in testes_automatizados_web/automacao_*/; do
-            if [ -d "$module/tests" ]; then
-              echo "📂 Módulo: $module/tests"
-              find "$module/tests" -name "*.robot" -type f 2>/dev/null | head -10 || echo "  Nenhum arquivo .robot encontrado"
-              echo "  Total de arquivos .robot: $(find "$module/tests" -name "*.robot" -type f 2>/dev/null | wc -l)"
-            fi
-          done
+          
+          echo "🎯 Verificando pasta raiz fixa: testes_automatizados_web"
+          if [ -d "testes_automatizados_web" ]; then
+            echo "✅ Pasta raiz encontrada: testes_automatizados_web"
+            echo ""
+            echo "📂 Conteúdo da pasta testes_automatizados_web:"
+            ls -la testes_automatizados_web/
+            echo ""
+            
+            echo "🔍 Verificando módulos de automação:"
+            for module in automacao_basico automacao_intermediario automacao_avancado; do
+              MODULE_PATH="testes_automatizados_web/$module"
+              TESTS_PATH="$MODULE_PATH/tests"
+              
+              echo "  📂 Verificando: $module"
+              if [ -d "$MODULE_PATH" ]; then
+                echo "    ✅ Diretório do módulo existe: $MODULE_PATH"
+                if [ -d "$TESTS_PATH" ]; then
+                  echo "    ✅ Diretório tests existe: $TESTS_PATH"
+                  ROBOT_COUNT=$(find "$TESTS_PATH" -name "*.robot" -type f 2>/dev/null | wc -l)
+                  echo "    � Arquivos .robot encontrados: $ROBOT_COUNT"
+                  if [ $ROBOT_COUNT -gt 0 ]; then
+                    echo "    📁 Arquivos .robot:"
+                    find "$TESTS_PATH" -name "*.robot" -type f 2>/dev/null | head -5 | while read file; do
+                      echo "      - $(basename "$file")"
+                    done
+                  fi
+                else
+                  echo "    ❌ Diretório tests NÃO existe: $TESTS_PATH"
+                fi
+              else
+                echo "    ❌ Diretório do módulo NÃO existe: $MODULE_PATH"
+              fi
+              echo ""
+            done
+            
+            echo "📊 RESUMO FINAL:"
+            TOTAL_ROBOTS=$(find testes_automatizados_web -name "*.robot" -type f 2>/dev/null | wc -l)
+            echo "  Total de arquivos .robot encontrados: $TOTAL_ROBOTS"
+            
+          else
+            echo "❌ ERRO: Pasta raiz 'testes_automatizados_web' NÃO ENCONTRADA!"
+            echo "Estrutura esperada:"
+            echo "  testes_automatizados_web/"
+            echo "  ├── automacao_basico/tests/"
+            echo "  ├── automacao_intermediario/tests/"
+            echo "  └── automacao_avancado/tests/"
+            echo ""
+            echo "Estrutura atual encontrada:"
+            ls -la
+          fi
 
       - name: Run E2E Tests
         run: |
@@ -175,22 +216,84 @@ jobs:
           # Configurar display para execução headless
           export DISPLAY=:99
           
-          # Descobrir todos os diretórios de teste dos módulos
-          TEST_MODULES=(testes_automatizados_web/automacao_basico testes_automatizados_web/automacao_intermediario testes_automatizados_web/automacao_avancado)
+          # Usar estrutura FIXA com pasta raiz testes_automatizados_web
+          echo "🎯 Usando estrutura FIXA do projeto" 
+          echo "Pasta raiz: testes_automatizados_web (FIXO)"
+          
+          # Definir módulos com caminho FIXO - NÃO MUDA NUNCA
+          BASE_PATH="testes_automatizados_web"
+          TEST_MODULES=(automacao_basico automacao_intermediario automacao_avancado)
           EXISTING_MODULES=()
           
+          echo "📋 Verificando módulos na estrutura fixa:"
           for module in "${TEST_MODULES[@]}"; do
-            if [ -d "$module/tests" ] && [ -n "$(find "$module/tests" -name "*.robot" -type f 2>/dev/null)" ]; then
-              EXISTING_MODULES+=("$module/tests")
-              echo "✅ Módulo encontrado: $module/tests"
-              echo "   📊 Arquivos .robot encontrados: $(find "$module/tests" -name "*.robot" -type f 2>/dev/null | wc -l)"
-              echo "   📁 Arquivos encontrados:"
-              find "$module/tests" -name "*.robot" -type f 2>/dev/null | head -5
+            MODULE_TESTS_PATH="$BASE_PATH/$module/tests"
+            
+            echo "🔍 Verificando: $MODULE_TESTS_PATH"
+            if [ -d "$MODULE_TESTS_PATH" ] && [ -n "$(find "$MODULE_TESTS_PATH" -name "*.robot" -type f 2>/dev/null)" ]; then
+              EXISTING_MODULES+=("$MODULE_TESTS_PATH")
+              ROBOT_COUNT=$(find "$MODULE_TESTS_PATH" -name "*.robot" -type f 2>/dev/null | wc -l)
+              echo "  ✅ Módulo ENCONTRADO: $module"
+              echo "     📊 Arquivos .robot: $ROBOT_COUNT"
+              echo "     📁 Arquivos encontrados:"
+              find "$MODULE_TESTS_PATH" -name "*.robot" -type f 2>/dev/null | head -3 | while read file; do
+                echo "       - $(basename "$file")"
+              done
             else
-              echo "⚠️ Módulo não encontrado ou sem testes: $module"
-              echo "   📂 Verificando se o diretório existe: [ -d \"$module/tests\" ] = $([ -d "$module/tests" ] && echo "true" || echo "false")"
+              echo "  ❌ Módulo NÃO ENCONTRADO: $module"
+              echo "     📂 Diretório existe? $([ -d "$MODULE_TESTS_PATH" ] && echo "SIM" || echo "NÃO")"
+              if [ -d "$BASE_PATH/$module" ]; then
+                echo "     📁 Conteúdo do módulo $module:"
+                ls -la "$BASE_PATH/$module/" 2>/dev/null || echo "       Não foi possível listar conteúdo"
+              fi
             fi
+            echo ""
           done
+          
+          # Validação dos módulos encontrados
+          echo "📋 RESUMO DA DESCOBERTA DE MÓDULOS:"
+          echo "   🎯 Estrutura base utilizada: $BASE_PATH"
+          echo "   📊 Total de módulos encontrados: ${#EXISTING_MODULES[@]}"
+          
+          if [ ${#EXISTING_MODULES[@]} -eq 0 ]; then
+            echo ""
+            echo "❌ ERRO CRÍTICO: Nenhum módulo de teste foi encontrado!"
+            echo "🔍 Estrutura esperada não localizada. Listando conteúdo do repositório:"
+            echo ""
+            echo "📂 Conteúdo da raiz:"
+            ls -la . | head -10
+            echo ""
+            if [ -d "$BASE_PATH" ]; then
+              echo "📂 Conteúdo de $BASE_PATH:"
+              ls -la "$BASE_PATH/"
+            else
+              echo "❌ Diretório $BASE_PATH não existe!"
+            fi
+            echo ""
+            echo "🔍 Procurando por arquivos .robot em qualquer lugar:"
+            find . -name "*.robot" -type f 2>/dev/null | head -10
+            exit 1
+          fi
+          
+          echo ""
+          echo "🔍 Tentativa alternativa: Buscando por arquivos .robot em qualquer estrutura..."
+          while IFS= read -r -d '' robot_file; do
+              dir_path=$(dirname "$robot_file")
+              if [[ ! " ${EXISTING_MODULES[@]} " =~ " ${dir_path} " ]]; then
+                EXISTING_MODULES+=("$dir_path")
+                echo "✅ Diretório alternativo encontrado: $dir_path"
+                echo "   📊 Arquivos .robot: $(find "$dir_path" -name "*.robot" -type f 2>/dev/null | wc -l)"
+              fi
+            done < <(find . -name "*.robot" -type f -print0 2>/dev/null)
+            
+            # Remover duplicatas e mostrar resultado
+            if [ ${#EXISTING_MODULES[@]} -gt 0 ]; then
+              echo "📂 Diretórios únicos com testes encontrados:"
+              printf '%s\n' "${EXISTING_MODULES[@]}" | sort -u
+              # Atualizar array com valores únicos
+              readarray -t EXISTING_MODULES < <(printf '%s\n' "${EXISTING_MODULES[@]}" | sort -u)
+            fi
+          fi
           
           if [ ${#EXISTING_MODULES[@]} -eq 0 ]; then
             echo "❌ Nenhum módulo de teste encontrado!"
