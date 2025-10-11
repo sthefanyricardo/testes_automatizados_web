@@ -117,13 +117,15 @@ Os relatórios de execução dos testes estão disponíveis publicamente:
 ---
 
 ## ⚙️ Detalhes dos Projetos
-### 1️⃣ Nível Básico: Gerenciador de Atividades - [TodoMVC](https://todomvc.com/)
+### 1️⃣ Nível Básico: Gerenciador de Atividades - TodoMVC
+
+| **Sistema** | **Objetivo** | **Link** |
+|:--:|:--|:--|
+| [TodoMVC](https://todomvc.com/) | Introdução aos fundamentos do Robot Framework com testes de interface web | 📂 **[Acessar Projeto Básico](./automacao_basico)** |
 
 <details>
 <summary><b>📖 Clique para expandir detalhes</b></summary>
   
-**Objetivo:** Introdução aos fundamentos do Robot Framework com testes de interface web.
-
 #### 📋 Cenários Implementados:
 - ✅ Adição de múltiplas atividades
 - ✅ Marcação de atividades como concluídas
@@ -143,17 +145,17 @@ Os relatórios de execução dos testes estão disponíveis publicamente:
 
 </details>
 
-📂 **[Acessar Projeto Básico](./automacao_basico)**
-
 ---
 
-### 2️⃣ Nível Intermediário: Sistema de Vendas - [SauceDemo](https://www.saucedemo.com/)
+### 2️⃣ Nível Intermediário: Sistema de Vendas - SauceDemo
+
+| **Sistema** | **Objetivo** | **Link** |
+|:--|:--|:--|
+| [SauceDemo](https://www.saucedemo.com/) | Implementar padrão POM completo com dados dinâmicos e múltiplos cenários de usuário | 📂 **[Acessar Projeto Intermediário](./automacao_intermediario)** |
 
 <details>
 <summary><b>📖 Clique para expandir detalhes</b></summary>
   
-**Objetivo:** Implementar padrão POM completo com dados dinâmicos e múltiplos cenários de usuário.
-
 #### 📋 Cenários Implementados:
 - ✅ Login com diferentes perfis de usuário (`standard_user`, `performance_glitch_user`)
 - ✅ Manipulação do carrinho (adição e remoção de produtos)
@@ -173,17 +175,17 @@ Os relatórios de execução dos testes estão disponíveis publicamente:
 
 </details>
 
-📂 **[Acessar Projeto Intermediário](./automacao_intermediario)**
-
 ---
 
-### 3️⃣ Nível Avançado: Sistema Bancário - [TestFire](https://demo.testfire.net/login.jsp)
+### 3️⃣ Nível Avançado: Sistema Bancário - TestFire
+
+| **Sistema** | **Objetivo** | **Link** |
+|:--|:--|:--|
+| [TestFire](https://demo.testfire.net/login.jsp) | Automação de cenários complexos com validações de dados e transações financeiras | 📂 **[Acessar Projeto Avançado](./automacao_avancado)** |
 
 <details>
 <summary><b>📖 Clique para expandir detalhes</b></summary>
   
-**Objetivo:** Automação de cenários complexos com validações de dados e transações financeiras.
-
 #### 📋 Cenários Implementados:
 - ✅ Login no sistema bancário
 - ✅ Transferência entre contas com validação de dados
@@ -202,8 +204,6 @@ Os relatórios de execução dos testes estão disponíveis publicamente:
 - [x] Documentação Clara
 
 </details>
-
-📂 **[Acessar Projeto Avançado](./automacao_avancado)**
 
 ---
 
