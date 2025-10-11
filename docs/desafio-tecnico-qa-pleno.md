@@ -1,9 +1,5 @@
 # Avaliação de Conhecimentos - Analista QA Pleno
 
-**Candidata:** Sthefany Albuquerque Ricardo
-
----
-
 ## Seção 1: Conceitos Básicos
 
 ### Questão 1: Testes de Regressão
@@ -448,7 +444,7 @@ de atualização ou inconsistências entre os usuários.
 
 ## Seção 3: Testes Automatizados 
 
-1.  Automação Básico: Escreva um caso de teste automatizado utilizando 
+### 1.  Automação Básico: Escreva um caso de teste automatizado utilizando 
 
 Robot Framework para garantir o funcionamento de um gerenciador de 
 
@@ -482,9 +478,11 @@ iii.  Cenário 3:
 
 3.  Limpar as atividades Concluídas 
 
-# Link GitHub:  automacao_basico 
+#### 📂 [Acessar Projeto Básico](./automacao_basico)
 
-2.  Automação Intermediário: Escreva um script de automação usando Robot 
+---
+
+### 2.  Automação Intermediário: Escreva um script de automação usando Robot 
 
 Framework para garantir o funcionamento de um sistema de vendas, 
 
@@ -524,9 +522,11 @@ iii.  Cenário 3:
 
 2.  Acessar carrinho e tentar finalizar o pedido. 
 
-# Link GitHub:  automacao_intermediario 
+#### 📂 [Acessar Projeto Intermediário](./automacao_intermediario)
 
-3.  Automação Avançado: Escreva um script de automação usando Robot 
+--- 
+
+### 3.  Automação Avançado: Escreva um script de automação usando Robot 
 
 Framework para garantir o funcionamento de um sistema bancário, 
 
@@ -550,12 +550,7 @@ mesma
 
 5.  Deve ter atualizado o Saldo da Conta 
 
-# Link GitHub:  automacao_avançado
-**Relatórios:**
-- Estruturar com logs detalhados
-- Incluir evidências (screenshots, vídeos)
-- Facilitar rastreamento de falhas
-- Simplificar análise de resultados
+#### 📂 [Acessar Projeto Avançado](./automacao_avancado)
 
 ---
 
