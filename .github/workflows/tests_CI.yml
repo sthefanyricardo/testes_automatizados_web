@@ -122,7 +122,6 @@ jobs:
             --variable TIMEOUT:30 \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
-            --reportbackground '#f5f5f5' \
             --maxerrorlines 10 \
             tests/
         continue-on-error: true
@@ -238,7 +237,6 @@ jobs:
               --report index.html \
               --log log.html \
               --reporttitle "🤖 Relatório Consolidado E2E - $(date '+%d/%m/%Y %H:%M')" \
-              --reportbackground '#ffffff' \
               --name "Robot Framework CI - ${{ github.ref_name }}" \
               --metadata "Execução:$(date '+%d/%m/%Y %H:%M')" \
               --metadata "Branch:${{ github.ref_name }}" \
