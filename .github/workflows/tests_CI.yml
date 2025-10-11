@@ -272,7 +272,7 @@ jobs:
   publish-results:
     needs: tests
     runs-on: ubuntu-latest
-    if: always() # Sempre executa, mesmo se os testes falharem
+    if: always()
     permissions:
       contents: read
       pages: write
@@ -303,251 +303,24 @@ jobs:
 
       - name: Create consolidated report with rebot
         run: |
-          echo "📋 Gerando relatório consolidado..."
-          
-          # Verificar se existem arquivos XML
-          if find ./all-results -name "output.xml" -type f | grep -q .; then
-            echo "🎯 Arquivos de resultado encontrados!"
-            find ./all-results -name "output.xml" -type f -exec ls -la {} \;
-            
-            # Contar arquivos XML disponíveis
-            XML_COUNT=$(find ./all-results -name "output.xml" -type f | wc -l)
-            echo "📊 Total de arquivos XML encontrados: $XML_COUNT"
-            
-            # Verificar se temos pelo menos um arquivo XML
-            if [ "$XML_COUNT" -eq 0 ]; then
-              echo "❌ Nenhum arquivo XML válido encontrado"
-              mkdir -p ./gh-pages
-              echo "<html><body><h1>❌ Nenhum resultado encontrado</h1><p>Verifique os artefatos individuais.</p></body></html>" > ./gh-pages/index.html
-              exit 0
-            fi
-            
-            # Gerar relatório consolidado usando approach mais robusto
-            set +e # Não falhar se rebot der erro
-            
-            # Comando rebot correto para consolidação cross-browser
-            echo "🔄 Executando comando rebot com sintaxe correta..."
-            REPORT_DATE=$(date '+%d/%m/%Y %H:%M')
-            COMMIT_SHORT=$(echo '${{ github.sha }}' | cut -c1-7)
-            
-            # Criar array com todos os arquivos XML encontrados
-            mapfile -t XML_FILES < <(find ./all-results -name "output.xml" -type f)
-            
-            echo "🔄 Executando rebot com ${#XML_FILES[@]} arquivo(s) XML..."
-            
-            rebot \
-              --outputdir ./gh-pages \
-              --report index.html \
-              --log log.html \
-              --output output.xml \
-              --merge \
-              --reporttitle "🤖 Relatórios E2E Consolidados - ${REPORT_DATE}" \
-              --logtitle "🔍 Logs Detalhados E2E - ${REPORT_DATE}" \
-              --metadata "Execução:${REPORT_DATE}" \
-              --metadata "Branch:${{ github.ref_name }}" \
-              --metadata "Executor:${{ github.actor }}" \
-              --metadata "Navegadores:Chrome_Firefox_Edge" \
-              --metadata "Commit:${COMMIT_SHORT}" \
-              --metadata "Workflow:${{ github.run_id }}" \
-              "${XML_FILES[@]}"
-            
-            REBOT_EXIT_CODE=$?
-            set -e # Reativar exit on error após rebot
-            
-            if [ $REBOT_EXIT_CODE -eq 0 ]; then
-              echo "🎉 SUCESSO! Relatório consolidado gerado com rebot!"
-              echo "📊 Arquivos Robot Framework nativos gerados:"
-              ls -la ./gh-pages/
-              
-              # Verificar se os arquivos principais foram criados
-              if [ -f "./gh-pages/index.html" ] && [ -f "./gh-pages/log.html" ]; then
-                echo "✅ Relatórios consolidados prontos: index.html (report) + log.html (logs)"
-              else
-                echo "⚠️ Alguns arquivos de relatório podem estar ausentes"
-              fi
-            else
-              echo "❌ Erro ao consolidar relatórios com rebot (código: $REBOT_EXIT_CODE)"
-              echo "� Tentando criar página de erro simplificada..."
-              
-              # Criar página informativa com links para cada navegador
-              mkdir -p ./gh-pages
-              
-              # Criar página simples e funcional
-              CURRENT_DATE=$(date "+%d/%m/%Y às %H:%M")
-              cat > ./gh-pages/index.html << 'HTML_END'
-          <!DOCTYPE html>
-          <html lang="pt-BR">
-          <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>🤖 Relatórios E2E - Robot Framework</title>
-              <style>
-                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 40px; background: #f6f8fa; }
-                  .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-                  h1 { color: #24292e; border-bottom: 2px solid #e1e4e8; padding-bottom: 10px; }
-                  .browser-card { background: #f6f8fa; padding: 20px; margin: 15px 0; border-radius: 6px; border-left: 4px solid #0366d6; }
-                  .download-btn { display: inline-block; padding: 8px 16px; background: #0366d6; color: white; text-decoration: none; border-radius: 4px; margin: 5px; }
-                  .download-btn:hover { background: #0256cc; }
-                  .info { background: #e6f3ff; padding: 15px; border-radius: 6px; margin: 20px 0; }
-              </style>
-          </head>
-          <body>
-              <div class="container">
-                  <h1>🤖 Relatórios de Teste E2E</h1>
-                  <div class="info">
-                      <strong>📊 Status:</strong> Testes executados com sucesso em múltiplos navegadores<br>
-                      <strong>📅 Data:</strong> \${CURRENT_DATE}<br>
-                      <strong>🌿 Branch:</strong> BRANCH_PLACEHOLDER<br>
-                      <strong>👤 Executado por:</strong> ACTOR_PLACEHOLDER
-                  </div>
-                  
-                  <h2>📦 Relatórios por Navegador</h2>
-                  <p>Os relatórios individuais estão disponíveis nos artefatos da execução:</p>
-                  
-                  <div class="browser-card">
-                      <h3>🌐 Chrome</h3>
-                      <p>Relatórios de testes executados no Google Chrome</p>
-                  </div>
-                  
-                  <div class="browser-card">
-                      <h3>🦊 Firefox</h3>
-                      <p>Relatórios de testes executados no Mozilla Firefox</p>
-                  </div>
-                  
-                  <div class="browser-card">
-                      <h3>⚡ Edge</h3>
-                      <p>Relatórios de testes executados no Microsoft Edge</p>
-                  </div>
-                  
-                  <h2>🔗 Links Úteis</h2>
-                  <a href="https://github.com/REPO_PLACEHOLDER/actions/runs/RUN_ID_PLACEHOLDER" class="download-btn">📥 Baixar Todos os Relatórios</a>
-                  <a href="https://github.com/REPO_PLACEHOLDER" class="download-btn">� Ver Repositório</a>
-                  
-                  <div class="info">
-                      <strong>💡 Dica:</strong> Baixe os artefatos individuais para acessar os relatórios HTML detalhados de cada navegador.
-                  </div>
-              </div>
-          </body>
-          </html>
-          HTML_END
-              
-              # Substituir placeholders com valores reais
-              sed -i "s/\${CURRENT_DATE}/${CURRENT_DATE}/g" ./gh-pages/index.html
-              sed -i "s/BRANCH_PLACEHOLDER/${{ github.ref_name }}/g" ./gh-pages/index.html
-              sed -i "s/ACTOR_PLACEHOLDER/${{ github.actor }}/g" ./gh-pages/index.html
-              sed -i "s/REPO_PLACEHOLDER/${{ github.repository }}/g" ./gh-pages/index.html
-              sed -i "s/RUN_ID_PLACEHOLDER/${{ github.run_id }}/g" ./gh-pages/index.html
-              
-              echo "⚠️ Página de erro criada para casos onde rebot falha"
-            fi
-          else
-            echo "❌ Nenhum arquivo XML encontrado para consolidação"
-            mkdir -p ./gh-pages
-            echo "<html><body><h1>❌ Nenhum resultado encontrado</h1><p>Verifique os artefatos individuais.</p></body></html>" > ./gh-pages/index.html
-          fi
+          python -m robot.rebot \
+            --outputdir ./gh-pages \
+            --report index.html \
+            --reporttitle "Relatório Consolidado E2E" \
+            --name "Robot Framework CI" \
+            ./all-results/test-results-*/output.xml
+        continue-on-error: true
 
-      - name: Add navigation and styling to Robot Framework reports
+      - name: Copy browser assets to pages directory
         run: |
-          # Verificar se temos relatórios consolidados do Robot Framework
-          if [ -f "./gh-pages/index.html" ] && [ -f "./gh-pages/log.html" ]; then
-            echo "🎯 Relatórios Robot Framework detectados, adicionando navegação..."
-            
-            # Criar arquivo CSS para melhorar aparência dos relatórios
-            cat > ./gh-pages/custom.css << 'EOF'
-          /* Melhorias para Relatórios Robot Framework */
-          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-          .header-info { background: #0366d6; color: white; padding: 15px; margin-bottom: 20px; border-radius: 6px; }
-          .nav-reports { background: #f6f8fa; padding: 15px; margin-bottom: 20px; border-radius: 6px; text-align: center; }
-          .nav-reports a { 
-            display: inline-block; 
-            margin: 5px 10px; 
-            padding: 8px 16px; 
-            background: #0366d6; 
-            color: white; 
-            text-decoration: none; 
-            border-radius: 4px; 
-            font-weight: bold;
-          }
-          .nav-reports a:hover { background: #0256cc; }
-          EOF
-            
-            # Adicionar header de navegação ao início do report
-            if grep -q "<body" ./gh-pages/index.html; then
-              CURRENT_DATE=$(date '+%d/%m/%Y às %H:%M')
-              
-              # Criar conteúdo temporário para inserção
-              cat > /tmp/nav_header.html << 'NAV_EOF'
-          <div class="header-info">
-            <h2>🤖 Relatórios E2E Consolidados</h2>
-            <p><strong>Branch:</strong> BRANCH_PLACEHOLDER | <strong>Executado por:</strong> ACTOR_PLACEHOLDER | <strong>Data:</strong> DATE_PLACEHOLDER</p>
-          </div>
-          <div class="nav-reports">
-            <a href="index.html">📊 Relatório Principal</a>
-            <a href="log.html">🔍 Logs Detalhados</a>
-            <a href="https://github.com/REPO_PLACEHOLDER/actions/runs/RUN_ID_PLACEHOLDER">📥 Artefatos</a>
-          </div>
-          NAV_EOF
-              
-              # Substituir placeholders
-              sed -i "s/BRANCH_PLACEHOLDER/${{ github.ref_name }}/g" /tmp/nav_header.html
-              sed -i "s/ACTOR_PLACEHOLDER/${{ github.actor }}/g" /tmp/nav_header.html
-              sed -i "s/DATE_PLACEHOLDER/${CURRENT_DATE}/g" /tmp/nav_header.html
-              sed -i "s/REPO_PLACEHOLDER/${{ github.repository }}/g" /tmp/nav_header.html
-              sed -i "s/RUN_ID_PLACEHOLDER/${{ github.run_id }}/g" /tmp/nav_header.html
-              
-              # Inserir após tag body
-              sed -i '/<body/r /tmp/nav_header.html' ./gh-pages/index.html
-              
-              # Adicionar CSS ao head
-              sed -i 's/<head>/<head><link rel="stylesheet" href="custom.css">/' ./gh-pages/index.html
-            fi
-            
-            # Adicionar navegação também ao log.html se existir
-            if [ -f "./gh-pages/log.html" ] && grep -q "<body" ./gh-pages/log.html; then
-              cat > /tmp/log_nav.html << 'LOG_NAV_EOF'
-          <div class="nav-reports">
-            <a href="index.html">📊 Voltar ao Relatório</a>
-            <a href="log.html">🔍 Logs Detalhados</a>
-          </div>
-          LOG_NAV_EOF
-              
-              sed -i '/<body/r /tmp/log_nav.html' ./gh-pages/log.html
-              sed -i 's/<head>/<head><link rel="stylesheet" href="custom.css">/' ./gh-pages/log.html
-            fi
-            
-            # Limpar arquivos temporários
-            rm -f /tmp/nav_header.html /tmp/log_nav.html
-            
-            echo "🎨 Navegação adicionada aos relatórios Robot Framework!"
-          else
-            echo "ℹ️ Página HTML personalizada detectada (não é relatório Robot Framework)"
-          fi
+          cp -r ./all-results/test-results-*/browser ./gh-pages/
+        continue-on-error: true
 
-      - name: Verify gh-pages directory
-        run: |
-          echo "🔍 Verificando diretório gh-pages antes do upload..."
-          if [ ! -d "./gh-pages" ]; then
-            echo "⚠️ Diretório gh-pages não existe, criando..."
-            mkdir -p ./gh-pages
-            echo "<h1>Relatórios E2E</h1><p>Diretório criado automaticamente</p>" > ./gh-pages/index.html
-          fi
-          
-          if [ ! -f "./gh-pages/index.html" ]; then
-            echo "⚠️ Arquivo index.html não existe, criando..."
-            echo "<h1>Relatórios E2E</h1><p>Arquivo criado automaticamente</p>" > ./gh-pages/index.html
-          fi
-          
-          echo "📁 Conteúdo final do diretório gh-pages:"
-          ls -la ./gh-pages/
-          echo "📄 Preview do arquivo index.html:"
-          head -n 5 ./gh-pages/index.html || echo "Erro ao ler arquivo"
-          
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./gh-pages
 
-   # Job para deploy no GitHub Pages
   deploy:
     environment:
       name: github-pages
@@ -564,3 +337,14 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        continue-on-error: true
+        
+      - name: Display Pages URL
+        if: always()
+        run: |
+          if [ "${{ steps.deployment.outputs.page_url }}" != "" ]; then
+            echo "🌐 GitHub Pages URL: ${{ steps.deployment.outputs.page_url }}"
+            echo "📊 Relatórios disponíveis em: ${{ steps.deployment.outputs.page_url }}"
+          else
+            echo "⚠️ GitHub Pages não configurado - Relatórios disponíveis nos artefatos"
+          fi
