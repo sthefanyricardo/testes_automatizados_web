@@ -10,7 +10,7 @@
 
 ## 📖 Sobre o Projeto
 Este repositório reúne três projetos de automação de testes web desenvolvidos com Robot Framework, organizados por nível de complexidade: básico, intermediário e avançado.
-
+  
 Cada nível foi planejado para aplicar boas práticas de automação e demonstrar evolução técnica, incluindo:
 
 - [x] **Page Object Model (POM)** - Padrão de projeto para melhor organização e manutenibilidade  
@@ -28,6 +28,9 @@ Cada nível foi planejado para aplicar boas práticas de automação e demonstra
 
 ## 💡 Motivação e Contexto
 
+<details>
+<summary><b>📖 Clique para expandir detalhes</b></summary>
+  
 Este projeto nasceu a partir de um **desafio técnico para uma vaga de Analista de QA Pleno**, no qual fui avaliada em:
 - ✔️ Conceitos fundamentais de testes de software
 - ✔️ Elaboração de cenários de teste (BDD/Gherkin)
@@ -37,10 +40,15 @@ A partir desse case inicial, **aperfeiçoei a solução** e a transformei em um 
 
 > 💬 Esse projeto não representa somente uma entrega técnica, mas também minha jornada de aprendizado e evolução como profissional de QA/QE.
 
+</details>
+
 ---
 
 ## ✨ Boas Práticas Aplicadas
 
+<details>
+<summary><b>📖 Clique para expandir detalhes</b></summary>
+  
 1. 📐 Page Object Model (POM)
 Separação clara entre a lógica de teste e a interação com elementos da página, facilitando **manutenção e escalabilidade**.
 
@@ -59,9 +67,11 @@ Nomes descritivos para testes, keywords e variáveis, tornando o código **auto-
 6. 📚 Documentação
 Cada keyword e teste possui documentação clara sobre seu **propósito e funcionamento**.
 
----
-
-## 📈  Competências Desenvolvidas
+</details>
+  
+<details>
+<summary><b>🧠 Competências Desenvolvidas</b></summary>
+  
 - [x] Automação de testes web com **Robot Framework**
 - [x] Implementação do padrão de projeto (POM)**
 - [x] Escrita de código **limpo, reutilizável e manutenível**
@@ -72,11 +82,16 @@ Cada keyword e teste possui documentação clara sobre seu **propósito e funcio
 - [x] Disponibilização de relatórios via **GitHub Pages**
 - [x] Uso do **rebot** para manipular execuções em múltiplos navegadores
 - [x] **Documentação técnica** completa
-  
+
+</details>
+
 ---
 
 ## 🔄 CI/CD e Relatórios
 
+<details>
+<summary><b>📖 Clique para expandir detalhes</b></summary>
+  
 Este projeto implementa **integração contínua** usando **GitHub Actions** para garantir a qualidade do código:
 
 ### 🎯 Pipeline de CI/CD
@@ -86,19 +101,26 @@ Este projeto implementa **integração contínua** usando **GitHub Actions** par
 - ✅ **Geração automática de relatórios**
 - ✅ **Publicação no GitHub Pages**
 
+</details>
+
 ### 📊 Visualizar Relatórios Online
 
+<details>
+<summary><b>📖 Clique para expandir detalhes</b></summary>
+  
 Os relatórios de execução dos testes estão disponíveis publicamente:
 
 🔗 **[Acessar Relatórios no GitHub Pages](https://sthefanyricardo.github.io/robot-actions/)**
 
+</details>
+
 ---
 
-## Detalhes dos Projetos
+## ⚙️ Detalhes dos Projetos
 ### 1️⃣ Nível Básico: Gerenciador de Atividades - [TodoMVC](https://todomvc.com/)
 
 <details>
-<summary>Clique aqui para expandir as informações</summary>
+<summary><b>📖 Clique para expandir detalhes</b></summary>
   
 **Objetivo:** Introdução aos fundamentos do Robot Framework com testes de interface web.
 
@@ -128,7 +150,7 @@ Os relatórios de execução dos testes estão disponíveis publicamente:
 ### 2️⃣ Nível Intermediário: Sistema de Vendas - [SauceDemo](https://www.saucedemo.com/)
 
 <details>
-<summary>Clique aqui para expandir as informações</summary>
+<summary><b>📖 Clique para expandir detalhes</b></summary>
   
 **Objetivo:** Implementar padrão POM completo com dados dinâmicos e múltiplos cenários de usuário.
 
@@ -158,7 +180,7 @@ Os relatórios de execução dos testes estão disponíveis publicamente:
 ### 3️⃣ Nível Avançado: Sistema Bancário - [TestFire](https://demo.testfire.net/login.jsp)
 
 <details>
-<summary>Clique aqui para expandir as informações</summary>
+<summary><b>📖 Clique para expandir detalhes</b></summary>
   
 **Objetivo:** Automação de cenários complexos com validações de dados e transações financeiras.
 
@@ -189,25 +211,27 @@ Os relatórios de execução dos testes estão disponíveis publicamente:
 Este projeto foi desenvolvido com as seguintes ferramentas e tecnologias. Certifique-se de que sua máquina atende aos requisitos abaixo para executar os testes.
 
 <details>
-<summary>Clique aqui para expandir as informações</summary>
+<summary>📦 Clique para expandir os requisitos</summary>
   
-- **Linguagem e Frameworks:**
+- 🧩 **Linguagem e Frameworks:**
   - **Python:** Linguagem de programação base para o Robot Framework e suas bibliotecas. [Download Versão 3.13.2 ou superior](https://www.python.org/downloads/)
   - **Robot Framework:** Framework de automação de testes com sintaxe baseada em palavras-chave [Download Versão 7.3.2 ou superior](https://robotframework.org/?tab=1#getting-started)
   - **SeleniumLibrary:** Biblioteca essencial para a automação de testes web. [Documentação](https://robotframework.org/?tab=libraries#resources)
   - **Faker Library:** Biblioteca utilizada para a geração de massa de dados dinâmicos. [Documentação](https://marketsquare.github.io/robotframework-faker/)
 
-- **Ferramentas de Desenvolvimento e Controle de Versão:**
+- 💻 **Ferramentas de Desenvolvimento e Controle de Versão:**
   - **Visual Studio Code:** IDE utilizada para o desenvolvimento dos testes. [Download VS Code](https://code.visualstudio.com/download)
   - **Git** Utilizado para o controle de versão. [Download Git](https://git-scm.com/downloads)
   - **GitHub:** Utilizado para o compartilhamento de código. [GitHub](https://github.com)
 
-- **Configuração do Ambiente de Execução:**
+- 🌐 **Configuração do Ambiente de Execução:**
   - **Navegador:** Um navegador instalado (como Chrome, Microsoft Edge ou Firefox).
   - **WebDriver:** O WebDriver compatível com a versão do seu navegador deve ser baixado e adicionado ao PATH do sistema.
     - [ChromeDriver para Google Chrome](https://googlechromelabs.github.io/chrome-for-testing/)
     - [EdgeDriver para o Microsoft Edge](https://developer.microsoft.com/pt-br/microsoft-edge/tools/webdriver)
     - [GeckoDriver para o Firefox](https://github.com/mozilla/geckodriver/releases)
+
+> Documentação e links de instalação estão detalhados dentro de cada projeto.
 
 </details>
 
