@@ -375,7 +375,7 @@ jobs:
 
   # Job para notificações
   notify:
-    needs: [tests, publish-results]
+    needs: [tests, publish-results, deploy]
     runs-on: ubuntu-latest
     if: always()
     
@@ -403,15 +403,19 @@ jobs:
           echo "STATUS_COLOR=$COLOR" >> $GITHUB_ENV
           
           # Criar resumo
-          echo "## $STATUS - Testes E2E" >> $GITHUB_STEP_SUMMARY
-          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Executado por:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Data:** $(date '+%d/%m/%Y às %H:%M')" >> $GITHUB_STEP_SUMMARY
+          echo "## $STATUS - Pipeline E2E Completa 🎯" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
-          echo "📊 **Relatórios:** Disponíveis nos artefatos da execução" >> $GITHUB_STEP_SUMMARY
-          echo "� **Artefatos:** [Ver todos os resultados](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "### 🌐 Navegadores Testados:" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Chrome | ✅ Firefox | ✅ Edge" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Detalhes:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Executado por:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Data:** $(date '+%d/%m/%Y às %H:%M')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### � Acessar Resultados:" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **Artefatos:** [Download Relatórios](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
 
   # Job para deploy no GitHub Pages
   deploy:
@@ -432,26 +436,48 @@ jobs:
         uses: actions/deploy-pages@v4
         continue-on-error: true
         
+      - name: Display Pages URL
+        if: always()
+        run: |
+          if [ "${{ steps.deployment.outputs.page_url }}" != "" ]; then
+            echo "🌐 GitHub Pages URL: ${{ steps.deployment.outputs.page_url }}"
+            echo "📊 Relatórios disponíveis em: ${{ steps.deployment.outputs.page_url }}"
+            echo "### 🎉 Deploy Realizado com Sucesso!" >> $GITHUB_STEP_SUMMARY
+            echo "🌐 **URL dos Relatórios:** [${{ steps.deployment.outputs.page_url }}](${{ steps.deployment.outputs.page_url }})" >> $GITHUB_STEP_SUMMARY
+            echo "📊 **Acesse seus relatórios E2E consolidados clicando no link acima**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ GitHub Pages não configurado - Relatórios disponíveis nos artefatos"
+            echo "### 📦 Relatórios nos Artefatos" >> $GITHUB_STEP_SUMMARY
+            echo "🔗 **Baixar Relatórios:** [Ver Artefatos](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          fi
+        
       - name: Comment PR with results
         if: github.event_name == 'pull_request'
         continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
-            const reportUrl = '${{ steps.deployment.outputs.page_url }}' || 'Não disponível';
+            const reportUrl = '${{ steps.deployment.outputs.page_url }}';
             const artifactsUrl = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
-            const comment = `## 🤖 Resultados dos Testes E2E
             
-            Os testes foram executados! 
+            let reportSection = '';
+            if (reportUrl && reportUrl !== '' && reportUrl !== 'undefined') {
+              reportSection = `🌐 **Relatórios Online:** [🔗 Ver Relatórios E2E](${reportUrl})
+            📊 **Relatórios Consolidados:** Disponíveis online no GitHub Pages`;
+            } else {
+              reportSection = `📦 **Relatórios:** Disponíveis nos artefatos para download`;
+            }
             
-            📊 **Relatórios:** ${reportUrl !== 'Não disponível' ? `[Ver Relatório](${reportUrl})` : 'Disponíveis nos artefatos'}
-            🔗 **Todos os resultados:** [Ver Artefatos](${artifactsUrl})
+            const comment = `## 🎉 Testes E2E Executados com Sucesso!
             
-            **Detalhes da execução:**
-            - **Branch:** ${{ github.ref_name }}
-            - **Commit:** ${{ github.sha }}
-            - **Executado em:** ${new Date().toLocaleString('pt-BR')}
-            `;
+            ${reportSection}
+            🔗 **Todos os artefatos:** [Ver Downloads](${artifactsUrl})
+            
+            ### 📋 Detalhes da Execução:
+            - **Branch:** \`${{ github.ref_name }}\`
+            - **Commit:** \`${{ github.sha }}\`
+            - **Executado por:** ${{ github.actor }}
+            - **Data:** ${new Date().toLocaleString('pt-BR')}
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
