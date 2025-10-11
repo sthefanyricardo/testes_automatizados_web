@@ -253,22 +253,40 @@ jobs:
           retention-days: 30
           if-no-files-found: warn
       
-      - name: Setup Node.js for Robot Framework Reporter ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        if: always()
-        with:
-          node-version: ${{ env.NODE_VERSION }} # Versão LTS atual
-
-      - name: Robot Framework Reporter
-        uses: joonvena/robotframework-reporter-action@v2.5
+      - name: Generate Test Summary
         if: always() && hashFiles('tests-results-CI/${{ matrix.browser }}/output.xml') != ''
-        continue-on-error: true
-        with:
-          gh_access_token: ${{ secrets.GITHUB_TOKEN }}
-          report_path: tests-results-CI/${{ matrix.browser }}
-          summary: true
-          only_summary: false
-          show_passed_tests: true
+        run: |
+          echo "## 📊 Resultados E2E - ${{ matrix.browser }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Extrair estatísticas básicas do output.xml
+          if [ -f "./tests-results-CI/${{ matrix.browser }}/output.xml" ]; then
+            TOTAL_TESTS=$(grep -o '<test ' "./tests-results-CI/${{ matrix.browser }}/output.xml" | wc -l)
+            PASSED_TESTS=$(grep -o 'status="PASS"' "./tests-results-CI/${{ matrix.browser }}/output.xml" | wc -l)
+            FAILED_TESTS=$(grep -o 'status="FAIL"' "./tests-results-CI/${{ matrix.browser }}/output.xml" | wc -l)
+            
+            echo "### 🎯 Estatísticas:" >> $GITHUB_STEP_SUMMARY
+            echo "- **Total de Testes:** $TOTAL_TESTS" >> $GITHUB_STEP_SUMMARY
+            echo "- **✅ Passou:** $PASSED_TESTS" >> $GITHUB_STEP_SUMMARY
+            echo "- **❌ Falhou:** $FAILED_TESTS" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            if [ $FAILED_TESTS -gt 0 ]; then
+              echo "### ⚠️ Testes com Falha:" >> $GITHUB_STEP_SUMMARY
+              # Extrair nomes dos testes que falharam
+              grep -B2 'status="FAIL"' "./tests-results-CI/${{ matrix.browser }}/output.xml" | grep 'name=' | head -5 | while read line; do
+                TEST_NAME=$(echo "$line" | sed 's/.*name="\([^"]*\)".*/\1/')
+                echo "- ❌ $TEST_NAME" >> $GITHUB_STEP_SUMMARY
+              done 2>/dev/null || echo "- Detalhes nos artefatos" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            echo "### 📁 Relatórios Disponíveis:" >> $GITHUB_STEP_SUMMARY
+            echo "- 📊 [Baixar Relatórios](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+            echo "- 🌐 Relatórios HTML serão publicados no GitHub Pages" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Arquivo output.xml não encontrado" >> $GITHUB_STEP_SUMMARY
+          fi
 
   # Job para consolidar resultados e publicar no GitHub Pages
   publish-results:
@@ -414,8 +432,12 @@ jobs:
           echo "- **Executado por:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Data:** $(date '+%d/%m/%Y às %H:%M')" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### � Acessar Resultados:" >> $GITHUB_STEP_SUMMARY
-          echo "📦 **Artefatos:** [Download Relatórios](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Acessar Resultados:" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **Artefatos:** [📥 Download Relatórios](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "🌐 **GitHub Pages:** Relatórios consolidados online (URL disponível no job Deploy)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "💡 **Dica:** Os relatórios consolidados no GitHub Pages mostram todos os navegadores juntos!" >> $GITHUB_STEP_SUMMARY
 
   # Job para deploy no GitHub Pages
   deploy:
