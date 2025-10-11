@@ -86,7 +86,7 @@ jobs:
           INSTALLED_MODULES=()
           
           # Instalar requirements.txt de cada módulo (evitando duplicatas)
-          for module in automacao_basico automacao_intermediario automacao_avancado; do
+          for module in testes_automatizados_web/automacao_basico testes_automatizados_web/automacao_intermediario testes_automatizados_web/automacao_avancado; do
             if [ -f "$module/requirements.txt" ]; then
               echo "🔧 Instalando dependências de $module..."
               pip install -r "$module/requirements.txt"
@@ -96,6 +96,13 @@ jobs:
               echo "⚠️ requirements.txt não encontrado em $module"
             fi
           done
+          
+          # Verificar se existe um requirements.txt global
+          if [ -f "testes_automatizados_web/requirements.txt" ]; then
+            echo "🔧 Instalando dependências globais..."
+            pip install -r "testes_automatizados_web/requirements.txt"
+            echo "✅ Dependências globais instaladas"
+          fi
           
           echo "📋 Módulos com dependências instaladas: ${INSTALLED_MODULES[*]}"
           
@@ -141,14 +148,18 @@ jobs:
           echo "Conteúdo do diretório raiz:"
           ls -la
           echo ""
+          echo "Procurando diretório testes_automatizados_web:"
+          ls -la testes_automatizados_web/ 2>/dev/null || echo "Diretório testes_automatizados_web não encontrado"
+          echo ""
           echo "Módulos de automação encontrados:"
-          ls -d automacao_*/ 2>/dev/null || echo "Nenhum módulo de automação encontrado"
+          ls -d testes_automatizados_web/automacao_*/ 2>/dev/null || echo "Nenhum módulo de automação encontrado"
           echo ""
           echo "Procurando arquivos .robot em cada módulo:"
-          for module in automacao_*/; do
-            if [ -d "$module" ]; then
-              echo "📂 Módulo: $module"
-              find "$module" -name "*.robot" -type f 2>/dev/null | head -5 || echo "  Nenhum arquivo .robot encontrado"
+          for module in testes_automatizados_web/automacao_*/; do
+            if [ -d "$module/tests" ]; then
+              echo "📂 Módulo: $module/tests"
+              find "$module/tests" -name "*.robot" -type f 2>/dev/null | head -10 || echo "  Nenhum arquivo .robot encontrado"
+              echo "  Total de arquivos .robot: $(find "$module/tests" -name "*.robot" -type f 2>/dev/null | wc -l)"
             fi
           done
 
@@ -165,15 +176,19 @@ jobs:
           export DISPLAY=:99
           
           # Descobrir todos os diretórios de teste dos módulos
-          TEST_MODULES=(automacao_basico automacao_intermediario automacao_avancado)
+          TEST_MODULES=(testes_automatizados_web/automacao_basico testes_automatizados_web/automacao_intermediario testes_automatizados_web/automacao_avancado)
           EXISTING_MODULES=()
           
           for module in "${TEST_MODULES[@]}"; do
             if [ -d "$module/tests" ] && [ -n "$(find "$module/tests" -name "*.robot" -type f 2>/dev/null)" ]; then
               EXISTING_MODULES+=("$module/tests")
               echo "✅ Módulo encontrado: $module/tests"
+              echo "   📊 Arquivos .robot encontrados: $(find "$module/tests" -name "*.robot" -type f 2>/dev/null | wc -l)"
+              echo "   📁 Arquivos encontrados:"
+              find "$module/tests" -name "*.robot" -type f 2>/dev/null | head -5
             else
               echo "⚠️ Módulo não encontrado ou sem testes: $module"
+              echo "   📂 Verificando se o diretório existe: [ -d \"$module/tests\" ] = $([ -d "$module/tests" ] && echo "true" || echo "false")"
             fi
           done
           
@@ -183,18 +198,28 @@ jobs:
           fi
           
           echo "📂 Executando testes dos módulos: ${EXISTING_MODULES[*]}"
+          echo ""
+          echo "📊 Resumo dos módulos que serão executados:"
+          TOTAL_TESTS=0
+          for module in "${EXISTING_MODULES[@]}"; do
+            TEST_COUNT=$(find "$module" -name "*.robot" -type f 2>/dev/null | wc -l)
+            TOTAL_TESTS=$((TOTAL_TESTS + TEST_COUNT))
+            echo "  - $module: $TEST_COUNT arquivos .robot"
+          done
+          echo "📋 Total de arquivos .robot a serem executados: $TOTAL_TESTS"
+          echo ""
           
           # Executar Robot Framework com todos os módulos encontrados
           set +e # Não falhar se robot retornar código de erro
           robot \
-            --name "Tests E2E - Robot Framework CI" \
+            --name "Tests E2E - Robot Framework CI (${{ matrix.browser }})" \
             --outputdir ./tests-results-CI/${{ matrix.browser }} \
             --variable BROWSER:$BROWSER \
             --variable HEADLESS:true \
             --variable TIMEOUT:30 \
             --variable WINDOW_SIZE:1920x1080 \
             --loglevel INFO \
-            --reporttitle "Relatório E2E - ${{ matrix.browser }} (Todos os Módulos)" \
+            --reporttitle "Relatório E2E - ${{ matrix.browser }} (Módulos: automacao_basico, automacao_intermediario, automacao_avancado)" \
             --maxerrorlines 10 \
             --include "*" \
             "${EXISTING_MODULES[@]}"
@@ -238,12 +263,41 @@ jobs:
       - name: Check Test Results
         if: always()
         run: |
-          echo "Verificando resultados dos testes..."
-          if [ -f "./tests-results-CI/${{ matrix.browser }}/output.xml" ]; then
-            echo "Arquivo output.xml encontrado!"
-            ls -la "./tests-results-CI/${{ matrix.browser }}/"
+          echo "🔍 Verificando resultados dos testes para ${{ matrix.browser }}..."
+          RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
+          
+          if [ -f "$RESULTS_DIR/output.xml" ]; then
+            echo "✅ Arquivo output.xml encontrado!"
+            echo "📁 Conteúdo do diretório de resultados:"
+            ls -la "$RESULTS_DIR/"
+            echo ""
+            
+            # Extrair estatísticas básicas do output.xml usando grep
+            echo "📊 Estatísticas dos testes executados:"
+            if grep -q "stat.*All Tests" "$RESULTS_DIR/output.xml" 2>/dev/null; then
+              PASS_COUNT=$(grep "stat.*All Tests" "$RESULTS_DIR/output.xml" | sed -n 's/.*pass="\([0-9]*\)".*/\1/p' | head -1)
+              FAIL_COUNT=$(grep "stat.*All Tests" "$RESULTS_DIR/output.xml" | sed -n 's/.*fail="\([0-9]*\)".*/\1/p' | head -1)
+              SKIP_COUNT=$(grep "stat.*All Tests" "$RESULTS_DIR/output.xml" | sed -n 's/.*skip="\([0-9]*\)".*/\1/p' | head -1)
+              TOTAL_TESTS=$((${PASS_COUNT:-0} + ${FAIL_COUNT:-0} + ${SKIP_COUNT:-0}))
+              
+              echo "  📋 Total de testes executados: $TOTAL_TESTS"
+              echo "  🎉 Sucessos: ${PASS_COUNT:-0}"
+              echo "  ❌ Falhas: ${FAIL_COUNT:-0}"
+              echo "  ⏭️  Ignorados: ${SKIP_COUNT:-0}"
+            else
+              echo "  ⚠️ Não foi possível extrair estatísticas do output.xml"
+            fi
+            echo ""
+            
+            # Listar arquivos de saída gerados
+            echo "� Arquivos de relatório gerados:"
+            [ -f "$RESULTS_DIR/report.html" ] && echo "  ✅ report.html ($(stat -c%s "$RESULTS_DIR/report.html" 2>/dev/null || echo "?") bytes)"
+            [ -f "$RESULTS_DIR/log.html" ] && echo "  ✅ log.html ($(stat -c%s "$RESULTS_DIR/log.html" 2>/dev/null || echo "?") bytes)"
+            [ -f "$RESULTS_DIR/output.xml" ] && echo "  ✅ output.xml ($(stat -c%s "$RESULTS_DIR/output.xml" 2>/dev/null || echo "?") bytes)"
           else
-            echo "Arquivo output.xml não encontrado."
+            echo "❌ Arquivo output.xml não encontrado!"
+            echo "📁 Conteúdo disponível no diretório:"
+            ls -la "$RESULTS_DIR/" 2>/dev/null || echo "Diretório de resultados não existe"
           fi
 
       - name: Upload Test Results (Essential Files Only)
@@ -290,14 +344,39 @@ jobs:
       - name: Debug - Check downloaded artifacts
         run: |
           echo "🔍 Verificando artefatos baixados..."
+          echo "📂 Estrutura do diretório all-results:"
           ls -la ./all-results/ || echo "Diretório all-results não encontrado"
           echo ""
-          echo "📂 Estrutura completa dos artefatos:"
-          find ./all-results -type f -name "*.xml" -exec echo "XML encontrado: {}" \; || echo "Nenhum arquivo XML encontrado"
-          find ./all-results -type f -name "*.html" -exec echo "HTML encontrado: {}" \; || echo "Nenhum arquivo HTML encontrado"
-          echo ""
-          echo "📊 Detalhes dos arquivos output.xml:"
-          find ./all-results -name "output.xml" -exec ls -la {} \; || echo "Nenhum arquivo output.xml encontrado"
+          
+          echo "🌐 Verificando artefatos por navegador:"
+          for browser in Chrome Firefox Edge; do
+            if [ -d "./all-results/test-results-$browser" ]; then
+              echo "✅ $browser: Artefatos encontrados"
+              ls -la "./all-results/test-results-$browser/" 2>/dev/null
+              
+              # Verificar se há output.xml para este navegador
+              if [ -f "./all-results/test-results-$browser/output.xml" ]; then
+                FILE_SIZE=$(stat -c%s "./all-results/test-results-$browser/output.xml" 2>/dev/null || echo "?")
+                echo "  📄 output.xml: $FILE_SIZE bytes"
+                
+                # Extrair estatística básica do navegador
+                if grep -q "stat.*All Tests" "./all-results/test-results-$browser/output.xml" 2>/dev/null; then
+                  PASS_COUNT=$(grep "stat.*All Tests" "./all-results/test-results-$browser/output.xml" | sed -n 's/.*pass="\([0-9]*\)".*/\1/p' | head -1)
+                  FAIL_COUNT=$(grep "stat.*All Tests" "./all-results/test-results-$browser/output.xml" | sed -n 's/.*fail="\([0-9]*\)".*/\1/p' | head -1)
+                  TOTAL_TESTS=$((${PASS_COUNT:-0} + ${FAIL_COUNT:-0}))
+                  echo "  📊 $browser: $TOTAL_TESTS testes ($PASS_COUNT sucessos, $FAIL_COUNT falhas)"
+                fi
+              else
+                echo "  ❌ output.xml não encontrado para $browser"
+              fi
+            else
+              echo "❌ $browser: Artefatos não encontrados"
+            fi
+            echo ""
+          done
+          
+          echo "� Resumo de arquivos XML para consolidação:"
+          find ./all-results -name "output.xml" -exec echo "  ✅ {}" \; || echo "  ❌ Nenhum arquivo output.xml encontrado"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
