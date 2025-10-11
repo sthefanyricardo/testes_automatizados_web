@@ -2,7 +2,7 @@
 
 ## Seção 1: Conceitos Básicos
 
-### Questão 1: Testes de Regressão
+**Questão 1: Testes de Regressão**
 
 **Qual é o objetivo principal dos testes de regressão?**
 
@@ -13,7 +13,7 @@
 
 ---
 
-### Questão 2: Objetivo Principal do Teste de Software
+Questão 2: Objetivo Principal do Teste de Software
 
 **Qual é o objetivo principal do teste de software?**
 
@@ -24,7 +24,7 @@
 
 ---
 
-### Questão 3: Tipos de Testes Manuais em ERP
+Questão 3: Tipos de Testes Manuais em ERP
 
 **Explique três tipos diferentes de testes manuais que podem ser realizados em um software ERP como o Microvix.**
 
@@ -55,7 +55,7 @@ Em um sistema como o Microvix, onde agilidade e eficiência são essenciais, ess
 
 ---
 
-### Questão 4: Diferença entre Testes de Regressão e Aceitação
+Questão 4: Diferença entre Testes de Regressão e Aceitação
 
 **Qual é a principal diferença entre testes de regressão e testes de aceitação?**
 
@@ -66,7 +66,7 @@ Em um sistema como o Microvix, onde agilidade e eficiência são essenciais, ess
 
 ---
 
-### Questão 5: Teste Exploratório
+Questão 5: Teste Exploratório
 
 **Descreva o conceito de teste exploratório. Quais são os benefícios desse tipo de teste e em que situações ele pode ser mais eficaz do que abordagens de teste mais tradicionais? Como você equilibra o uso de testes exploratórios com testes planejados em um projeto de desenvolvimento de software?**
 
@@ -96,7 +96,7 @@ Esse tipo de teste é mais eficaz quando:
 
 ---
 
-### Questão 6: Cenário Scrum - Sprint Review
+Questão 6: Cenário Scrum - Sprint Review
 
 **Cenário:** Em uma equipe de desenvolvimento ágil que usa a metodologia Scrum. Durante a Sprint Review, o PO apresenta uma nova funcionalidade para a equipe, mas os testadores identificam alguns problemas de qualidade significativos que não foram detectados durante o desenvolvimento. Como membro da equipe de teste, como você abordaria essa situação?
 
@@ -137,7 +137,7 @@ Reforçando a importância da **qualidade contínua** dentro do time.
 
 ---
 
-### Questão 7: Boas Práticas em Automação de Testes
+Questão 7: Boas Práticas em Automação de Testes
 
 **Descreva três boas práticas para escrever scripts de automação de teste que sejam fáceis de manter e escaláveis.**
 
@@ -172,7 +172,7 @@ Avaliação de conhecimentos vaga Analista QA Pleno
 
 ---
 
-# Seção 2: Montagem de Cenários e Resolução de Problemas Práticos 
+## Seção 2: Montagem de Cenários e Resolução de Problemas Práticos 
 
 1.  Com base na história abaixo, crie cenários de teste para verificar a funcionalidade de 
 
