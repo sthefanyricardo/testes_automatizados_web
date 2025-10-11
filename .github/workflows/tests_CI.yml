@@ -85,7 +85,7 @@ jobs:
           echo "📦 Instalando dependências específicas dos módulos..."
           INSTALLED_MODULES=()
           
-          # Instalar requirements.txt de cada módulo (evitando duplicatas)
+          # ✅ CORRIGIDO: Instalar requirements.txt de cada módulo na RAIZ do repositório
           for module in automacao_basico automacao_intermediario automacao_avancado; do
             if [ -f "$module/requirements.txt" ]; then
               echo "🔧 Instalando dependências de $module..."
@@ -97,7 +97,7 @@ jobs:
             fi
           done
           
-          # Verificar se existe um requirements.txt global
+          # Verificar se existe um requirements.txt global na raiz
           if [ -f "requirements.txt" ]; then
             echo "🔧 Instalando dependências globais..."
             pip install -r "requirements.txt"
@@ -144,17 +144,13 @@ jobs:
 
       - name: Discover test directory structure
         run: |
-          echo "🔍 Verificando estrutura fixa do projeto"
-          echo "Pasta raiz fixa: . (raiz do repositório)"
+          echo "🔍 Verificando estrutura do projeto"
+          echo "Pasta raiz: RAIZ DO REPOSITÓRIO (corrigido)"
           echo "=========================================="
           echo ""
           
           echo "📁 Conteúdo do diretório raiz:"
           ls -la
-          echo ""
-          
-          echo "🎯 Verificando estrutura fixa na raiz do repositório"
-          echo "✅ Usando raiz do repositório como base"
           echo ""
           
           echo "🔍 Verificando módulos de automação:"
@@ -168,10 +164,10 @@ jobs:
               if [ -d "$TESTS_PATH" ]; then
                 echo "    ✅ Diretório tests existe: $TESTS_PATH"
                 ROBOT_COUNT=$(find "$TESTS_PATH" -name "*.robot" -type f 2>/dev/null | wc -l)
-                echo "    📊 Arquivos .robot encontrados: $ROBOT_COUNT"
+                echo "    🤖 Arquivos .robot encontrados: $ROBOT_COUNT"
                 if [ $ROBOT_COUNT -gt 0 ]; then
-                  echo "    📁 Primeiros arquivos .robot:"
-                  find "$TESTS_PATH" -name "*.robot" -type f 2>/dev/null | head -3 | while read file; do
+                  echo "    📁 Arquivos .robot:"
+                  find "$TESTS_PATH" -name "*.robot" -type f 2>/dev/null | head -5 | while read file; do
                     echo "      - $(basename "$file")"
                   done
                 fi
@@ -185,7 +181,7 @@ jobs:
           done
           
           echo "📊 RESUMO FINAL:"
-          TOTAL_ROBOTS=$(find . -name "*.robot" -type f 2>/dev/null | wc -l)
+          TOTAL_ROBOTS=$(find . -name "*.robot" -type f -path "*/tests/*" 2>/dev/null | wc -l)
           echo "  Total de arquivos .robot encontrados: $TOTAL_ROBOTS"
 
       - name: Run E2E Tests
@@ -200,18 +196,18 @@ jobs:
           # Configurar display para execução headless
           export DISPLAY=:99
           
-          # Usar estrutura FIXA do projeto (raiz do repositório)
-          echo "🎯 Usando estrutura FIXA do projeto" 
-          echo "Pasta raiz: . (raiz do repositório - FIXO)"
+          # ✅ CORRIGIDO: Usar estrutura REAL do repositório (raiz, não testes_automatizados_web)
+          echo "🎯 Usando estrutura REAL do projeto" 
+          echo "Pasta raiz: RAIZ DO REPOSITÓRIO (não testes_automatizados_web)"
           
-          # Definir módulos com caminho FIXO - NÃO MUDA NUNCA
+          # ✅ CORRIGIDO: Definir módulos com caminho correto (raiz)
           BASE_PATH="."
           TEST_MODULES=(automacao_basico automacao_intermediario automacao_avancado)
           EXISTING_MODULES=()
           
-          echo "📋 Verificando módulos na estrutura fixa:"
+          echo "📋 Verificando módulos na estrutura do repositório:"
           for module in "${TEST_MODULES[@]}"; do
-            MODULE_TESTS_PATH="$BASE_PATH/$module/tests"
+            MODULE_TESTS_PATH="$module/tests"
             
             echo "🔍 Verificando: $MODULE_TESTS_PATH"
             if [ -d "$MODULE_TESTS_PATH" ] && [ -n "$(find "$MODULE_TESTS_PATH" -name "*.robot" -type f 2>/dev/null)" ]; then
@@ -226,9 +222,9 @@ jobs:
             else
               echo "  ❌ Módulo NÃO ENCONTRADO: $module"
               echo "     📂 Diretório existe? $([ -d "$MODULE_TESTS_PATH" ] && echo "SIM" || echo "NÃO")"
-              if [ -d "$BASE_PATH/$module" ]; then
+              if [ -d "$module" ]; then
                 echo "     📁 Conteúdo do módulo $module:"
-                ls -la "$BASE_PATH/$module/" 2>/dev/null || echo "       Não foi possível listar conteúdo"
+                ls -la "$module/" 2>/dev/null || echo "       Não foi possível listar conteúdo"
               fi
             fi
             echo ""
@@ -236,7 +232,7 @@ jobs:
           
           # Validação dos módulos encontrados
           echo "📋 RESUMO DA DESCOBERTA DE MÓDULOS:"
-          echo "   🎯 Estrutura base utilizada: $BASE_PATH"
+          echo "   🎯 Estrutura base utilizada: RAIZ DO REPOSITÓRIO"
           echo "   📊 Total de módulos encontrados: ${#EXISTING_MODULES[@]}"
           
           if [ ${#EXISTING_MODULES[@]} -eq 0 ]; then
@@ -247,40 +243,8 @@ jobs:
             echo "📂 Conteúdo da raiz:"
             ls -la . | head -10
             echo ""
-            if [ -d "$BASE_PATH" ]; then
-              echo "📂 Conteúdo de $BASE_PATH:"
-              ls -la "$BASE_PATH/"
-            else
-              echo "❌ Diretório $BASE_PATH não existe!"
-            fi
-            echo ""
             echo "🔍 Procurando por arquivos .robot em qualquer lugar:"
             find . -name "*.robot" -type f 2>/dev/null | head -10
-            exit 1
-          fi
-          
-          echo ""
-          echo "🔍 Tentativa alternativa: Buscando por arquivos .robot em qualquer estrutura..."
-          while IFS= read -r -d '' robot_file; do
-              dir_path=$(dirname "$robot_file")
-              if [[ ! " ${EXISTING_MODULES[@]} " =~ " ${dir_path} " ]]; then
-                EXISTING_MODULES+=("$dir_path")
-                echo "✅ Diretório alternativo encontrado: $dir_path"
-                echo "   📊 Arquivos .robot: $(find "$dir_path" -name "*.robot" -type f 2>/dev/null | wc -l)"
-              fi
-            done < <(find . -name "*.robot" -type f -print0 2>/dev/null)
-            
-            # Remover duplicatas e mostrar resultado
-            if [ ${#EXISTING_MODULES[@]} -gt 0 ]; then
-              echo "📂 Diretórios únicos com testes encontrados:"
-              printf '%s\n' "${EXISTING_MODULES[@]}" | sort -u
-              # Atualizar array com valores únicos
-              readarray -t EXISTING_MODULES < <(printf '%s\n' "${EXISTING_MODULES[@]}" | sort -u)
-            fi
-          fi
-          
-          if [ ${#EXISTING_MODULES[@]} -eq 0 ]; then
-            echo "❌ Nenhum módulo de teste encontrado!"
             exit 1
           fi
           
@@ -356,7 +320,7 @@ jobs:
           fi
           
           # Listar evidências coletadas
-          echo "� Resumo da coleta de evidências:"
+          echo "📊 Resumo da coleta de evidências:"
           echo "  📁 Total de imagens coletadas: $IMAGES_FOUND"
           if [ $IMAGES_FOUND -gt 0 ]; then
             echo "  🖼️ Screenshots disponíveis:"
@@ -406,7 +370,7 @@ jobs:
             echo ""
             
             # Listar arquivos de saída gerados
-            echo "� Arquivos de relatório gerados:"
+            echo "📄 Arquivos de relatório gerados:"
             [ -f "$RESULTS_DIR/report.html" ] && echo "  ✅ report.html ($(stat -c%s "$RESULTS_DIR/report.html" 2>/dev/null || echo "?") bytes)"
             [ -f "$RESULTS_DIR/log.html" ] && echo "  ✅ log.html ($(stat -c%s "$RESULTS_DIR/log.html" 2>/dev/null || echo "?") bytes)"
             [ -f "$RESULTS_DIR/output.xml" ] && echo "  ✅ output.xml ($(stat -c%s "$RESULTS_DIR/output.xml" 2>/dev/null || echo "?") bytes)"
@@ -557,12 +521,15 @@ jobs:
             # Executar rebot com tratamento de falhas
             set +e
             echo "🔧 Executando rebot com os arquivos encontrados..."
+            
+            # ✅ SINTAXE CORRETA: SEM --merge, arquivos passados diretamente
             python -m robot.rebot \
               --outputdir ./gh-pages \
+              --output output.xml \
+              --log log.html \
               --report index.html \
               --reporttitle "Relatório Consolidado E2E - $(date '+%d/%m/%Y %H:%M')" \
-              --name "Robot Framework CI" \
-              --merge \
+              --name "Robot Framework CI - Run #${{ github.run_number }}" \
               $OUTPUT_FILES
             
             REBOT_EXIT_CODE=$?
