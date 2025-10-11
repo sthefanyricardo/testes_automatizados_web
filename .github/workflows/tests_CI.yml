@@ -36,6 +36,7 @@ on:
 env:
   PYTHON_VERSION: "3.12"
   CACHE_VERSION: "v1" # Incrementar para invalidar cache se necessário
+  NODE_VERSION: "22"
 
 jobs:
   tests:
@@ -213,6 +214,13 @@ jobs:
           name: test-results-${{ matrix.browser }}
           path: tests-results-CI/${{ matrix.browser }}/
           retention-days: 30
+      
+      - name: Setup Node.js for Robot Framework Reporter ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        if: always()
+        with:
+          node-version: ${{ env.NODE_VERSION }} # Versão LTS atual
+          cache: 'npm'
 
       - name: Robot Framework Reporter
         uses: joonvena/robotframework-reporter-action@v2.5
@@ -220,26 +228,6 @@ jobs:
         with:
           gh_access_token: ${{ secrets.GITHUB_TOKEN }}
           report_path: tests-results-CI/${{ matrix.browser }}
-
-      - name: Generate Test Summary
-        if: always()
-        run: |
-          echo "📊 Gerando resumo dos testes para ${{ matrix.browser }}..."
-          if [ -f "./tests-results-CI/${{ matrix.browser }}/output.xml" ]; then
-            # Extrair estatísticas básicas do XML
-            TOTAL=$(grep -o 'stat="[0-9]*"' ./tests-results-CI/${{ matrix.browser }}/output.xml | head -1 | grep -o '[0-9]*' || echo "0")
-            PASSED=$(grep -o 'pass="[0-9]*"' ./tests-results-CI/${{ matrix.browser }}/output.xml | head -1 | grep -o '[0-9]*' || echo "0")
-            FAILED=$(grep -o 'fail="[0-9]*"' ./tests-results-CI/${{ matrix.browser }}/output.xml | head -1 | grep -o '[0-9]*' || echo "0")
-            
-            echo "## 🧪 Resultados dos Testes - ${{ matrix.browser }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **Total:** $TOTAL testes" >> $GITHUB_STEP_SUMMARY
-            echo "- **✅ Passou:** $PASSED testes" >> $GITHUB_STEP_SUMMARY
-            echo "- **❌ Falhou:** $FAILED testes" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "## ❌ Erro nos Testes - ${{ matrix.browser }}" >> $GITHUB_STEP_SUMMARY
-            echo "Não foi possível gerar o arquivo de resultados." >> $GITHUB_STEP_SUMMARY
-          fi
 
   # Job para consolidar resultados e publicar no GitHub Pages
   publish-results:
