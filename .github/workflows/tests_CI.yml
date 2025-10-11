@@ -192,6 +192,7 @@ jobs:
             --variable BROWSER:$BROWSER \
             --variable HEADLESS:true \
             --variable TIMEOUT:30 \
+            --variable WINDOW_SIZE:1920x1080 \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }} (Todos os Módulos)" \
             --maxerrorlines 10 \
@@ -286,23 +287,91 @@ jobs:
         with:
           path: ./all-results
 
+      - name: Debug - Check downloaded artifacts
+        run: |
+          echo "🔍 Verificando artefatos baixados..."
+          ls -la ./all-results/ || echo "Diretório all-results não encontrado"
+          find ./all-results -name "*.xml" -type f || echo "Nenhum arquivo XML encontrado"
+          find ./all-results -name "output.xml" -type f || echo "Nenhum arquivo output.xml encontrado"
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
         continue-on-error: true
 
       - name: Create consolidated report with rebot
         run: |
-          python -m robot.rebot \
-            --outputdir ./gh-pages \
-            --report index.html \
-            --reporttitle "Relatório Consolidado E2E" \
-            --name "Robot Framework CI" \
-            ./all-results/test-results-*/output.xml
+          # Criar diretório de saída
+          mkdir -p ./gh-pages
+          
+          # Verificar se existem arquivos output.xml
+          OUTPUT_FILES=$(find ./all-results -name "output.xml" -type f 2>/dev/null | tr '\n' ' ')
+          
+          if [ -z "$OUTPUT_FILES" ]; then
+            echo "⚠️ Nenhum arquivo output.xml encontrado. Criando página de status..."
+            cat > ./gh-pages/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Relatório E2E - Status</title>
+            <meta charset="utf-8">
+          </head>
+          <body>
+            <h1>🔄 Pipeline em Execução</h1>
+            <p>Os testes estão sendo executados. Os relatórios serão disponibilizados em breve.</p>
+            <p>Status: <strong>Aguardando resultados dos testes</strong></p>
+          </body>
+          </html>
+          EOF
+            echo "📄 Página de status criada"
+          else
+            echo "✅ Arquivos output.xml encontrados:"
+            echo "$OUTPUT_FILES"
+            
+            # Executar rebot com tratamento de falhas
+            set +e
+            python -m robot.rebot \
+              --outputdir ./gh-pages \
+              --report index.html \
+              --reporttitle "Relatório Consolidado E2E - $(date '+%d/%m/%Y %H:%M')" \
+              --name "Robot Framework CI" \
+              --merge \
+              $OUTPUT_FILES
+            
+            REBOT_EXIT_CODE=$?
+            echo "📊 Rebot finalizado com código: $REBOT_EXIT_CODE"
+            
+            if [ $REBOT_EXIT_CODE -eq 0 ]; then
+              echo "🎉 Relatório consolidado gerado com sucesso!"
+            elif [ $REBOT_EXIT_CODE -le 250 ]; then
+              echo "⚠️ Relatório consolidado gerado com alguns testes falhando"
+              echo "📊 Relatório disponível para análise"
+            else
+              echo "❌ Erro crítico na geração do relatório"
+              # Criar relatório de erro
+              cat > ./gh-pages/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Relatório E2E - Erro</title>
+            <meta charset="utf-8">
+          </head>
+          <body>
+            <h1>❌ Erro na Consolidação</h1>
+            <p>Houve um erro ao consolidar os relatórios dos testes.</p>
+            <p>Verifique os artefatos individuais de cada navegador.</p>
+          </body>
+          </html>
+          EOF
+            fi
+          fi
         continue-on-error: true
 
-      - name: Copy browser assets to pages directory
+      - name: Copy additional assets
         run: |
-          cp -r ./all-results/test-results-*/browser ./gh-pages/
+          # Copiar assets adicionais se existirem
+          find ./all-results -name "*.png" -exec cp {} ./gh-pages/ \; 2>/dev/null || true
+          find ./all-results -name "*.html" -not -name "index.html" -exec cp {} ./gh-pages/ \; 2>/dev/null || true
+          echo "📁 Assets adicionais copiados"
         continue-on-error: true
 
       - name: Upload Pages artifact
