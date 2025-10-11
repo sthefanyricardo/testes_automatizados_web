@@ -33,6 +33,14 @@ on:
           - Firefox
           - Edge
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  pull-requests: write
+  issues: write
+  actions: read
+
 env:
   PYTHON_VERSION: "3.12"
   CACHE_VERSION: "v1" # Incrementar para invalidar cache se necessário
@@ -176,6 +184,7 @@ jobs:
           echo "📂 Executando testes dos módulos: ${EXISTING_MODULES[*]}"
           
           # Executar Robot Framework com todos os módulos encontrados
+          set +e # Não falhar se robot retornar código de erro
           robot \
             --name "Tests E2E - ${{ matrix.browser }}" \
             --outputdir ./tests-results-CI/${{ matrix.browser }} \
@@ -187,7 +196,19 @@ jobs:
             --maxerrorlines 10 \
             --include "*" \
             "${EXISTING_MODULES[@]}"
-        continue-on-error: true
+          
+          ROBOT_EXIT_CODE=$?
+          echo "Robot Framework finalizado com código: $ROBOT_EXIT_CODE"
+          
+          if [ $ROBOT_EXIT_CODE -eq 0 ]; then
+            echo "✅ Todos os testes passaram!"
+          elif [ $ROBOT_EXIT_CODE -le 250 ]; then
+            echo "⚠️ Alguns testes falharam, mas a execução continuará"
+          else
+            echo "❌ Erro crítico na execução dos testes"
+          fi
+          
+          set -e # Reativar failfast para próximos comandos
 
       - name: Capture Screenshots on Failure
         if: failure()
@@ -228,20 +249,24 @@ jobs:
           name: test-results-${{ matrix.browser }}
           path: tests-results-CI/${{ matrix.browser }}/
           retention-days: 30
+          if-no-files-found: warn
       
       - name: Setup Node.js for Robot Framework Reporter ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         if: always()
         with:
           node-version: ${{ env.NODE_VERSION }} # Versão LTS atual
-          cache: 'npm'
 
       - name: Robot Framework Reporter
         uses: joonvena/robotframework-reporter-action@v2.5
-        if: always()
+        if: always() && hashFiles('tests-results-CI/${{ matrix.browser }}/output.xml') != ''
+        continue-on-error: true
         with:
           gh_access_token: ${{ secrets.GITHUB_TOKEN }}
           report_path: tests-results-CI/${{ matrix.browser }}
+          summary: true
+          only_summary: false
+          show_passed_tests: true
 
   # Job para consolidar resultados e publicar no GitHub Pages
   publish-results:
@@ -274,6 +299,7 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
+        continue-on-error: true
 
       - name: Create consolidated report with rebot
         run: |
@@ -322,8 +348,18 @@ jobs:
             echo "🎨 Estilo customizado adicionado ao relatório!"
           fi
 
+      - name: Upload consolidated results as artifact (backup)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: consolidated-test-reports
+          path: ./gh-pages
+          retention-days: 30
+          if-no-files-found: warn
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
+        continue-on-error: true
         with:
           path: ./gh-pages
 
@@ -364,9 +400,8 @@ jobs:
           echo "**Data:** $(date '+%d/%m/%Y às %H:%M')" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ "${{ needs.publish-results.result }}" == "success" ]; then
-            echo "📊 **Relatório:** Disponível no GitHub Pages" >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "📊 **Relatórios:** Disponíveis nos artefatos da execução" >> $GITHUB_STEP_SUMMARY
+          echo "� **Artefatos:** [Ver todos os resultados](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
 
   # Job para deploy no GitHub Pages
   deploy:
@@ -375,7 +410,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     needs: publish-results
     runs-on: ubuntu-latest
-    if: always() && needs.publish-results.result == 'success'
+    if: always()
     permissions:
       contents: read
       pages: write
@@ -385,18 +420,22 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        continue-on-error: true
         
       - name: Comment PR with results
         if: github.event_name == 'pull_request'
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
-            const reportUrl = '${{ steps.deployment.outputs.page_url }}';
+            const reportUrl = '${{ steps.deployment.outputs.page_url }}' || 'Não disponível';
+            const artifactsUrl = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
             const comment = `## 🤖 Resultados dos Testes E2E
             
-            Os testes foram executados com sucesso! 
+            Os testes foram executados! 
             
-            📊 **Relatório completo:** [Ver Relatório](${reportUrl})
+            📊 **Relatórios:** ${reportUrl !== 'Não disponível' ? `[Ver Relatório](${reportUrl})` : 'Disponíveis nos artefatos'}
+            🔗 **Todos os resultados:** [Ver Artefatos](${artifactsUrl})
             
             **Detalhes da execução:**
             - **Branch:** ${{ github.ref_name }}
