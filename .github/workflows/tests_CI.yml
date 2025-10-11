@@ -46,7 +46,6 @@ permissions:
 env:
   PYTHON_VERSION: "3.12"
   CACHE_VERSION: "v1" # Incrementar para invalidar cache se necessário
-  NODE_VERSION: "22"
 
 jobs:
   tests:
@@ -257,18 +256,6 @@ jobs:
             tests-results-CI/${{ matrix.browser }}/log.html
           retention-days: 7  # Reduzido de 30 para 7 dias
           if-no-files-found: warn
-      
-      - name: Setup Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Robot Framework Reporter
-        uses: joonvena/robotframework-reporter-action@v2.5
-        if: always()
-        with:
-          gh_access_token: ${{ secrets.GITHUB_TOKEN }}
-          report_path: tests-results-CI/${{ matrix.browser }}
 
   # Job para consolidar resultados e publicar no GitHub Pages
   publish-results:
