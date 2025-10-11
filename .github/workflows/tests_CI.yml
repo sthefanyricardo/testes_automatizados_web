@@ -261,16 +261,31 @@ jobs:
           echo "## 📊 Resultados E2E - ${{ matrix.browser }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Extrair estatísticas básicas do output.xml
+          # Extrair estatísticas reais dos testes do Robot Framework
           if [ -f "./tests-results-CI/${{ matrix.browser }}/output.xml" ]; then
-            TOTAL_TESTS=$(grep -o '<test ' "./tests-results-CI/${{ matrix.browser }}/output.xml" | wc -l)
-            PASSED_TESTS=$(grep -o 'status="PASS"' "./tests-results-CI/${{ matrix.browser }}/output.xml" | wc -l)
-            FAILED_TESTS=$(grep -o 'status="FAIL"' "./tests-results-CI/${{ matrix.browser }}/output.xml" | wc -l)
+            # Contar testes reais (elementos <test>)
+            TOTAL_TESTS=$(grep -c '<test ' "./tests-results-CI/${{ matrix.browser }}/output.xml" || echo "0")
+            
+            # Contar apenas testes que passaram (não keywords)
+            PASSED_TESTS=$(grep '<test ' "./tests-results-CI/${{ matrix.browser }}/output.xml" | grep -c 'status="PASS"' || echo "0")
+            
+            # Contar apenas testes que falharam (não keywords)  
+            FAILED_TESTS=$(grep '<test ' "./tests-results-CI/${{ matrix.browser }}/output.xml" | grep -c 'status="FAIL"' || echo "0")
+            
+            # Extrair estatísticas de keywords/steps executados
+            TOTAL_KEYWORDS=$(grep -o 'status="PASS"\|status="FAIL"' "./tests-results-CI/${{ matrix.browser }}/output.xml" | wc -l || echo "0")
+            PASSED_KEYWORDS=$(grep -o 'status="PASS"' "./tests-results-CI/${{ matrix.browser }}/output.xml" | wc -l || echo "0")
+            FAILED_KEYWORDS=$(grep -o 'status="FAIL"' "./tests-results-CI/${{ matrix.browser }}/output.xml" | wc -l || echo "0")
             
             echo "### 🎯 Estatísticas:" >> $GITHUB_STEP_SUMMARY
             echo "- **Total de Testes:** $TOTAL_TESTS" >> $GITHUB_STEP_SUMMARY
             echo "- **✅ Passou:** $PASSED_TESTS" >> $GITHUB_STEP_SUMMARY
             echo "- **❌ Falhou:** $FAILED_TESTS" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📈 Detalhes de Execução:" >> $GITHUB_STEP_SUMMARY
+            echo "- **Total de Keywords/Steps:** $TOTAL_KEYWORDS" >> $GITHUB_STEP_SUMMARY
+            echo "- **✅ Keywords Executadas:** $PASSED_KEYWORDS" >> $GITHUB_STEP_SUMMARY
+            echo "- **❌ Keywords Falharam:** $FAILED_KEYWORDS" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
             if [ $FAILED_TESTS -gt 0 ]; then
