@@ -73,7 +73,7 @@ Cada keyword e teste possui documentação clara sobre seu **propósito e funcio
 <summary><b>🧠 Competências Desenvolvidas</b></summary>
   
 - [x] Automação de testes web com **Robot Framework**
-- [x] Implementação do padrão de projeto (POM)**
+- [x] Implementação do padrão de projeto (POM)
 - [x] Escrita de código **limpo, reutilizável e manutenível**
 - [x] Uso de bibliotecas externas (**Faker**, **String Library**)
 - [x] Versionamento de código com **Git**
@@ -104,15 +104,10 @@ Este projeto implementa **integração contínua** usando **GitHub Actions** par
 </details>
 
 ### 📊 Visualizar Relatórios Online
-
-<details>
-<summary><b>📖 Clique para expandir detalhes</b></summary>
   
 Os relatórios de execução dos testes estão disponíveis publicamente:
 
 🔗 **[Acessar Relatórios no GitHub Pages](https://sthefanyricardo.github.io/robot-actions/)**
-
-</details>
 
 ---
 
@@ -121,7 +116,7 @@ Os relatórios de execução dos testes estão disponíveis publicamente:
 
 | **Sistema** | **Objetivo** | **Link** |
 |:--:|:--|:--|
-| [TodoMVC](https://todomvc.com/) | Introdução aos fundamentos do Robot Framework com testes de interface web | 📂 **[Acessar Projeto Básico](./automacao_basico)** |
+| [TodoMVC](https://todomvc.com/) | Introdução aos fundamentos do Robot Framework com testes de interface web | 📂 [Acessar Projeto Básico](./automacao_basico) |
 
 <details>
 <summary><b>📖 Clique para expandir detalhes</b></summary>
@@ -151,7 +146,7 @@ Os relatórios de execução dos testes estão disponíveis publicamente:
 
 | **Sistema** | **Objetivo** | **Link** |
 |:--|:--|:--|
-| [SauceDemo](https://www.saucedemo.com/) | Implementar padrão POM completo com dados dinâmicos e múltiplos cenários de usuário | 📂 **[Acessar Projeto Intermediário](./automacao_intermediario)** |
+| [SauceDemo](https://www.saucedemo.com/) | Implementar padrão POM completo com dados dinâmicos e múltiplos cenários de usuário | 📂 [Acessar Projeto Intermediário](./automacao_intermediario) |
 
 <details>
 <summary><b>📖 Clique para expandir detalhes</b></summary>
@@ -181,7 +176,7 @@ Os relatórios de execução dos testes estão disponíveis publicamente:
 
 | **Sistema** | **Objetivo** | **Link** |
 |:--|:--|:--|
-| [TestFire](https://demo.testfire.net/login.jsp) | Automação de cenários complexos com validações de dados e transações financeiras | 📂 **[Acessar Projeto Avançado](./automacao_avancado)** |
+| [TestFire](https://demo.testfire.net/login.jsp) | Automação de cenários complexos com validações de dados e transações financeiras | 📂 [Acessar Projeto Avançado](./automacao_avancado) |
 
 <details>
 <summary><b>📖 Clique para expandir detalhes</b></summary>
