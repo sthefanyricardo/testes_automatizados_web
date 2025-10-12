@@ -159,6 +159,10 @@ jobs:
             echo "   📍 Caminho: $(which microsoft-edge)"
             echo "   🔧 Edge é pré-instalado no GitHub Actions Ubuntu runner"
             echo "   📦 Versão estável mantida automaticamente pelo GitHub"
+            
+            # Extrair número da versão para EdgeDriver
+            EDGE_MAJOR_VERSION=$(echo "$EDGE_VERSION" | grep -oP '\d+' | head -1)
+            echo "   🔢 Versão principal detectada: $EDGE_MAJOR_VERSION"
           else
             echo "❌ Microsoft Edge não encontrado"
             echo "⚠️ Isso é inesperado - Edge deveria estar pré-instalado"
@@ -180,6 +184,81 @@ jobs:
           export SELENIUM_IMPLICIT_WAIT=30
           export SELENIUM_PAGE_LOAD_TIMEOUT=60
           export SELENIUM_SCRIPT_TIMEOUT=30
+
+      - name: Setup EdgeDriver (Robust)
+        if: matrix.browser == 'Edge'
+        run: |
+          echo "🔧 Configuração robusta do EdgeDriver para Microsoft Edge..."
+          
+          # Detectar versão do Edge
+          if command -v microsoft-edge &> /dev/null; then
+            EDGE_VERSION=$(microsoft-edge --version | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1)
+            EDGE_MAJOR_VERSION=$(echo "$EDGE_VERSION" | cut -d. -f1)
+            echo "🌐 Edge detectado: $EDGE_VERSION (Major: $EDGE_MAJOR_VERSION)"
+          else
+            echo "❌ Edge não encontrado!"
+            exit 1
+          fi
+          
+          # Criar diretório para drivers
+          mkdir -p ~/.cache/selenium/edgedriver
+          
+          # URLs alternativas para EdgeDriver
+          EDGEDRIVER_URLS=(
+            "https://msedgedriver.azureedge.net/${EDGE_VERSION}/edgedriver_linux64.zip"
+            "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/"
+            "https://github.com/MicrosoftDocs/edge-developer/raw/main/microsoft-edge/webdriver-chromium/webdriver-chromium.md"
+          )
+          
+          echo "📥 Tentando baixar EdgeDriver versão $EDGE_VERSION..."
+          
+          # Método 1: Tentar webdriver-manager primeiro (com timeout)
+          echo "🔄 Método 1: webdriver-manager (com timeout de 30s)..."
+          timeout 30s python -c "
+          try:
+              from webdriver_manager.microsoft import EdgeChromiumDriverManager
+              driver_path = EdgeChromiumDriverManager().install()
+              print(f'✅ EdgeDriver instalado via webdriver-manager: {driver_path}')
+              with open('/tmp/edgedriver_path.txt', 'w') as f:
+                  f.write(driver_path)
+          except Exception as e:
+              print(f'⚠️ webdriver-manager falhou: {e}')
+              exit(1)
+          " || echo "⚠️ webdriver-manager timeout ou falhou"
+          
+          # Verificar se o webdriver-manager funcionou
+          if [ -f "/tmp/edgedriver_path.txt" ]; then
+            DRIVER_PATH=$(cat /tmp/edgedriver_path.txt)
+            echo "✅ EdgeDriver configurado com sucesso: $DRIVER_PATH"
+            echo "🔍 Verificando driver:"
+            ls -la "$DRIVER_PATH" 2>/dev/null || echo "Arquivo não encontrado"
+          else
+            echo "⚠️ webdriver-manager falhou, usando método alternativo..."
+            
+            # Método 2: Download manual (fallback)
+            echo "🔄 Método 2: Download manual..."
+            DRIVER_URL="https://msedgedriver.azureedge.net/${EDGE_VERSION}/edgedriver_linux64.zip"
+            
+            # Usar curl com timeout e retry
+            if curl -L --max-time 30 --retry 3 --retry-delay 5 -o /tmp/edgedriver.zip "$DRIVER_URL"; then
+              echo "📦 EdgeDriver baixado com sucesso"
+              
+              # Extrair e configurar
+              cd ~/.cache/selenium/edgedriver
+              unzip -q /tmp/edgedriver.zip
+              chmod +x msedgedriver
+              echo "✅ EdgeDriver extraído e configurado"
+              
+              # Adicionar ao PATH
+              export PATH="$HOME/.cache/selenium/edgedriver:$PATH"
+              echo "🔧 EdgeDriver adicionado ao PATH"
+            else
+              echo "❌ Falha no download manual do EdgeDriver"
+              echo "🤔 Continuando sem configuração específica (Selenium pode usar driver padrão)"
+            fi
+          fi
+          
+          echo "✅ Configuração do EdgeDriver concluída"
 
       - name: Run E2E Tests
         run: |
