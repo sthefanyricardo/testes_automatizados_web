@@ -1,7 +1,9 @@
 ***Settings***
 Documentation  Este arquivo contém os casos de teste automatizados para o gerenciador de atividades To-Do MVC (https://todomvc.com/examples/react/dist/), incluindo casos de testes de adição, marcação, exclusão, filtragem e limpeza de atividades da lista de tarefas.
 Resource  ../resources/main.robot
-Suite Setup  Abrir o navegador
+Suite Setup  Run Keywords
+...  Abrir o navegador
+...  Especificar diretório para screenshots
 Test Setup  Acessar página home do site  ${TODO_MVC_URL}
 Suite Teardown  Fechar o navegador
 

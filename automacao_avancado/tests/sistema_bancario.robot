@@ -1,7 +1,9 @@
 ***Settings***
 Documentation  Este arquivo contém os casos de teste automatizados para o sistema bancário (https://demo.testfire.net/login.jsp) com os dados de acesso usuário e senha: admin, incluindo casos de testes de login, transferência, consulta de extratos e verificação de saldo.
 Resource  ../resources/main.robot
-Suite Setup  Abrir o navegador
+Suite Setup  Run Keywords
+...  Abrir o navegador
+...  Especificar diretório para screenshots
 Suite Teardown  Fechar o navegador
 
 ***Test Cases***

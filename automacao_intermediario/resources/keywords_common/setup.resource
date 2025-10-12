@@ -16,3 +16,7 @@ Abrir o navegador
     Open Browser  about:blank  ${BROWSER}  options=add_argument("--incognito")
   END
   Maximize Browser Window
+
+Especificar diretório para screenshots
+  [Documentation]  Especifica o diretório onde os screenshots serão salvos
+  Set Screenshot Directory  ./resultados_${BROWSER}
