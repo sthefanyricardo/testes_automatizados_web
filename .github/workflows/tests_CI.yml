@@ -625,9 +625,9 @@ jobs:
           
           # Mover arquivos consolidados para pasta dedicada
           echo " Organizando relatórios consolidados..."
-          if [ -f "./gh-pages/index.html" ]; then
-            mv "./gh-pages/index.html" "./gh-pages/relatorio-consolidado/"
-            echo "   report.html → relatorio-consolidado/"
+          if [ -f "./gh-pages/report.html" ]; then
+            mv "./gh-pages/report.html" "./gh-pages/relatorio-consolidado/"
+            echo "   ✅ report.html → relatorio-consolidado/"
           fi
           if [ -f "./gh-pages/log.html" ]; then
             mv "./gh-pages/log.html" "./gh-pages/relatorio-consolidado/"
@@ -635,16 +635,10 @@ jobs:
           fi
           if [ -f "./gh-pages/output.xml" ]; then
             mv "./gh-pages/output.xml" "./gh-pages/relatorio-consolidado/"
-            echo "   output.xml → relatorio-consolidado/"
+            echo "   ✅ output.xml → relatorio-consolidado/"
           fi
           
-          # Mover imagens para pasta do relatório consolidado (apenas as da raiz)
-          echo "Organizando imagens para consolidação..."
-          IMAGE_COUNT=$(find ./gh-pages -maxdepth 1 -name "*.png" -type f | wc -l)
-          if [ $IMAGE_COUNT -gt 0 ]; then
-            find ./gh-pages -maxdepth 1 -name "*.png" -type f -exec mv {} "./gh-pages/relatorio-consolidado/" \;
-            echo "  $IMAGE_COUNT imagens (Chrome) → relatorio-consolidado/"
-          fi
+          # NÃO mover imagens soltas - elas ficarão organizadas apenas nas pastas por navegador
           
           # Mover pastas de imagens para dentro do relatorio-consolidado
           echo "Movendo pastas de imagens para relatorio-consolidado..."
@@ -748,31 +742,26 @@ jobs:
               # Primeiro, converter caminhos absolutos para relativos básicos
               sed -i 's|src="[^"]*[/\\]\([^/\\]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               
-              # Agora mapear selenium-screenshot para as pastas de navegadores
-              # Verificar quais imagens existem e criar mapeamento
+              # Mapear selenium-screenshot para as pastas organizadas de navegadores
+              # IMPORTANTE: Não há mais imagens na raiz - todas estão nas subpastas
               for img_ref in $(grep -o 'src="\./selenium-screenshot-[0-9]*\.png"' "$html_file" 2>/dev/null | sed 's/src="\.\///; s/"//' | sort | uniq); do
                 if [ -n "$img_ref" ]; then
-                  # Verificar se existe na raiz (Chrome por default)
-                  if [ -f "./gh-pages/relatorio-consolidado/$img_ref" ]; then
-                    echo "      ✅ Imagem na raiz: $img_ref"
-                  else
-                    # Procurar nas pastas de navegadores
-                    FOUND_IN_FOLDER=""
-                    for browser in chrome firefox edge; do
-                      if [ -f "./gh-pages/relatorio-consolidado/images-$browser/$img_ref" ]; then
-                        FOUND_IN_FOLDER="images-$browser"
-                        break
-                      fi
-                    done
-                    
-                    if [ -n "$FOUND_IN_FOLDER" ]; then
-                      echo "      🔄 Mapeando: $img_ref → $FOUND_IN_FOLDER/$img_ref"
-                      # Substituir referência para apontar para a pasta correta
-                      sed -i "s|src=\"\.\/$img_ref\"|src=\"./$FOUND_IN_FOLDER/$img_ref\"|g" "$html_file" 2>/dev/null
-                      sed -i "s|href=\"\.\/$img_ref\"|href=\"./$FOUND_IN_FOLDER/$img_ref\"|g" "$html_file" 2>/dev/null
-                    else
-                      echo "      ❌ Imagem não encontrada: $img_ref"
+                  # Procurar nas pastas de navegadores (não mais na raiz)
+                  FOUND_IN_FOLDER=""
+                  for browser in chrome firefox edge; do
+                    if [ -f "./gh-pages/relatorio-consolidado/images-$browser/$img_ref" ]; then
+                      FOUND_IN_FOLDER="images-$browser"
+                      break
                     fi
+                  done
+                  
+                  if [ -n "$FOUND_IN_FOLDER" ]; then
+                    echo "      🔄 Mapeando: $img_ref → $FOUND_IN_FOLDER/$img_ref"
+                    # Substituir referência para apontar para a pasta correta
+                    sed -i "s|src=\"\.\/$img_ref\"|src=\"./$FOUND_IN_FOLDER/$img_ref\"|g" "$html_file" 2>/dev/null
+                    sed -i "s|href=\"\.\/$img_ref\"|href=\"./$FOUND_IN_FOLDER/$img_ref\"|g" "$html_file" 2>/dev/null
+                  else
+                    echo "      ❌ Imagem não encontrada em nenhuma subpasta: $img_ref"
                   fi
                 fi
               done
@@ -820,7 +809,6 @@ jobs:
           echo " 📋 Resumo da NOVA estrutura organizada:"
           echo "   📂 relatorio-consolidado/"
           echo "     ├── report.html, log.html, output.xml (relatórios consolidados)"
-          echo "     ├── selenium-screenshot-*.png (imagens Chrome na raiz)"
           echo "     ├── 📂 images-chrome/ (todas as imagens Chrome organizadas)"
           echo "     ├── 📂 images-firefox/ (todas as imagens Firefox organizadas)"
           echo "     └── 📂 images-edge/ (todas as imagens Edge organizadas)"
