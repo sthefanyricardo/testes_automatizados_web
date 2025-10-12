@@ -19,4 +19,6 @@ Abrir o navegador
 
 Especificar diretório para screenshots
   [Documentation]  Especifica o diretório onde os screenshots serão salvos
-  Set Screenshot Directory  ./resultados_${BROWSER}
+  # O ${OUTPUT DIR} aponta para o diretório definido pela flag --outputdir no CLI
+  # Na pipeline a pasta 'screenshots' será criada dentro de 'tests-results-CI/${{ matrix.browser }}/'
+  Set Screenshot Directory  ${OUTPUT DIR}/screenshots_${BROWSER}
