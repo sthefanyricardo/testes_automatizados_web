@@ -454,53 +454,25 @@ jobs:
         uses: actions/configure-pages@v4
         continue-on-error: true
 
-      - name: Copy images before consolidation
+      - name: Consolidate reports with rebot
         run: |
-          echo "🖼️ Copiando imagens ANTES da consolidação para garantir disponibilidade..."
-          mkdir -p ./gh-pages
-          
-          # Copiar todas as imagens encontradas para o diretório de saída ANTES da consolidação
-          IMAGES_FOUND=0
-          for browser in Chrome Firefox Edge; do
-            BROWSER_DIR="./all-results/test-results-$browser"
-            if [ -d "$BROWSER_DIR" ]; then
-              echo "  📂 Copiando imagens de $browser..."
-              
-              # Copiar PNGs do diretório raiz (onde o Robot Framework os gera naturalmente)
-              if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
-                # Copiar com renomeação para evitar conflitos entre navegadores
-                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | while read img; do
-                  filename=$(basename "$img")
-                  # Renomear apenas se não tiver prefixo de navegador já
-                  if [[ "$filename" == *"$browser"* ]] || [[ "$filename" == *"$(echo $browser | tr '[:upper:]' '[:lower:]')"* ]]; then
-                    cp "$img" "./gh-pages/$filename"
-                  else
-                    cp "$img" "./gh-pages/${browser,,}-$filename"
-                  fi
-                done
-                PNG_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
-                echo "    ✅ $PNG_COUNT imagens copiadas (com prefixo $browser se necessário)"
-                IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT))
-              fi
-              
-              # Verificar se há imagens em subdiretórios (casos especiais, não duplicar)
-              SUB_IMAGES=$(find "$BROWSER_DIR" -mindepth 2 -name "*.png" -type f | wc -l)
-              if [ $SUB_IMAGES -gt 0 ]; then
-                echo "    📂 $SUB_IMAGES imagens adicionais encontradas em subdiretórios (não copiadas para evitar duplicação)"
-              fi
-            fi
-          done
-          
-          echo "📊 Total de $IMAGES_FOUND imagens copiadas antes da consolidação"
-        continue-on-error: true
+          # Criar um diretório único para a consolidação
+          mkdir -p ./consolidation-dir
+          echo "📁 Diretório de consolidação criado: ./consolidation-dir"
 
-      - name: Create consolidated report with rebot
-        run: |
+          # Copiar todos os XMLs e PNGs para o diretório de consolidação
+          echo "➕ Copiando todos os arquivos output.xml e *.png para o diretório de consolidação..."
+          find ./all-results -type f \( -name "output.xml" -o -name "*.png" \) -exec cp {} ./consolidation-dir/ \;
+          
+          echo "📂 Conteúdo do diretório de consolidação:"
+          ls -la ./consolidation-dir/
+          
           # Verificar se existem arquivos output.xml
-          OUTPUT_FILES=$(find ./all-results -name "output.xml" -type f 2>/dev/null | tr '\n' ' ')
+          OUTPUT_FILES=$(find ./consolidation-dir -name "output.xml" -type f 2>/dev/null)
           
           if [ -z "$OUTPUT_FILES" ]; then
             echo "⚠️ Nenhum arquivo output.xml encontrado. Criando página de status..."
+            mkdir -p ./gh-pages
             cat > ./gh-pages/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
@@ -517,45 +489,29 @@ jobs:
           EOF
             echo "📄 Página de status criada"
           else
-            echo "✅ Arquivos output.xml encontrados:"
-            echo "$OUTPUT_FILES"
-            echo ""
-            echo "📋 Lista detalhada dos arquivos que serão consolidados:"
-            for file in $OUTPUT_FILES; do
-              echo "  - $file ($(stat -c%s "$file" 2>/dev/null || echo "?" ) bytes)"
-            done
-            echo ""
+            echo "✅ Arquivos output.xml encontrados. Executando rebot..."
             
-            # Executar rebot com tratamento de falhas
+            # Executar rebot DENTRO do diretório de consolidação
+            cd ./consolidation-dir
+            
             set +e
-            echo "🔧 Executando rebot com os arquivos encontrados..."
-            
-            # Executar rebot no mesmo diretório onde estão as imagens
-            cd ./gh-pages
             python -m robot.rebot \
               --output output.xml \
               --log log.html \
               --report index.html \
               --reporttitle "Relatório Consolidado E2E" \
               --name "Relatório Consolidado E2E" \
-              ../all-results/*/output.xml
-            cd ..
+              *.xml
             
             REBOT_EXIT_CODE=$?
+            cd ..
+            
             echo "📊 Rebot finalizado com código: $REBOT_EXIT_CODE"
             
-            # Verificar arquivos gerados
-            echo "📁 Arquivos gerados pelo rebot:"
-            ls -la ./gh-pages/ || echo "Diretório gh-pages não encontrado"
-            
-            if [ $REBOT_EXIT_CODE -eq 0 ]; then
-              echo "🎉 Relatório consolidado gerado com sucesso!"
-            elif [ $REBOT_EXIT_CODE -le 250 ]; then
-              echo "⚠️ Relatório consolidado gerado com alguns testes falhando"
-              echo "📊 Relatório disponível para análise"
-            else
-              echo "❌ Erro crítico na geração do relatório"
+            if [ $REBOT_EXIT_CODE -gt 250 ]; then
+              echo "❌ Erro crítico na geração do relatório consolidado."
               # Criar relatório de erro
+              mkdir -p ./gh-pages
               cat > ./gh-pages/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
@@ -571,62 +527,22 @@ jobs:
           </html>
           EOF
             fi
-            
-            # Pós-processamento: corrigir caminhos de imagens nos HTMLs gerados
-            echo "🔧 Pós-processamento: corrigindo caminhos de imagens..."
-            for html_file in ./gh-pages/*.html; do
-              if [ -f "$html_file" ]; then
-                # Corrigir qualquer caminho absoluto ou relativo complexo para imagens
-                sed -i 's|src="[^"]*\/\([^"\/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null || true
-                sed -i 's|href="[^"]*\/\([^"\/]*\.png\)"|href="./\1"|g' "$html_file" 2>/dev/null || true
-                # Remover caminhos que contenham diretórios de teste
-                sed -i 's|src="[^"]*tests-results-CI[^"]*\/\([^"\/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null || true
-                echo "    ✅ Caminhos corrigidos em $(basename "$html_file")"
-              fi
-            done
-            
-            # Verificar se as imagens estão realmente disponíveis
-            IMAGE_COUNT=$(find ./gh-pages -maxdepth 1 -name "*.png" -type f | wc -l)
-            echo "🖼️ Verificação final: $IMAGE_COUNT imagens disponíveis na raiz"
           fi
         continue-on-error: true
 
-      - name: Copy additional assets
+      - name: Organize assets for GitHub Pages
         run: |
           echo "📁 Organizando assets em estrutura de pastas..."
           
           # Criar estrutura de pastas organizada
-          echo "📂 Criando estrutura de pastas..."
-          mkdir -p "./gh-pages/relatorio-consolidado"
-          echo "  📁 Pasta criada: relatorio-consolidado/"
+          mkdir -p ./gh-pages/relatorio-consolidado
+          echo "  📁 Pasta criada: ./gh-pages/relatorio-consolidado/"
           
-          for browser in Chrome Firefox Edge; do
-            FOLDER_NAME="execucao-${browser,,}"
-            mkdir -p "./gh-pages/$FOLDER_NAME"
-            echo "  📁 Pasta criada: $FOLDER_NAME/"
-          done
-          
-          # Mover arquivos consolidados para pasta dedicada
-          echo "📄 Organizando relatórios consolidados..."
-          if [ -f "./gh-pages/index.html" ]; then
-            mv "./gh-pages/index.html" "./gh-pages/relatorio-consolidado/"
-            echo "  ✅ index.html → relatorio-consolidado/"
-          fi
-          if [ -f "./gh-pages/log.html" ]; then
-            mv "./gh-pages/log.html" "./gh-pages/relatorio-consolidado/"
-            echo "  ✅ log.html → relatorio-consolidado/"
-          fi
-          if [ -f "./gh-pages/output.xml" ]; then
-            mv "./gh-pages/output.xml" "./gh-pages/relatorio-consolidado/"
-            echo "  ✅ output.xml → relatorio-consolidado/"
-          fi
-          
-          # Mover imagens para pasta do relatório consolidado
-          echo "🖼️ Organizando imagens..."
-          IMAGE_COUNT=$(find ./gh-pages -maxdepth 1 -name "*.png" -type f | wc -l)
-          if [ $IMAGE_COUNT -gt 0 ]; then
-            find ./gh-pages -maxdepth 1 -name "*.png" -type f -exec mv {} "./gh-pages/relatorio-consolidado/" \;
-            echo "  ✅ $IMAGE_COUNT imagens → relatorio-consolidado/"
+          # Mover o conteúdo do diretório de consolidação para a pasta final
+          if [ -d "./consolidation-dir" ]; then
+            echo "🚚 Movendo relatórios consolidados e imagens..."
+            mv ./consolidation-dir/* ./gh-pages/relatorio-consolidado/
+            echo "  ✅ Arquivos movidos para ./gh-pages/relatorio-consolidado/"
           fi
           
           # Organizar relatórios individuais por navegador
@@ -634,6 +550,8 @@ jobs:
           for browser in Chrome Firefox Edge; do
             BROWSER_DIR="./all-results/test-results-$browser"
             FOLDER_NAME="execucao-${browser,,}"
+            mkdir -p "./gh-pages/$FOLDER_NAME"
+            echo "  📁 Pasta criada: $FOLDER_NAME/"
             
             if [ -d "$BROWSER_DIR" ]; then
               echo "  📂 Processando $browser..."
@@ -641,85 +559,24 @@ jobs:
               # Copiar arquivos individuais para pasta do navegador
               if [ -f "$BROWSER_DIR/report.html" ]; then
                 cp "$BROWSER_DIR/report.html" "./gh-pages/$FOLDER_NAME/"
-                echo "    ✅ report.html → $FOLDER_NAME/"
+                # Corrigir caminho das imagens para apontar para a pasta consolidada
+                sed -i 's/src="[^"]*\.png"/src="..\/relatorio-consolidado\/&"/g' "./gh-pages/$FOLDER_NAME/report.html"
+                echo "    ✅ report.html copiado e corrigido"
               fi
               if [ -f "$BROWSER_DIR/log.html" ]; then
                 cp "$BROWSER_DIR/log.html" "./gh-pages/$FOLDER_NAME/"
-                echo "    ✅ log.html → $FOLDER_NAME/"
+                # Corrigir caminho das imagens para apontar para a pasta consolidada
+                sed -i 's/src="[^"]*\.png"/src="..\/relatorio-consolidado\/&"/g' "./gh-pages/$FOLDER_NAME/log.html"
+                echo "    ✅ log.html copiado e corrigido"
               fi
               if [ -f "$BROWSER_DIR/output.xml" ]; then
                 cp "$BROWSER_DIR/output.xml" "./gh-pages/$FOLDER_NAME/"
-                echo "    ✅ output.xml → $FOLDER_NAME/"
+                echo "    ✅ output.xml copiado"
               fi
             fi
           done
           
-          # Corrigir caminhos das imagens nos arquivos HTML
-          echo "� Corrigindo caminhos das imagens nos arquivos HTML..."
-          # Corrigir relatórios consolidados (imagens na mesma pasta) - PADRÕES SUPER ROBUSTOS
-          for html_file in ./gh-pages/relatorio-consolidado/*.html; do
-            if [ -f "$html_file" ]; then
-              # Debug: mostrar imagens disponíveis
-              if [ "$(basename "$html_file")" = "log.html" ]; then
-                echo "    📋 Debug: Imagens disponíveis na pasta consolidada:"
-                ls -la ./gh-pages/relatorio-consolidado/*.png 2>/dev/null | head -5 | sed 's/^/      /' || echo "      Nenhuma imagem PNG encontrada"
-                echo "    🔍 Debug: Referências de imagem ANTES da correção em log.html:"
-                grep -o 'src="[^"]*\.png"' "$html_file" 2>/dev/null | head -5 | sed 's/^/      /' || echo "      Nenhuma referência encontrada"
-              fi
-              
-              echo "    🔧 Corrigindo $(basename "$html_file") com padrões robustos..."
-              
-              # SÉRIE COMPLETA DE CORREÇÕES PARA ROBOT FRAMEWORK
-              
-              # Padrão 1: Qualquer caminho com subdiretório + .png
-              sed -i 's/src="[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/href="[^"]*\/\([^"\/]*\.png\)"/href=".\/\1"/g' "$html_file" 2>/dev/null || true
-              
-              # Padrão 2: Caminhos específicos do nosso CI
-              sed -i 's/src="[^"]*tests-results-CI[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/src="[^"]*all-results[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/src="[^"]*test-results[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              
-              # Padrão 3: Caminhos com nomes de browsers
-              sed -i 's/src="[^"]*-\(Chrome\|Firefox\|Edge\)[^"]*\/\([^"\/]*\.png\)"/src=".\/\2"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/src="[^"]*\(Chrome\|Firefox\|Edge\)[^"]*\/\([^"\/]*\.png\)"/src=".\/\2"/g' "$html_file" 2>/dev/null || true
-              
-              # Padrão 4: Caminhos relativos complexos  
-              sed -i 's/src="\.\.\/[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/src="\.\/[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              
-              # Padrão 5: Screenshots com selenium no nome
-              sed -i 's/src="[^"]*selenium[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/src="[^"]*screenshot[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              
-              # Padrão 6: AGRESSIVO - qualquer estrutura de pasta antes do .png
-              sed -i 's/src="\([^"]*\/\)+\([^"\/]*\.png\)"/src=".\/\2"/g' "$html_file" 2>/dev/null || true
-              
-              echo "    ✅ Relatório consolidado: $(basename "$html_file")"
-            fi
-          done
-          
-          # Corrigir relatórios individuais (imagens no consolidado)
-          for browser in Chrome Firefox Edge; do
-            FOLDER_NAME="execucao-${browser,,}"
-            for html_file in ./gh-pages/$FOLDER_NAME/*.html; do
-              if [ -f "$html_file" ]; then
-                sed -i 's/src="[^"]*\/\([^"]*\.png\)"/src="..\/relatorio-consolidado\/\1"/g' "$html_file" 2>/dev/null || true
-                sed -i 's/href="[^"]*\/\([^"]*\.png\)"/href="..\/relatorio-consolidado\/\1"/g' "$html_file" 2>/dev/null || true
-                sed -i 's/src="[^"]*tests-results-CI[^"]*\/\([^"]*\.png\)"/src="..\/relatorio-consolidado\/\1"/g' "$html_file" 2>/dev/null || true
-                echo "    ✅ Relatório individual $FOLDER_NAME: $(basename "$html_file")"
-              fi
-            done
-          done
-          
-          # Resumo da estrutura organizada
-          echo "📋 Estrutura final organizada:"
-          echo "  📂 relatorio-consolidado/ - Relatórios consolidados + todas as imagens"
-          echo "  📂 execucao-chrome/ - Relatórios Chrome (referencia imagens do consolidado)"
-          echo "  📂 execucao-firefox/ - Relatórios Firefox (referencia imagens do consolidado)"
-          echo "  📂 execucao-edge/ - Relatórios Edge (referencia imagens do consolidado)"
-          
-          echo "✅ Assets adicionais processados com sucesso!"
+          echo "✅ Assets organizados com sucesso!"
         continue-on-error: true
 
       - name: Create asset index page
