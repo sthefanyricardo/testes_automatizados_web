@@ -148,6 +148,38 @@ jobs:
           robot --version
           python -c "import selenium; print(f'Selenium: {selenium.__version__}')"
 
+      - name: Debug and Verify Environment
+        run: |
+          echo "🔍 Verificando estrutura do projeto e diretórios de teste..."
+          
+          echo "📂 Estrutura atual do workspace:"
+          ls -la
+          
+          echo ""
+          echo "🔍 Verificando diretórios de teste específicos:"
+          for test_dir in automacao_basico/tests automacao_intermediario/tests automacao_avancado/tests; do
+            if [ -d "$test_dir" ]; then
+              echo "  ✅ $test_dir existe"
+              echo "     Arquivos: $(find "$test_dir" -name "*.robot" -o -name "*.resource" | wc -l) arquivos .robot/.resource"
+              ls -la "$test_dir" | head -5
+            else
+              echo "  ❌ $test_dir NÃO EXISTE!"
+            fi
+          done
+          
+          echo ""
+          echo "🔍 Procurando qualquer arquivo .robot no projeto:"
+          find . -name "*.robot" -type f | head -10
+          
+          echo ""
+          echo "🔍 Verificando se há testes em outros locais:"
+          for possible_dir in tests test src .; do
+            if find "$possible_dir" -maxdepth 2 -name "*.robot" -type f 2>/dev/null | grep -q .; then
+              echo "  📁 Encontrados arquivos .robot em: $possible_dir"
+              find "$possible_dir" -maxdepth 2 -name "*.robot" -type f | head -5
+            fi
+          done
+
       - name: Run E2E Tests
         run: |
           echo "🚀 Executando testes para o navegador: ${{ matrix.browser }}"
@@ -181,6 +213,41 @@ jobs:
             IMPLICIT_WAIT="10"
           fi
           
+          # 🔍 Verificação final antes da execução
+          echo "🔍 Verificação final dos diretórios de teste:"
+          TEST_DIRS=""
+          for test_dir in automacao_basico/tests automacao_intermediario/tests automacao_avancado/tests; do
+            if [ -d "$test_dir" ] && find "$test_dir" -name "*.robot" | grep -q .; then
+              TEST_DIRS="$TEST_DIRS $test_dir"
+              echo "  ✅ $test_dir será incluído"
+            else
+              echo "  ⚠️ $test_dir não contém arquivos .robot - ignorando"
+            fi
+          done
+          
+          # Se nenhum diretório de teste foi encontrado, procurar em outros locais
+          if [ -z "$TEST_DIRS" ]; then
+            echo "🔍 Nenhum teste encontrado nos diretórios esperados. Procurando em outros locais..."
+            
+            # Tentar diretório raiz
+            if find . -maxdepth 1 -name "*.robot" | grep -q .; then
+              TEST_DIRS="."
+              echo "  ✅ Encontrados testes no diretório raiz"
+            # Tentar pasta tests genérica
+            elif [ -d "tests" ] && find tests -name "*.robot" | grep -q .; then
+              TEST_DIRS="tests"
+              echo "  ✅ Encontrados testes em ./tests"
+            else
+              echo "  ❌ ERRO: Nenhum arquivo .robot encontrado em lugar algum!"
+              echo "  📁 Listando toda a estrutura para debug:"
+              find . -type f -name "*.robot" -o -name "*.resource" | head -20
+              exit 1
+            fi
+          fi
+          
+          echo ""
+          echo "🚀 Executando Robot Framework com os seguintes diretórios: $TEST_DIRS"
+          
           # Executar Robot Framework com configurações otimizadas
           set +e
           
@@ -204,7 +271,7 @@ jobs:
             --name "Relatório E2E - ${{ matrix.browser }}" \
             --maxerrorlines 10 \
             --include "*" \
-            automacao_basico/tests automacao_intermediario/tests automacao_avancado/tests
+            $TEST_DIRS
           
           ROBOT_EXIT_CODE=$?
           echo "Robot Framework finalizado com código: $ROBOT_EXIT_CODE"
@@ -217,7 +284,20 @@ jobs:
             echo "📊 Relatórios gerados com sucesso para análise"
             exit 0
           else
-            echo "❌ Erro crítico na execução dos testes"
+            echo "❌ Erro crítico na execução dos testes (código $ROBOT_EXIT_CODE)"
+            
+            # Debug adicional em caso de erro crítico
+            echo ""
+            echo "🔍 DEBUG: Verificando se algum arquivo foi gerado mesmo com erro:"
+            ls -la ./tests-results-CI/${{ matrix.browser }}/ || echo "Diretório de resultados não existe"
+            
+            echo ""
+            echo "🔍 DEBUG: Verificando logs do Robot Framework:"
+            if [ -f "./tests-results-CI/${{ matrix.browser }}/log.html" ]; then
+              echo "Log encontrado - extraindo últimas linhas de erro:"
+              grep -i "error\|fatal\|exception" "./tests-results-CI/${{ matrix.browser }}/log.html" | tail -5 || true
+            fi
+            
             exit 1
           fi
 
