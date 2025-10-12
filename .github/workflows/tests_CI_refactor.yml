@@ -639,6 +639,14 @@ jobs:
         run: |
           echo "📋 Criando página de índice de assets..."
           
+          # Debug: verificar estrutura atual
+          echo "🔍 Debug - Estrutura atual do gh-pages:"
+          ls -la ./gh-pages/ || echo "Diretório gh-pages não encontrado"
+          echo ""
+          echo "🖼️ Debug - Imagens encontradas:"
+          find ./gh-pages -name "*.png" -type f | head -10 || echo "Nenhuma imagem encontrada"
+          echo ""
+          
           # Criar página com links para todos os relatórios e assets
           cat > ./gh-pages/assets.html << 'EOF'
           <!DOCTYPE html>
@@ -701,15 +709,22 @@ jobs:
               <h2>📸 Screenshots</h2>
           EOF
           
-          # Adicionar screenshots se existirem
-          if [ -d "./gh-pages/screenshots" ] && [ "$(find ./gh-pages/screenshots -name "*.png" | wc -l)" -gt 0 ]; then
+          # Adicionar screenshots se existirem (agora na raiz do gh-pages)
+          SCREENSHOT_COUNT=$(find ./gh-pages -maxdepth 1 -name "*.png" -type f 2>/dev/null | wc -l)
+          echo "📸 Debug: Encontrados $SCREENSHOT_COUNT screenshots na raiz"
+          
+          if [ $SCREENSHOT_COUNT -gt 0 ]; then
+            echo "✅ Adicionando $SCREENSHOT_COUNT screenshots à página"
             echo '<div class="screenshot-grid">' >> ./gh-pages/assets.html
-            find ./gh-pages/screenshots -name "*.png" -type f | sort | while read screenshot; do
+            
+            # Adicionar cada screenshot
+            find ./gh-pages -maxdepth 1 -name "*.png" -type f 2>/dev/null | sort | while read screenshot; do
               filename=$(basename "$screenshot")
+              echo "  📎 Adicionando: $filename"
               cat >> ./gh-pages/assets.html << EOF
                 <div class="screenshot-card">
-                  <a href="screenshots/$filename" target="_blank">
-                    <img src="screenshots/$filename" alt="$filename" style="max-height: 150px;">
+                  <a href="$filename" target="_blank">
+                    <img src="$filename" alt="$filename" style="max-height: 150px;">
                   </a>
                   <p>$filename</p>
                 </div>
@@ -717,7 +732,29 @@ jobs:
             done
             echo '</div>' >> ./gh-pages/assets.html
           else
-            echo '<p>⚠️ Nenhum screenshot encontrado para esta execução.</p>' >> ./gh-pages/assets.html
+            echo "⚠️ Nenhum screenshot encontrado - verificando diretórios alternativos..."
+            
+            # Verificar se existem em subdiretórios (fallback)
+            ALT_SCREENSHOTS=$(find ./gh-pages -name "*.png" -type f 2>/dev/null | wc -l)
+            if [ $ALT_SCREENSHOTS -gt 0 ]; then
+              echo "📸 Encontrados $ALT_SCREENSHOTS screenshots em subdiretórios"
+              echo '<div class="screenshot-grid">' >> ./gh-pages/assets.html
+              find ./gh-pages -name "*.png" -type f 2>/dev/null | sort | while read screenshot; do
+                filename=$(basename "$screenshot")
+                relative_path=$(echo "$screenshot" | sed 's|./gh-pages/||')
+                cat >> ./gh-pages/assets.html << EOF
+                <div class="screenshot-card">
+                  <a href="$relative_path" target="_blank">
+                    <img src="$relative_path" alt="$filename" style="max-height: 150px;">
+                  </a>
+                  <p>$filename</p>
+                </div>
+          EOF
+              done
+              echo '</div>' >> ./gh-pages/assets.html
+            else
+              echo '<p>⚠️ Nenhum screenshot encontrado para esta execução.</p>' >> ./gh-pages/assets.html
+            fi
           fi
           
           # Finalizar HTML
