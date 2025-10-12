@@ -121,12 +121,6 @@ jobs:
           mkdir -p ./tests-results-CI/${{ matrix.browser }}
           echo "📁 Diretório de resultados criado: ./tests-results-CI/${{ matrix.browser }}"
           
-      - name: Setup MS Edge Driver
-        if: matrix.browser == 'Edge'
-        uses: actions/setup-edge@v1
-        with:
-          edge-version: 'stable'
-
       - name: Setup Browser Environment
         run: |
           echo "🔧 Configurando ambiente para execução robusta..."
@@ -136,10 +130,41 @@ jobs:
           echo "SeleniumLibrary: $(python -c 'import SeleniumLibrary; print(SeleniumLibrary.__version__)' 2>/dev/null || echo 'Não encontrada')"
           echo "Selenium: $(python -c 'import selenium; print(selenium.__version__)' 2>/dev/null || echo 'Não encontrado')"
           
-          # Verificar navegadores disponíveis no Ubuntu runner
-          echo "Chrome version: $(google-chrome --version 2>/dev/null || echo 'Chrome não encontrado')"
-          echo "Firefox version: $(firefox --version 2>/dev/null || echo 'Firefox não encontrado')"
-          echo "Edge version: $(microsoft-edge --version 2>/dev/null || echo 'Edge não encontrado')"
+          # Verificar navegadores disponíveis no Ubuntu runner (versões detalhadas)
+          echo "🌐 VERIFICAÇÃO DETALHADA DE NAVEGADORES:"
+          echo "=========================================="
+          
+          # Chrome
+          if command -v google-chrome &> /dev/null; then
+            CHROME_VERSION=$(google-chrome --version)
+            echo "✅ Chrome: $CHROME_VERSION"
+            echo "   📍 Caminho: $(which google-chrome)"
+          else
+            echo "❌ Chrome não encontrado"
+          fi
+          
+          # Firefox
+          if command -v firefox &> /dev/null; then
+            FIREFOX_VERSION=$(firefox --version)
+            echo "✅ Firefox: $FIREFOX_VERSION"
+            echo "   📍 Caminho: $(which firefox)"
+          else
+            echo "❌ Firefox não encontrado"
+          fi
+          
+          # Microsoft Edge (verificação detalhada)
+          if command -v microsoft-edge &> /dev/null; then
+            EDGE_VERSION=$(microsoft-edge --version)
+            echo "✅ Microsoft Edge: $EDGE_VERSION"
+            echo "   📍 Caminho: $(which microsoft-edge)"
+            echo "   🔧 Edge é pré-instalado no GitHub Actions Ubuntu runner"
+            echo "   📦 Versão estável mantida automaticamente pelo GitHub"
+          else
+            echo "❌ Microsoft Edge não encontrado"
+            echo "⚠️ Isso é inesperado - Edge deveria estar pré-instalado"
+          fi
+          
+          echo "=========================================="
           
           # Instalar Xvfb se não estiver disponível
           sudo apt-get update -qq
