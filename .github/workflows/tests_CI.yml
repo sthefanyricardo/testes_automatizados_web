@@ -730,12 +730,12 @@ jobs:
           </head>
           <body>
             <div class="container">
-              <h1>📊 Relatórios de Testes E2E</h1>
+              <h1>🔗 Relatórios de Testes E2E</h1>
               <p class="subtitle">Pipeline automatizada com Robot Framework + Selenium</p>
               
               <div class="asset-grid">
                 <div class="asset-card">
-                  <h3><span class="icon">📂</span>Relatório Consolidado<span class="badge">Todos</span></h3>
+                  <h3><span class="icon">📇</span>Relatório Consolidado<span class="badge">Todos</span></h3>
                   <ul class="asset-list">
                     <li><a href="relatorio-consolidado/report.html">📊 Relatório Unificado</a></li>
                     <li><a href="relatorio-consolidado/log.html">📋 Log Detalhado</a></li>
@@ -798,7 +798,7 @@ jobs:
                     <p>Todas as evidências visuais capturadas automaticamente durante a execução dos testes, mantendo nomes originais.</p>
                   </div>
                   <div class="info-item">
-                    <h4><span class="icon">📊</span>Consolidação</h4>
+                    <h4><span class="icon">🔄</span>Consolidação</h4>
                     <p>O relatório consolidado unifica resultados de todos os navegadores em uma única visualização completa.</p>
                   </div>
                   <div class="info-item">
@@ -907,3 +907,37 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: ./gh-pages
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: publish-results
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+        
+      - name: Display Pages URL
+        if: always()
+        run: |
+          if [ "${{ steps.deployment.outputs.page_url }}" != "" ]; then
+            echo "🌐 GitHub Pages URL: ${{ steps.deployment.outputs.page_url }}"
+            echo "✅ Relatórios disponíveis em: ${{ steps.deployment.outputs.page_url }}"
+            echo ""
+            echo "📋 Links diretos:"
+            echo "   Consolidado: ${{ steps.deployment.outputs.page_url }}relatorio-consolidado/report.html"
+            echo "   Chrome: ${{ steps.deployment.outputs.page_url }}execucao-chrome/report.html"
+            echo "   Firefox: ${{ steps.deployment.outputs.page_url }}execucao-firefox/report.html"
+            echo "   Edge: ${{ steps.deployment.outputs.page_url }}execucao-edge/report.html"
+          else
+            echo "📦 Relatórios disponíveis nos artefatos"
+          fi
