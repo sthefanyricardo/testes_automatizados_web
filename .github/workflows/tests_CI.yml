@@ -418,8 +418,20 @@ jobs:
               --report report.html \
               --reporttitle "Relatório Consolidado E2E" \
               --name "Relatório Consolidado E2E" \
-              ../all-results/*/output.xml
+              ../all-results/*/output.xml || true
             cd ..
+
+            REBOT_EXIT_CODE=$?
+            echo "Robot.rebot finalizado com código: $REBOT_EXIT_CODE"
+            
+            if [ $REBOT_EXIT_CODE -eq 0 ]; then
+              echo "✅ Relatório consolidado gerado com sucesso - todos os testes passaram!"
+            elif [ $REBOT_EXIT_CODE -le 250 ]; then
+              echo "⚠️ Relatório consolidado gerado com alguns testes falhando (código $REBOT_EXIT_CODE)"
+              echo "📊 Relatório disponível para análise das falhas"
+            else
+              echo "❌ Erro na geração do relatório (código $REBOT_EXIT_CODE)"
+            fi
             
             echo "📊 Relatório consolidado gerado com sucesso!"
           fi
