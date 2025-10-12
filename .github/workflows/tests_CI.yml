@@ -3,12 +3,11 @@
 # Esta pipeline executa testes automatizados end-to-end em múltiplos navegadores,
 # gera relatórios consolidados e publica os resultados no GitHub Pages.
 #
-# ✨ OTIMIZAÇÕES IMPLEMENTADAS:
-# - 🚀 Setup automático do Edge com browser-actions/setup-edge@v1
-# - ⚡ Timeouts reduzidos para melhor performance
-# - 🎯 Estratégia de SUBPASTAS para organizar imagens por navegador
-# - 📁 Zero conflito de nomenclatura entre navegadores
-# - 🔧 Nomes originais preservados (selenium-screenshot-X.png)
+# Funcionalidades:
+# - ✅ Execução em múltiplos navegadores: Chrome, Firefox e Edge
+# - 🐧 Execução em Ubuntu com Robot Framework e Selenium
+# - 📊 Relatórios HTML consolidados
+# - 🚀 Deploy automático no GitHub Pages
 
 name: E2E Tests - Selenium + Robot Framework
 run-name: Testes E2E (${{ github.ref_name }}) - ${{ github.actor }}
@@ -411,8 +410,6 @@ jobs:
           else
             echo "✅ Arquivos output.xml encontrados - gerando relatório consolidado..."
             
-            # Executar rebot com tratamento de falhas
-            set +e
             cd ./gh-pages
             python -m robot.rebot \
               --output output.xml \
@@ -422,7 +419,7 @@ jobs:
               --name "Relatório Consolidado E2E" \
               ../all-results/*/output.xml || true
             cd ..
-            
+
             REBOT_EXIT_CODE=$?
             echo "Robot.rebot finalizado com código: $REBOT_EXIT_CODE"
             
@@ -435,12 +432,8 @@ jobs:
               echo "❌ Erro na geração do relatório (código $REBOT_EXIT_CODE)"
             fi
             
-            echo "📊 Processamento de relatório concluído!"
+            echo "📊 Relatório consolidado gerado com sucesso!"
           fi
-          
-          # Garantir que o step termine com sucesso
-          echo "✅ Consolidação de relatórios finalizada"
-          exit 0
         continue-on-error: true
 
       - name: Copy additional assets and fix image paths
