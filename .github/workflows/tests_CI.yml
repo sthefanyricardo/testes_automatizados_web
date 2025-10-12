@@ -914,7 +914,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     needs: publish-results
     runs-on: ubuntu-latest
-    if: always()
+    if: github.ref_name == 'main'
     permissions:
       contents: read
       pages: write
