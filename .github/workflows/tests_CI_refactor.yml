@@ -309,6 +309,7 @@ jobs:
             --variable WINDOW_SIZE:1920x1080 \
             --variable SELENIUM_SPEED:0.5 \
             --variable CAPTURE_PAGE_SCREENSHOT_ON_FAILURE:true \
+            --variable BROWSER_PREFIX:${{ matrix.browser }} \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
             --name "Relatório E2E - ${{ matrix.browser }}" \
@@ -459,11 +460,41 @@ jobs:
         uses: actions/configure-pages@v4
         continue-on-error: true
 
-      - name: Create consolidated report with rebot
+      - name: Copy images before consolidation
         run: |
-          # Criar diretório de saída
+          echo "🖼️ Copiando imagens ANTES da consolidação para garantir disponibilidade..."
           mkdir -p ./gh-pages
           
+          # Copiar todas as imagens encontradas para o diretório de saída ANTES da consolidação
+          IMAGES_FOUND=0
+          for browser in Chrome Firefox Edge; do
+            BROWSER_DIR="./all-results/test-results-$browser"
+            if [ -d "$BROWSER_DIR" ]; then
+              echo "  📂 Copiando imagens de $browser..."
+              
+              # Copiar PNGs do diretório raiz
+              if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
+                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} ./gh-pages/ \;
+                PNG_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
+                echo "    ✅ $PNG_COUNT imagens copiadas"
+                IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT))
+              fi
+              
+              # Copiar PNGs do diretório screenshots
+              if [ -d "$BROWSER_DIR/screenshots" ] && find "$BROWSER_DIR/screenshots" -name "*.png" -type f | grep -q .; then
+                find "$BROWSER_DIR/screenshots" -name "*.png" -type f -exec cp {} ./gh-pages/ \;
+                SCREENSHOT_COUNT=$(find "$BROWSER_DIR/screenshots" -name "*.png" -type f | wc -l)
+                echo "    ✅ $SCREENSHOT_COUNT screenshots copiados"
+                IMAGES_FOUND=$((IMAGES_FOUND + SCREENSHOT_COUNT))
+              fi
+            fi
+          done
+          
+          echo "📊 Total de $IMAGES_FOUND imagens copiadas antes da consolidação"
+        continue-on-error: true
+
+      - name: Create consolidated report with rebot
+        run: |
           # Verificar se existem arquivos output.xml
           OUTPUT_FILES=$(find ./all-results -name "output.xml" -type f 2>/dev/null | tr '\n' ' ')
           
@@ -498,14 +529,16 @@ jobs:
             set +e
             echo "🔧 Executando rebot com os arquivos encontrados..."
             
+            # Executar rebot no mesmo diretório onde estão as imagens
+            cd ./gh-pages
             python -m robot.rebot \
-              --outputdir ./gh-pages \
               --output output.xml \
               --log log.html \
               --report index.html \
               --reporttitle "Relatório Consolidado E2E" \
               --name "Relatório Consolidado E2E" \
-              $OUTPUT_FILES
+              ../all-results/*/output.xml
+            cd ..
             
             REBOT_EXIT_CODE=$?
             echo "📊 Rebot finalizado com código: $REBOT_EXIT_CODE"
@@ -537,44 +570,29 @@ jobs:
           </html>
           EOF
             fi
+            
+            # Pós-processamento: corrigir caminhos de imagens nos HTMLs gerados
+            echo "🔧 Pós-processamento: corrigindo caminhos de imagens..."
+            for html_file in ./gh-pages/*.html; do
+              if [ -f "$html_file" ]; then
+                # Corrigir qualquer caminho absoluto ou relativo complexo para imagens
+                sed -i 's|src="[^"]*\/\([^"\/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null || true
+                sed -i 's|href="[^"]*\/\([^"\/]*\.png\)"|href="./\1"|g' "$html_file" 2>/dev/null || true
+                # Remover caminhos que contenham diretórios de teste
+                sed -i 's|src="[^"]*tests-results-CI[^"]*\/\([^"\/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null || true
+                echo "    ✅ Caminhos corrigidos em $(basename "$html_file")"
+              fi
+            done
+            
+            # Verificar se as imagens estão realmente disponíveis
+            IMAGE_COUNT=$(find ./gh-pages -maxdepth 1 -name "*.png" -type f | wc -l)
+            echo "🖼️ Verificação final: $IMAGE_COUNT imagens disponíveis na raiz"
           fi
         continue-on-error: true
 
       - name: Copy additional assets
         run: |
-          echo "📁 Copiando assets adicionais..."
-          
-          # Criar diretórios para organizar assets
-          mkdir -p ./gh-pages/screenshots
-          mkdir -p ./gh-pages/assets
-          
-          # Copiar todas as imagens (screenshots) encontradas
-          echo "🖼️ Procurando e copiando imagens..."
-          IMAGES_FOUND=0
-          for browser in Chrome Firefox Edge; do
-            BROWSER_DIR="./all-results/test-results-$browser"
-            if [ -d "$BROWSER_DIR" ]; then
-              echo "  📂 Verificando imagens em $browser..."
-              
-              # Copiar PNGs do diretório raiz do navegador
-              if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
-                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} ./gh-pages/screenshots/ \;
-                PNG_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
-                echo "    ✅ $PNG_COUNT imagens copiadas do diretório raiz"
-                IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT))
-              fi
-              
-              # Copiar PNGs do diretório screenshots (se existir)
-              if [ -d "$BROWSER_DIR/screenshots" ] && find "$BROWSER_DIR/screenshots" -name "*.png" -type f | grep -q .; then
-                find "$BROWSER_DIR/screenshots" -name "*.png" -type f -exec cp {} ./gh-pages/screenshots/ \;
-                SCREENSHOT_COUNT=$(find "$BROWSER_DIR/screenshots" -name "*.png" -type f | wc -l)
-                echo "    ✅ $SCREENSHOT_COUNT screenshots copiados da pasta screenshots"
-                IMAGES_FOUND=$((IMAGES_FOUND + SCREENSHOT_COUNT))
-              fi
-            fi
-          done
-          
-          echo "📊 Total de imagens encontradas e copiadas: $IMAGES_FOUND"
+          echo "📁 Finalizando cópia de assets adicionais..."
           
           # Copiar relatórios HTML individuais para acesso direto
           echo "📄 Copiando relatórios HTML individuais..."
@@ -590,17 +608,28 @@ jobs:
             fi
           done
           
+          # Corrigir caminhos das imagens nos arquivos HTML
+          echo "� Corrigindo caminhos das imagens nos arquivos HTML..."
+          for html_file in ./gh-pages/*.html; do
+            if [ -f "$html_file" ]; then
+              # Corrigir links relativos de imagens para apontar para a raiz
+              sed -i 's/src="[^"]*\/\([^"]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
+              sed -i 's/href="[^"]*\/\([^"]*\.png\)"/href=".\/\1"/g' "$html_file" 2>/dev/null || true
+              # Corrigir caminhos que podem estar com diretórios extras
+              sed -i 's/src="[^"]*tests-results-CI[^"]*\/\([^"]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
+              echo "    ✅ Caminhos corrigidos em $(basename "$html_file")"
+            fi
+          done
+          
           # Listar assets finais copiados
           echo "📋 Assets finais disponíveis:"
-          if [ -d "./gh-pages/screenshots" ]; then
-            FINAL_IMAGES=$(find ./gh-pages/screenshots -name "*.png" -type f | wc -l)
-            echo "  🖼️ Screenshots: $FINAL_IMAGES arquivos"
-            if [ $FINAL_IMAGES -gt 0 ]; then
-              echo "  📁 Amostras de screenshots:"
-              find ./gh-pages/screenshots -name "*.png" -type f | head -3 | while read img; do
-                echo "    - $(basename "$img")"
-              done
-            fi
+          FINAL_IMAGES=$(find ./gh-pages -maxdepth 1 -name "*.png" -type f | wc -l)
+          echo "  🖼️ Screenshots na raiz: $FINAL_IMAGES arquivos"
+          if [ $FINAL_IMAGES -gt 0 ]; then
+            echo "  📁 Amostras de screenshots:"
+            find ./gh-pages -maxdepth 1 -name "*.png" -type f | head -3 | while read img; do
+              echo "    - $(basename "$img")"
+            done
           fi
           
           echo "✅ Assets adicionais processados com sucesso!"
