@@ -277,6 +277,23 @@ jobs:
           if [ $TOTAL_IMAGES -eq 0 ]; then
             echo "  ⚠️ Nenhum screenshot encontrado em ambos os locais"
           fi
+          
+          # Debug: Listar TUDO que existe no diretório de resultados
+          echo ""
+          echo "🔍 DEBUG - Estrutura completa do diretório de resultados:"
+          if [ -d "$RESULTS_DIR" ]; then
+            find "$RESULTS_DIR" -type f -name "*.png" 2>/dev/null | head -10 | while read img; do
+              echo "  📸 Encontrado: $img"
+            done
+            
+            echo ""
+            echo "📁 Estrutura de diretórios:"
+            find "$RESULTS_DIR" -type d 2>/dev/null | head -5 | while read dir; do
+              echo "  📂 $dir"
+            done
+          else
+            echo "  ❌ Diretório $RESULTS_DIR não existe!"
+          fi
         continue-on-error: true
 
       - name: Check Test Results
@@ -301,6 +318,39 @@ jobs:
             ls -la "$RESULTS_DIR/" 2>/dev/null || echo "Diretório de resultados não existe"
           fi
 
+      - name: Debug Upload Paths
+        run: |
+          echo "🔍 DEBUG - Verificando o que será incluído no upload:"
+          BASE_PATH="tests-results-CI/${{ matrix.browser }}"
+          
+          echo ""
+          echo "📄 Arquivos essenciais:"
+          [ -f "$BASE_PATH/output.xml" ] && echo "  ✅ output.xml ($(stat -c%s "$BASE_PATH/output.xml" 2>/dev/null || echo "?") bytes)" || echo "  ❌ output.xml não encontrado"
+          [ -f "$BASE_PATH/report.html" ] && echo "  ✅ report.html ($(stat -c%s "$BASE_PATH/report.html" 2>/dev/null || echo "?") bytes)" || echo "  ❌ report.html não encontrado"
+          [ -f "$BASE_PATH/log.html" ] && echo "  ✅ log.html ($(stat -c%s "$BASE_PATH/log.html" 2>/dev/null || echo "?") bytes)" || echo "  ❌ log.html não encontrado"
+          
+          echo ""
+          echo "📸 Screenshots no diretório principal:"
+          find $BASE_PATH -maxdepth 1 -name "*.png" 2>/dev/null | head -5 | while read f; do echo "  📸 $f"; done || echo "  Nenhum PNG no diretório principal"
+          
+          echo ""
+          echo "📸 Screenshots em subdiretórios screenshots_*:"
+          find $BASE_PATH -path "*/screenshots_*/*.png" 2>/dev/null | head -10 | while read f; do echo "  📸 $f"; done || echo "  Nenhum PNG em subdiretórios screenshots_*"
+          
+          echo ""
+          echo "📁 Todos os subdiretórios screenshots_*:"
+          find $BASE_PATH -type d -name "screenshots_*" 2>/dev/null | while read d; do 
+            echo "  📂 $d ($(find "$d" -name "*.png" 2>/dev/null | wc -l) PNGs)"
+          done || echo "  Nenhum subdiretório screenshots_* encontrado"
+          
+          echo ""
+          echo "🎯 Simulando padrões de upload:"
+          echo "Pattern: $BASE_PATH/*.png"
+          find $BASE_PATH -maxdepth 1 -name "*.png" 2>/dev/null | wc -l | xargs echo "  Matches:"
+          echo "Pattern: $BASE_PATH/screenshots_*/"
+          find $BASE_PATH -type d -name "screenshots_*" 2>/dev/null | wc -l | xargs echo "  Directories:"
+        continue-on-error: true
+
       - name: Upload Test Results (Essential Files Only)
         uses: actions/upload-artifact@v4
         if: always()
@@ -311,6 +361,7 @@ jobs:
             tests-results-CI/${{ matrix.browser }}/report.html
             tests-results-CI/${{ matrix.browser }}/log.html
             tests-results-CI/${{ matrix.browser }}/*.png
+            tests-results-CI/${{ matrix.browser }}/screenshots_*/
           retention-days: 7
           if-no-files-found: warn
 
