@@ -232,6 +232,7 @@ jobs:
             --variable CAPTURE_PAGE_SCREENSHOT_ON_FAILURE:true \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
+            --name "Relatório E2E - ${{ matrix.browser }}" \
             --maxerrorlines 10 \
             --include "*" \
             $EXTRA_ARGS \
@@ -312,23 +313,6 @@ jobs:
             echo "✅ Arquivo output.xml encontrado!"
             echo "📁 Conteúdo do diretório de resultados:"
             ls -la "$RESULTS_DIR/"
-            echo ""
-            
-            # Extrair estatísticas básicas do output.xml usando grep
-            echo "📊 Estatísticas dos testes executados:"
-            if grep -q "stat.*All Tests" "$RESULTS_DIR/output.xml" 2>/dev/null; then
-              PASS_COUNT=$(grep "stat.*All Tests" "$RESULTS_DIR/output.xml" | sed -n 's/.*pass="\([0-9]*\)".*/\1/p' | head -1)
-              FAIL_COUNT=$(grep "stat.*All Tests" "$RESULTS_DIR/output.xml" | sed -n 's/.*fail="\([0-9]*\)".*/\1/p' | head -1)
-              SKIP_COUNT=$(grep "stat.*All Tests" "$RESULTS_DIR/output.xml" | sed -n 's/.*skip="\([0-9]*\)".*/\1/p' | head -1)
-              TOTAL_TESTS=$((${PASS_COUNT:-0} + ${FAIL_COUNT:-0} + ${SKIP_COUNT:-0}))
-              
-              echo "  📋 Total de testes executados: $TOTAL_TESTS"
-              echo "  🎉 Sucessos: ${PASS_COUNT:-0}"
-              echo "  ❌ Falhas: ${FAIL_COUNT:-0}"
-              echo "  ⏭️  Ignorados: ${SKIP_COUNT:-0}"
-            else
-              echo "  ⚠️ Não foi possível extrair estatísticas do output.xml"
-            fi
             echo ""
             
             # Listar arquivos de saída gerados
@@ -435,14 +419,13 @@ jobs:
             set +e
             echo "🔧 Executando rebot com os arquivos encontrados..."
             
-            # ✅ SINTAXE CORRETA: SEM --merge, arquivos passados diretamente
             python -m robot.rebot \
               --outputdir ./gh-pages \
               --output output.xml \
               --log log.html \
               --report index.html \
-              --reporttitle "Relatório Consolidado E2E - $(date '+%d/%m/%Y %H:%M')" \
-              --name "Robot Framework CI - Relatório Consolidado E2E" \
+              --reporttitle "Relatório Consolidado E2E" \
+              --name "Relatório Consolidado E2E" \
               $OUTPUT_FILES
             
             REBOT_EXIT_CODE=$?
