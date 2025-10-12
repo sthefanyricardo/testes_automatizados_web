@@ -456,42 +456,59 @@ jobs:
 
       - name: Copy images before consolidation
         run: |
-          echo "Copiando imagens ANTES da consolidação para garantir disponibilidade..."
+          echo "Organizando imagens por navegador ANTES da consolidação..."
           mkdir -p ./gh-pages
           
-          # Copiar todas as imagens encontradas para o diretório de saída ANTES da consolidação
+          # Estratégia SIMPLIFICADA: manter nomes originais e organizar por pastas
           IMAGES_FOUND=0
+          
+          echo "  Nova estratégia de organização:"
+          echo "    1. Manter nomes originais das imagens (selenium-screenshot-X.png)"
+          echo "    2. Organizar em pastas separadas por navegador"
+          echo "    3. Consolidado usa imagens do Chrome como padrão"
+          
+          # Criar estrutura de pastas para cada navegador
           for browser in Chrome Firefox Edge; do
             BROWSER_DIR="./all-results/test-results-$browser"
+            BROWSER_FOLDER="./gh-pages/images-${browser,,}"
+            
             if [ -d "$BROWSER_DIR" ]; then
-              echo "  Copiando imagens de $browser..."
+              echo "  Processando imagens de $browser..."
+              mkdir -p "$BROWSER_FOLDER"
               
-              # Copiar PNGs do diretório raiz (onde o Robot Framework os gera naturalmente)
+              # Copiar PNGs mantendo nomes originais
               if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
-                # Copiar com renomeação para evitar conflitos entre navegadores
-                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | while read img; do
-                  filename=$(basename "$img")
-                  # Renomear apenas se não tiver prefixo de navegador já
-                  if [[ "$filename" == *"$browser"* ]] || [[ "$filename" == *"$(echo $browser | tr '[:upper:]' '[:lower:]')"* ]]; then
-                    cp "$img" "./gh-pages/$filename"
-                  else
-                    cp "$img" "./gh-pages/${browser,,}-$filename"
-                  fi
-                done
                 PNG_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
-                echo "    $PNG_COUNT imagens copiadas (com prefixo $browser se necessário)"
-                IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT))
+                
+                # Copiar todas as imagens mantendo nomes originais
+                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "$BROWSER_FOLDER/" \;
+                
+                echo "    $PNG_COUNT imagens copiadas para images-${browser,,}/"
+                echo "    Pasta: $BROWSER_FOLDER"
+                
+                # Para o Chrome, também copiar para a raiz (usado na consolidação)
+                if [ "$browser" = "Chrome" ]; then
+                  find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "./gh-pages/" \;
+                  echo "    Imagens Chrome também copiadas para raiz (consolidação)"
+                  IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT * 2))  # Pasta + raiz
+                else
+                  IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT))
+                fi
+                
+                # Mostrar exemplos de imagens copiadas
+                echo "    Exemplos copiados:"
+                find "$BROWSER_FOLDER" -name "*.png" -type f | head -3 | sed 's/^/      /'
+                
+              else
+                echo "    Nenhuma imagem encontrada em $browser"
               fi
-              
-              # Verificar se há imagens em subdiretórios (casos especiais, não duplicar)
-              SUB_IMAGES=$(find "$BROWSER_DIR" -mindepth 2 -name "*.png" -type f | wc -l)
-              if [ $SUB_IMAGES -gt 0 ]; then
-                echo "    $SUB_IMAGES imagens adicionais encontradas em subdiretórios (não copiadas para evitar duplicação)"
-              fi
+            else
+              echo "    Diretório não encontrado: $BROWSER_DIR"
             fi
           done
 
-          echo "Total de $IMAGES_FOUND imagens copiadas antes da consolidação"
+          echo "Total: $IMAGES_FOUND arquivos de imagem organizados"
+          echo "Vantagem: Nomes originais preservados, organização por pastas"
         continue-on-error: true
 
       - name: Create consolidated report with rebot
@@ -621,13 +638,29 @@ jobs:
             echo "   output.xml → relatorio-consolidado/"
           fi
           
-          # Mover imagens para pasta do relatório consolidado
-          echo "Organizando imagens..."
+          # Mover imagens para pasta do relatório consolidado (apenas as da raiz)
+          echo "Organizando imagens para consolidação..."
           IMAGE_COUNT=$(find ./gh-pages -maxdepth 1 -name "*.png" -type f | wc -l)
           if [ $IMAGE_COUNT -gt 0 ]; then
             find ./gh-pages -maxdepth 1 -name "*.png" -type f -exec mv {} "./gh-pages/relatorio-consolidado/" \;
-            echo "  $IMAGE_COUNT imagens → relatorio-consolidado/"
+            echo "  $IMAGE_COUNT imagens (Chrome) → relatorio-consolidado/"
           fi
+          
+          # Organizar imagens específicas de cada navegador em suas pastas individuais
+          echo "Organizando imagens individuais por navegador..."
+          for browser in Chrome Firefox Edge; do
+            BROWSER_FOLDER="./gh-pages/images-${browser,,}"
+            TARGET_FOLDER="./gh-pages/execucao-${browser,,}"
+            
+            if [ -d "$BROWSER_FOLDER" ] && [ -d "$TARGET_FOLDER" ]; then
+              BROWSER_IMAGE_COUNT=$(find "$BROWSER_FOLDER" -name "*.png" -type f | wc -l)
+              if [ $BROWSER_IMAGE_COUNT -gt 0 ]; then
+                # Copiar imagens para pasta de execução do navegador
+                find "$BROWSER_FOLDER" -name "*.png" -type f -exec cp {} "$TARGET_FOLDER/" \;
+                echo "  $BROWSER_IMAGE_COUNT imagens ${browser} → execucao-${browser,,}/"
+              fi
+            fi
+          done
           
           # Organizar relatórios individuais por navegador
           echo "Organizando relatórios individuais por navegador..."
@@ -680,9 +713,6 @@ jobs:
                 grep -o 'src="[^"]*\.png"' "$html_file" 2>/dev/null | head -3 | sed 's/^/        /' || echo "        Nenhuma referência encontrada"
               fi
               
-              # Criar backup para debug
-              cp "$html_file" "${html_file}.backup" 2>/dev/null || true
-              
               # 1. Robot Framework gera caminhos absolutos - converter para relativos
               # Padrões como: src="/home/runner/work/.../screenshot.png" → src="./screenshot.png"
               sed -i 's|src="[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
@@ -705,14 +735,15 @@ jobs:
               sed -i 's|src="\.\./[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               sed -i 's|src="\./[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               
-              # 6. PADRÃO FINAL AGRESSIVO - qualquer coisa antes do nome do arquivo
+              # 6. PADRÃO FINAL SIMPLES - converter qualquer caminho para relativo
               sed -i 's|src="[^"]*[/\\]\([^/\\]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               
-              # Debug APÓS correção para log.html
+              # Debug APÓS correção simples para log.html
               if [ "$(basename "$html_file")" = "log.html" ]; then
-                echo "      Debug APÓS a correção:"
+                echo "      Debug APÓS correção de caminhos:"
                 echo "      Primeiras 3 referências corrigidas:"
                 grep -o 'src="[^"]*\.png"' "$html_file" 2>/dev/null | head -3 | sed 's/^/        /' || echo "        Nenhuma referência encontrada"
+                
                 echo "      Verificar se alguma imagem específica existe:"
                 SAMPLE_IMG=$(grep -o 'src="\./[^"]*\.png"' "$html_file" 2>/dev/null | head -1 | sed 's/src="\.\///; s/"//' || echo "")
                 if [ -n "$SAMPLE_IMG" ]; then
@@ -730,38 +761,44 @@ jobs:
             fi
           done
           
-          # Corrigir relatórios individuais (imagens no consolidado)
+          # Corrigir relatórios individuais (imagens na própria pasta)
           for browser in Chrome Firefox Edge; do
             FOLDER_NAME="execucao-${browser,,}"
             for html_file in ./gh-pages/$FOLDER_NAME/*.html; do
               if [ -f "$html_file" ]; then
-                sed -i 's/src="[^"]*\/\([^"]*\.png\)"/src="..\/relatorio-consolidado\/\1"/g' "$html_file" 2>/dev/null || true
-                sed -i 's/href="[^"]*\/\([^"]*\.png\)"/href="..\/relatorio-consolidado\/\1"/g' "$html_file" 2>/dev/null || true
-                sed -i 's/src="[^"]*tests-results-CI[^"]*\/\([^"]*\.png\)"/src="..\/relatorio-consolidado\/\1"/g' "$html_file" 2>/dev/null || true
-                echo "    Relatório individual $FOLDER_NAME: $(basename "$html_file")"
+                echo "    Corrigindo relatório individual $FOLDER_NAME: $(basename "$html_file")"
+                
+                # Corrigir caminhos para usar imagens locais da própria pasta
+                sed -i 's|src="[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
+                sed -i 's|href="[^"]*\/\([^/]*\.png\)"|href="./\1"|g' "$html_file" 2>/dev/null
+                
+                # Corrigir caminhos específicos do CI
+                sed -i 's|src="[^"]*tests-results-CI[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
+                sed -i 's|src="[^"]*test-results[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
+                
+                # Verificar se as imagens estão disponíveis na pasta
+                LOCAL_IMAGES=$(find "./gh-pages/$FOLDER_NAME" -name "*.png" -type f | wc -l)
+                if [ $LOCAL_IMAGES -gt 0 ]; then
+                  echo "      $LOCAL_IMAGES imagens disponíveis localmente"
+                else
+                  echo "      Nenhuma imagem local - relatório pode não exibir screenshots"
+                fi
               fi
             done
           done
-          
-          # Resumo da estrutura organizada
-          echo " Estrutura final organizada:"
-          echo "  relatorio-consolidado/ - Relatórios consolidados + todas as imagens"
-          echo "  execucao-chrome/ - Relatórios Chrome (referencia imagens do consolidado)"
-          echo "  execucao-firefox/ - Relatórios Firefox (referencia imagens do consolidado)"
-          echo "  execucao-edge/ - Relatórios Edge (referencia imagens do consolidado)"
           
           echo "Assets adicionais processados com sucesso!"
         continue-on-error: true
 
       - name: Create asset index page
         run: |
-          echo "📋 Criando página de índice de assets..."
+          echo "Criando página de índice de assets..."
           
           # Debug: verificar estrutura atual
-          echo "🔍 Debug - Estrutura atual do gh-pages:"
+          echo "Debug - Estrutura atual do gh-pages:"
           ls -la ./gh-pages/ || echo "Diretório gh-pages não encontrado"
           echo ""
-          echo "🖼️ Debug - Imagens encontradas:"
+          echo "Debug - Imagens encontradas:"
           find ./gh-pages -name "*.png" -type f | head -10 || echo "Nenhuma imagem encontrada"
           echo ""
           
@@ -880,60 +917,38 @@ jobs:
           
           echo "Página principal criada: index.html (estrutura organizada)"
           
-          # Verificação final e correção ROBUSTA de imagens no consolidado
-          echo "Verificação e correção ROBUSTA dos caminhos de imagem no consolidado..."
+          # Verificação final SIMPLIFICADA dos caminhos de imagem no consolidado
+          echo "Verificação final dos caminhos de imagem no consolidado..."
           for html_file in ./gh-pages/relatorio-consolidado/*.html; do
             if [ -f "$html_file" ]; then
               echo "   Processando $(basename "$html_file")..."
               
               # Debug: mostrar exemplos de referências ANTES da correção
-              echo "     Exemplos de referências de imagem ANTES da correção:"
-              grep -o 'src="[^"]*\.png"' "$html_file" | head -5 | sed 's/^/      /' || echo "      Nenhuma referência PNG encontrada"
+              echo "     Exemplos de referências ANTES da correção:"
+              grep -o 'src="[^"]*\.png"' "$html_file" | head -3 | sed 's/^/      /' || echo "      Nenhuma referência PNG encontrada"
               
-              # CORREÇÕES MAIS ROBUSTAS E ESPECÍFICAS
+              # Correção SIMPLES: Robot Framework gera "selenium-screenshot-X.png" e as imagens já estão na pasta
+              echo "     Aplicando correção simples de caminhos..."
               
-              # 1. Padrão básico: qualquer caminho que termine com .png
-              sed -i 's/src="[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/href="[^"]*\/\([^"\/]*\.png\)"/href=".\/\1"/g' "$html_file" 2>/dev/null || true
-              
-              # 2. Padrões específicos do Robot Framework
-              sed -i 's/src="tests-results-CI[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/src="[^"]*selenium-screenshot[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/src="[^"]*screenshot[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              
-              # 3. Padrões com nomes de browsers
-              sed -i 's/src="[^"]*-\(Chrome\|Firefox\|Edge\)[^"]*\/\([^"\/]*\.png\)"/src=".\/\2"/g' "$html_file" 2>/dev/null || true
-              
-              # 4. Padrões com all-results (específico do nosso pipeline)
-              sed -i 's/src="[^"]*all-results[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/src="[^"]*test-results[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              
-              # 5. Padrões com caminhos relativos complexos
-              sed -i 's/src="\.\.\/[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/src="\.\/[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              
-              # 6. Padrões sem barra inicial (casos especiais)
-              sed -i 's/src="[^"\/][^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
+              # Corrigir caminhos absolutos para relativos
+              sed -i 's|src="[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
+              sed -i 's|href="[^"]*\/\([^/]*\.png\)"|href="./\1"|g' "$html_file" 2>/dev/null
               
               # Debug: mostrar exemplos APÓS a correção
-              echo "    Exemplos de referências APÓS a correção:"
-              grep -o 'src="[^"]*\.png"' "$html_file" | head -5 | sed 's/^/      /' || echo "      Nenhuma referência PNG encontrada"
+              echo "     Exemplos de referências APÓS a correção:"
+              grep -o 'src="[^"]*\.png"' "$html_file" | head -3 | sed 's/^/      /' || echo "      Nenhuma referência PNG encontrada"
               
-              # Verificar se ainda há caminhos problemáticos (com subdiretórios)
+              # Verificar se ainda há caminhos problemáticos
               PROBLEM_PATHS=$(grep -c 'src="[^"]*\/[^"]*\.png"' "$html_file" 2>/dev/null || echo "0")
-              if [ "$PROBLEM_PATHS" -gt 0 ]; then
-                echo "     AINDA há $PROBLEM_PATHS caminhos com subdiretórios:"
-                grep 'src="[^"]*\/[^"]*\.png"' "$html_file" | head -3 | sed 's/^/      /'
-                echo "     Aplicando correção final AGRESSIVA..."
-                # Correção final agressiva: qualquer src com / vira ./
-                sed -i 's/src="\([^"]*\/\)*\([^"\/]*\.png\)"/src=".\/\2"/g' "$html_file" 2>/dev/null || true
-              else
+              if [ "$PROBLEM_PATHS" -eq 0 ]; then
                 echo "     Todos os caminhos corrigidos em $(basename "$html_file")"
+              else
+                echo "     Ainda há $PROBLEM_PATHS caminhos com subdiretórios"
               fi
             fi
           done
           
-          # Verificação final: validar que as imagens existem e podem ser acessadas
+          # Validação final: verificar se as imagens estão acessíveis
           echo " Validação final: verificando se imagens estão acessíveis..."
           for html_file in ./gh-pages/relatorio-consolidado/*.html; do
             if [ -f "$html_file" ]; then
@@ -946,6 +961,7 @@ jobs:
                 VALID_IMAGES=0
                 INVALID_IMAGES=0
                 
+                echo "     Referências encontradas:"
                 while IFS= read -r img_ref; do
                   if [ -n "$img_ref" ]; then
                     # Construir caminho completo
@@ -957,19 +973,53 @@ jobs:
                     
                     if [ -f "$FULL_PATH" ]; then
                       VALID_IMAGES=$((VALID_IMAGES + 1))
+                      echo "      $img_ref"
                     else
                       INVALID_IMAGES=$((INVALID_IMAGES + 1))
-                      echo "    Imagem não encontrada: $img_ref (esperada em: $FULL_PATH)"
+                      echo "       $img_ref (não encontrada)"
+                      
+                      # Tentar sugerir imagens similares
+                      BASENAME=$(basename "$img_ref")
+                      SIMILAR=$(find "./gh-pages/relatorio-consolidado/" -name "*${BASENAME}" -o -name "*$(echo "$BASENAME" | sed 's/selenium-screenshot/selenium-screenshot/')*" 2>/dev/null | head -3)
+                      if [ -n "$SIMILAR" ]; then
+                        echo "          Similares disponíveis:"
+                        echo "$SIMILAR" | sed 's|^./gh-pages/relatorio-consolidado/|            |'
+                      fi
                     fi
                   fi
                 done <<< "$IMAGE_REFS"
                 
-                echo "    Validação: $VALID_IMAGES válidas | $INVALID_IMAGES inválidas"
+                echo "    Resumo da validação: $VALID_IMAGES válidas | $INVALID_IMAGES inválidas"
+                
+                if [ $INVALID_IMAGES -eq 0 ]; then
+                  echo "   Todas as imagens estão corretamente referenciadas!"
+                fi
               else
-                echo "     Nenhuma referência de imagem encontrada"
+                echo "   Nenhuma referência de imagem encontrada neste arquivo"
               fi
             fi
           done
+          
+          # Mostrar estatísticas finais das imagens ORGANIZADAS
+          echo " Estatísticas finais da nova organização:"
+          
+          # Imagens consolidadas
+          CONSOLIDATED_IMAGES=$(find ./gh-pages/relatorio-consolidado -name "*.png" -type f 2>/dev/null | wc -l)
+          echo "   relatorio-consolidado/: $CONSOLIDATED_IMAGES imagens"
+          
+          # Imagens por navegador
+          for browser in Chrome Firefox Edge; do
+            FOLDER_NAME="execucao-${browser,,}"
+            BROWSER_IMAGES=$(find "./gh-pages/$FOLDER_NAME" -name "*.png" -type f 2>/dev/null | wc -l)
+            echo "   $FOLDER_NAME/: $BROWSER_IMAGES imagens"
+          done
+          
+          # Exemplos de imagens (nomes originais preservados)
+          echo "   Exemplos de nomes preservados:"
+          find ./gh-pages/relatorio-consolidado -name "selenium-screenshot-*.png" -type f 2>/dev/null | head -5 | sed 's|^./gh-pages/relatorio-consolidado/|     |'
+          
+          TOTAL_IMAGES=$((CONSOLIDATED_IMAGES))
+          echo "   Total de imagens únicas: $TOTAL_IMAGES (sem duplicação de nomes)"
           
           echo "Verificação de imagens concluída!"
         continue-on-error: true
