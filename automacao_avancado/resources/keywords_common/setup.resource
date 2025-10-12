@@ -16,3 +16,9 @@ Abrir o navegador
     Open Browser  about:blank  ${BROWSER}
   END
   Maximize Browser Window
+
+Especificar diretório para screenshots
+  [Documentation]  Especifica o diretório onde os screenshots serão salvos
+  # O ${OUTPUT DIR} aponta para o diretório definido pela flag --outputdir no CLI
+  # Na pipeline a pasta 'screenshots' será criada dentro de 'tests-results-CI/${{ matrix.browser }}/'
+  Set Screenshot Directory  ${OUTPUT DIR}/screenshots_${BROWSER}

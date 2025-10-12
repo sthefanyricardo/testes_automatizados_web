@@ -1,7 +1,9 @@
 ***Settings***
 Documentation  Este arquivo contém os testes automatizados para o sistema de vendas (https://www.saucedemo.com/), incluindo cenários de login, adição e remoção de produtos no carrinho, e finalização de pedidos.
 Resource  ../resources/main.robot
-Suite Setup  Abrir o navegador
+Suite Setup  Run Keywords
+...  Abrir o navegador
+...  Especificar diretório para screenshots
 Suite Teardown  Fechar o navegador
 Test Setup  Acessar página home do site  ${SAUCE_DEMO_URLS.env_v0}
 Test Teardown  Limpar variaveis globais
