@@ -768,7 +768,7 @@ jobs:
           </head>
           <body>
             <div class="container">
-              <h1>📊 Assets dos Testes E2E - Estrutura Organizada</h1>
+              <h1>📊 Artefatos gerados nas execuções dos testes E2E pelo pipeline de CI</h1>
               
               <h2>ℹ️ Estrutura de Pastas</h2>
               <div class="asset-grid">
@@ -817,7 +817,6 @@ jobs:
           # Finalizar HTML com informações da estrutura organizada
           cat >> ./gh-pages/index.html << 'EOF'
               
-              
               <!-- Seção de informações adicionais -->
               <div style="margin-top: 50px; padding: 25px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #28a745;">
                 <h3 style="margin-top: 0; color: #495057;">ℹ️ Sobre os Relatórios</h3>
@@ -827,12 +826,12 @@ jobs:
                     <p style="margin: 0; color: #6c757d; font-size: 14px;">Contém todos os resultados unificados e screenshots centralizados para evitar duplicação</p>
                   </div>
                   <div>
-                    <h4 style="color: #495057; margin: 0 0 10px 0;">🌐 Relatórios Individuais</h4>
-                    <p style="margin: 0; color: #6c757d; font-size: 14px;">Resultados específicos de cada navegador com XMLs individuais disponíveis</p>
-                  </div>
-                  <div>
                     <h4 style="color: #495057; margin: 0 0 10px 0;">🖼️ Screenshots</h4>
                     <p style="margin: 0; color: #6c757d; font-size: 14px;">Todas as evidências visuais centralizadas no relatório consolidado</p>
+                  </div>
+                  <div>
+                    <h4 style="color: #495057; margin: 0 0 10px 0;">🌐 Relatórios Individuais</h4>
+                    <p style="margin: 0; color: #6c757d; font-size: 14px;">Resultados específicos de cada navegador com XMLs individuais disponíveis</p>
                   </div>
                 </div>
               </div>
