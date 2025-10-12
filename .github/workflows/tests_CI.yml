@@ -3,12 +3,11 @@
 # Esta pipeline executa testes automatizados end-to-end em múltiplos navegadores,
 # gera relatórios consolidados e publica os resultados no GitHub Pages.
 #
-# ✨ OTIMIZAÇÕES IMPLEMENTADAS:
-# - 🚀 Setup automático do Edge com browser-actions/setup-edge@v1
-# - ⚡ Timeouts reduzidos para melhor performance
-# - 🎯 Estratégia de SUBPASTAS para organizar imagens por navegador
-# - 📁 Zero conflito de nomenclatura entre navegadores
-# - 🔧 Nomes originais preservados (selenium-screenshot-X.png)
+# Funcionalidades:
+# - ✅ Execução em múltiplos navegadores: Chrome, Firefox e Edge
+# - 🐧 Execução em Ubuntu com Robot Framework e Selenium
+# - 📊 Relatórios HTML consolidados
+# - 🚀 Deploy automático no GitHub Pages
 
 name: E2E Tests - Selenium + Robot Framework
 run-name: Testes E2E (${{ github.ref_name }}) - ${{ github.actor }}
@@ -731,12 +730,12 @@ jobs:
           </head>
           <body>
             <div class="container">
-              <h1>📊 Relatórios de Testes E2E</h1>
+              <h1>🔗 Relatórios de Testes E2E</h1>
               <p class="subtitle">Pipeline automatizada com Robot Framework + Selenium</p>
               
               <div class="asset-grid">
                 <div class="asset-card">
-                  <h3><span class="icon">📂</span>Relatório Consolidado<span class="badge">Todos</span></h3>
+                  <h3><span class="icon">📇</span>Relatório Consolidado<span class="badge">Todos</span></h3>
                   <ul class="asset-list">
                     <li><a href="relatorio-consolidado/report.html">📊 Relatório Unificado</a></li>
                     <li><a href="relatorio-consolidado/log.html">📋 Log Detalhado</a></li>
@@ -799,7 +798,7 @@ jobs:
                     <p>Todas as evidências visuais capturadas automaticamente durante a execução dos testes, mantendo nomes originais.</p>
                   </div>
                   <div class="info-item">
-                    <h4><span class="icon">📊</span>Consolidação</h4>
+                    <h4><span class="icon">🔄</span>Consolidação</h4>
                     <p>O relatório consolidado unifica resultados de todos os navegadores em uma única visualização completa.</p>
                   </div>
                   <div class="info-item">
