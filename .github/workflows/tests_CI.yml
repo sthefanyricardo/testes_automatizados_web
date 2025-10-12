@@ -456,21 +456,23 @@ jobs:
 
       - name: Copy images before consolidation
         run: |
-          echo "Nova estratégia: Todas as imagens no relatorio-consolidado com prefixos..."
+          echo "ESTRATÉGIA DE PREFIXOS: Todas as imagens no relatorio-consolidado com prefixos por navegador..."
           mkdir -p ./gh-pages
           mkdir -p ./gh-pages/relatorio-consolidado
           
           IMAGES_FOUND=0
           
-          echo "  Nova estratégia de organização:"
-          echo "    1. Manter nomes originais das imagens (selenium-screenshot-X.png) para as execuções unitarias por navegador"
-          echo "    2. Pastas separadas apenas para relatórios individuais"
-          echo "    3. Organizar em pastas separadas por navegador"
-          echo "    4. Todas as imagens que precisam ficar em relatorio-consolidado/ (na raiz da pasta)"
-          echo "    5. Prefixos por navegador: chrome-, firefox-, edge-"
-          echo "    6. Nenhuma imagem na raiz do artifact"
+          echo "Estratégia de organização para as imagens:"
+          echo "1. Manter nomes originais das imagens (selenium-screenshot-X.png) para as execuções unitarias por navegador"
+          echo "2. Pastas separadas apenas para relatórios individuais - Organizar em pastas separadas por navegador"
+          echo "3. Cópias individuais nas pastas execucao-* (nomes originais)"
+          echo "4. Todas as imagens que precisam ficar em relatorio-consolidado/ (na raiz da pasta)"
+          echo "5. Prefixos por navegador: chrome-, firefox-, edge- para as imagens no relatorio-consolidado/"
+          echo "6. Nomes: chrome-selenium-screenshot-X.png, firefox-selenium-screenshot-X.png"
+          echo "7. Raiz do artifact LIMPA (só index.html)"
+          echo "8. Compatível com GitHub Pages (imagens na mesma pasta dos HTMLs)"
 
-          # Processar cada navegador e copiar diretamente para relatorio-consolidado
+          # Processar cada navegador com estratégia de PREFIXOS
           for browser in Chrome Firefox Edge; do
             BROWSER_DIR="./all-results/test-results-$browser"
             BROWSER_INDIVIDUAL="./gh-pages/execucao-${browser,,}"
@@ -480,30 +482,31 @@ jobs:
               echo "  Processando $browser..."
               mkdir -p "$BROWSER_INDIVIDUAL"
               
-              # Copiar PNGs mantendo nomes originais
+              # Verificar se há PNGs
               if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
                 PNG_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
                 
-                # Copiar todas as imagens mantendo nomes originais
-                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "$BROWSER_FOLDER/" \;
+                # 1. Copiar para pasta individual com nomes originais
+                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "$BROWSER_INDIVIDUAL/" \;
+                echo "    Copiadas para $BROWSER_INDIVIDUAL/ (nomes originais)"
                 
-                echo "    $PNG_COUNT imagens copiadas para images-${browser,,}/"
-                echo "    Pasta: $BROWSER_FOLDER"
+                # 2. Copiar para relatorio-consolidado COM PREFIXOS
+                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | while read img; do
+                  filename=$(basename "$img")
+                  new_name="${PREFIX}${filename}"
+                  cp "$img" "./gh-pages/relatorio-consolidado/$new_name"
+                done
                 
-                # Para o Chrome, também copiar para a raiz (usado na consolidação)
-                if [ "$browser" = "Chrome" ]; then
-                  find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "./gh-pages/" \;
-                  echo "    Imagens Chrome também copiadas para raiz (consolidação)"
-                  IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT * 2))  # Pasta + raiz
-                else
-                  IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT))
-                fi
-                
-                # Mostrar exemplos de imagens copiadas
-                echo "    Exemplos copiados:"
-                find "$BROWSER_FOLDER" -name "*.png" -type f | head -3 | sed 's/^/      /'
-                echo "    Exemplo no consolidado:"
-                ls -1 "./gh-pages/relatorio-consolidado/${PREFIX}"*.png 2>/dev/null | head -2 | sed 's/^/      /'
+                echo "    Copiadas para relatorio-consolidado/ com prefixo '$PREFIX'"
+                IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT * 2))  # Individual + consolidado
+
+                # Mostrar exemplos de imagens copiadas sem renomeação
+                echo "    Exemplos copiados na pasta individual:"
+                find "$BROWSER_INDIVIDUAL" -name "*.png" -type f | head -3 | sed 's/^/      /'
+
+                # Mostrar exemplos das imagens copiadas com prefixos
+                echo "    Exemplos com prefixos criados no consolidado:"
+                ls -1 "./gh-pages/relatorio-consolidado/${PREFIX}"*.png 2>/dev/null | head -3 | sed 's/^/      /'
                 
               else
                 echo "    Nenhuma imagem encontrada em $browser"
@@ -513,8 +516,12 @@ jobs:
             fi
           done
 
-          echo "Total: $IMAGES_FOUND arquivos organizados (consolidado + individuais)"
-          echo "Vantagem: Nomes originais preservados, organização por pastas"
+          echo ""
+          echo "📊 RESUMO DA ESTRATÉGIA DE PREFIXOS:"
+          echo "   Total de imagens organizadas: $IMAGES_FOUND"
+          echo "   🎯 Todas as imagens do consolidado em: ./gh-pages/relatorio-consolidado/"
+          echo "   🚫 Raiz do artifact: LIMPA (0 imagens)"
+          echo "   ✅ GitHub Pages: Compatível (imagens co-localizadas com HTMLs)"
         continue-on-error: true
 
       - name: Create consolidated report with rebot
@@ -720,32 +727,33 @@ jobs:
               sed -i 's|src="\.\./[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               sed -i 's|src="\./[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               
-              # 6. ESTRATÉGIA INTELIGENTE - mapear para imagens nas pastas corretas
-              echo "    Aplicando mapeamento inteligente para nova estrutura de pastas..."
+              # 6. ESTRATÉGIA DE PREFIXOS - mapear selenium-screenshot para imagens com prefixos
+              echo "    Aplicando mapeamento inteligente para estratégia de PREFIXOS..."
               
               # Primeiro, converter caminhos absolutos para relativos básicos
               sed -i 's|src="[^"]*[/\\]\([^/\\]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               
-              # Mapear selenium-screenshot para as pastas organizadas de navegadores
-              # IMPORTANTE: Não há mais imagens na raiz - todas estão nas subpastas
+              # Mapear selenium-screenshot-X.png para NAVEGADOR-selenium-screenshot-X.png
+              # Estratégia: Todas as imagens renomeadas com prefixos estão na RAIZ do relatorio-consolidado
               for img_ref in $(grep -o 'src="\./selenium-screenshot-[0-9]*\.png"' "$html_file" 2>/dev/null | sed 's/src="\.\///; s/"//' | sort | uniq); do
                 if [ -n "$img_ref" ]; then
-                  # Procurar nas pastas de navegadores (não mais na raiz)
-                  FOUND_IN_FOLDER=""
-                  for browser in chrome firefox edge; do
-                    if [ -f "./gh-pages/relatorio-consolidado/images-$browser/$img_ref" ]; then
-                      FOUND_IN_FOLDER="images-$browser"
+                  # Verificar qual imagem com prefixo existe (chrome-, firefox-, edge-)
+                  FOUND_WITH_PREFIX=""
+                  for prefix in chrome firefox edge; do
+                    prefixed_name="${prefix}-${img_ref}"
+                    if [ -f "./gh-pages/relatorio-consolidado/$prefixed_name" ]; then
+                      FOUND_WITH_PREFIX="$prefixed_name"
                       break
                     fi
                   done
                   
-                  if [ -n "$FOUND_IN_FOLDER" ]; then
-                    echo "      Mapeando: $img_ref → $FOUND_IN_FOLDER/$img_ref"
-                    # Substituir referência para apontar para a pasta correta
-                    sed -i "s|src=\"\.\/$img_ref\"|src=\"./$FOUND_IN_FOLDER/$img_ref\"|g" "$html_file" 2>/dev/null
-                    sed -i "s|href=\"\.\/$img_ref\"|href=\"./$FOUND_IN_FOLDER/$img_ref\"|g" "$html_file" 2>/dev/null
+                  if [ -n "$FOUND_WITH_PREFIX" ]; then
+                    echo "      Mapeando: $img_ref → $FOUND_WITH_PREFIX"
+                    # Substituir referência para usar a imagem com prefixo
+                    sed -i "s|src=\"\.\/$img_ref\"|src=\"./$FOUND_WITH_PREFIX\"|g" "$html_file" 2>/dev/null
+                    sed -i "s|href=\"\.\/$img_ref\"|href=\"./$FOUND_WITH_PREFIX\"|g" "$html_file" 2>/dev/null
                   else
-                    echo "      Imagem não encontrada em nenhuma subpasta: $img_ref"
+                    echo "      Imagem não encontrada com nenhum prefixo: $img_ref"
                   fi
                 fi
               done
@@ -789,8 +797,8 @@ jobs:
             done
           done
           
-          # Resumo da NOVA estrutura com PREFIXOS
-          echo "📋 Nova Estrutura Implementada:"
+          # Resumo da estrutura de organização das imagens com PREFIXOS somente para o relatório consolidado
+          echo "Estrutura de organização implementada:"
           echo "  📂 relatorio-consolidado/"
           echo "    ├── report.html, log.html, output.xml (relatórios consolidados)"
           echo "    ├── chrome-selenium-screenshot-*.png (imagens Chrome)"
@@ -1011,29 +1019,29 @@ jobs:
             fi
           done
           
-          # Mostrar estatísticas finais da NOVA ESTRUTURA ORGANIZADA
-          echo " Estatísticas finais da nova estrutura (pastas dentro do relatorio-consolidado):"
+          # Mostrar estatísticas finais da ESTRATÉGIA DE PREFIXOS
+          echo " Estatísticas finais da nova estrutura (prefixos no relatorio-consolidado):"
           
-          # Imagens na raiz do consolidado (Chrome)
-          ROOT_IMAGES=$(find ./gh-pages/relatorio-consolidado -maxdepth 1 -name "*.png" -type f 2>/dev/null | wc -l)
-          echo "   relatorio-consolidado/ (raiz): $ROOT_IMAGES imagens Chrome"
+          # Imagens com prefixos na raiz do consolidado
+          CHROME_IMAGES=$(find ./gh-pages/relatorio-consolidado -maxdepth 1 -name "chrome-*.png" -type f 2>/dev/null | wc -l)
+          FIREFOX_IMAGES=$(find ./gh-pages/relatorio-consolidado -maxdepth 1 -name "firefox-*.png" -type f 2>/dev/null | wc -l)
+          EDGE_IMAGES=$(find ./gh-pages/relatorio-consolidado -maxdepth 1 -name "edge-*.png" -type f 2>/dev/null | wc -l)
           
-          # Imagens nas subpastas por navegador (dentro do consolidado)
-          for browser in chrome firefox edge; do
-            SUBFOLDER_IMAGES=$(find "./gh-pages/relatorio-consolidado/images-$browser" -name "*.png" -type f 2>/dev/null | wc -l)
-            echo "   relatorio-consolidado/images-$browser/: $SUBFOLDER_IMAGES imagens"
-          done
+          echo "   relatorio-consolidado/ (com prefixos):"
+          echo "     chrome-*.png: $CHROME_IMAGES imagens"
+          echo "     firefox-*.png: $FIREFOX_IMAGES imagens"
+          echo "     edge-*.png: $EDGE_IMAGES imagens"
           
           # Imagens nas pastas individuais (cópias para relatórios individuais)
           for browser in Chrome Firefox Edge; do
             FOLDER_NAME="execucao-${browser,,}"
             BROWSER_IMAGES=$(find "./gh-pages/$FOLDER_NAME" -name "*.png" -type f 2>/dev/null | wc -l)
-            echo "   $FOLDER_NAME/: $BROWSER_IMAGES imagens (cópias locais)"
+            echo "   $FOLDER_NAME/: $BROWSER_IMAGES imagens (nomes originais)"
           done
           
-          TOTAL_CONSOLIDATED=$(find ./gh-pages/relatorio-consolidado -name "*.png" -type f 2>/dev/null | wc -l)
-          echo "   Total no relatorio-consolidado: $TOTAL_CONSOLIDATED imagens (todas organizadas)"
-          echo "   Vantagem: Pastas de imagens centralizadas, sem duplicação na raiz"
+          TOTAL_CONSOLIDATED=$(find ./gh-pages/relatorio-consolidado -maxdepth 1 -name "*.png" -type f 2>/dev/null | wc -l)
+          echo "   Total no relatorio-consolidado: $TOTAL_CONSOLIDATED imagens (todas com prefixos)"
+          echo "   Vantagem: GitHub Pages compatível - imagens co-localizadas com HTMLs"
           
           echo "Verificação de imagens concluída!"
         continue-on-error: true
