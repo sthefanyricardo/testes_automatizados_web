@@ -768,9 +768,10 @@ jobs:
           </head>
           <body>
             <div class="container">
-              <h1>📊 Artefatos gerados nas execuções dos testes E2E pelo pipeline de CI</h1>
-              
-              <h2>ℹ️ Estrutura de Pastas</h2>
+              <h1>📊 Artefatos gerados na execução do pipeline de CI</h1>
+              <hr>
+              <h2 >ℹ️ Estrutura de Pastas</h2>
+              <hr>
               <div class="asset-grid">
                 <div class="asset-card">
                   <h3><span class="folder-icon">📂</span>Relatório Consolidado</h3>
@@ -838,8 +839,7 @@ jobs:
               
               <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e1e5e9;">
                 <p style="color: #6a737d; font-size: 14px; margin: 0;">
-                  🤖 Gerado automaticamente pelo GitHub Actions • 
-                  <span style="color: #28a745;">✅ Estrutura organizada e otimizada</span>
+                  🤖 Gerado automaticamente pelo GitHub Actions 
                 </p>
               </div>
             </div>
