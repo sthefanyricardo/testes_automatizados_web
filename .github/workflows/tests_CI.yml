@@ -790,19 +790,19 @@ jobs:
                 </h3>
                 <div class="info-grid">
                   <div class="info-item">
-                    <h4><span class="icon">📂</span>Estrutura Organizada</h4>
+                    <h4><span class="icon">1️⃣</span>Estrutura Organizada</h4>
                     <p>Screenshots organizados em subpastas por navegador (chrome/, firefox/, edge/) para evitar conflitos de nomenclatura.</p>
                   </div>
                   <div class="info-item">
-                    <h4><span class="icon">🖼️</span>Screenshots</h4>
+                    <h4><span class="icon">2️⃣</span>Screenshots</h4>
                     <p>Todas as evidências visuais capturadas automaticamente durante a execução dos testes, mantendo nomes originais.</p>
                   </div>
                   <div class="info-item">
-                    <h4><span class="icon">🔄</span>Consolidação</h4>
+                    <h4><span class="icon">3️⃣</span>Consolidação</h4>
                     <p>O relatório consolidado unifica resultados de todos os navegadores em uma única visualização completa.</p>
                   </div>
                   <div class="info-item">
-                    <h4><span class="icon">🔍</span>Análise Individual</h4>
+                    <h4><span class="icon">4️⃣</span>Análise Individual</h4>
                     <p>Relatórios separados por navegador para análise detalhada de comportamentos específicos.</p>
                   </div>
                 </div>
