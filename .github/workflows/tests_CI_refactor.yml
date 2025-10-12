@@ -656,12 +656,25 @@ jobs:
           
           # Corrigir caminhos das imagens nos arquivos HTML
           echo "� Corrigindo caminhos das imagens nos arquivos HTML..."
-          # Corrigir relatórios consolidados (imagens na mesma pasta)
+          # Corrigir relatórios consolidados (imagens na mesma pasta) - padrões mais abrangentes
           for html_file in ./gh-pages/relatorio-consolidado/*.html; do
             if [ -f "$html_file" ]; then
-              sed -i 's/src="[^"]*\/\([^"]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/href="[^"]*\/\([^"]*\.png\)"/href=".\/\1"/g' "$html_file" 2>/dev/null || true
-              sed -i 's/src="[^"]*tests-results-CI[^"]*\/\([^"]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
+              # Padrão 1: Qualquer caminho que termine com .png
+              sed -i 's/src="[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
+              sed -i 's/href="[^"]*\/\([^"\/]*\.png\)"/href=".\/\1"/g' "$html_file" 2>/dev/null || true
+              
+              # Padrão 2: Caminhos específicos com tests-results-CI
+              sed -i 's/src="[^"]*tests-results-CI[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
+              sed -i 's/href="[^"]*tests-results-CI[^"]*\/\([^"\/]*\.png\)"/href=".\/\1"/g' "$html_file" 2>/dev/null || true
+              
+              # Padrão 3: Caminhos com browser names
+              sed -i 's/src="[^"]*-\(Chrome\|Firefox\|Edge\)[^"]*\/\([^"\/]*\.png\)"/src=".\/\2"/g' "$html_file" 2>/dev/null || true
+              sed -i 's/href="[^"]*-\(Chrome\|Firefox\|Edge\)[^"]*\/\([^"\/]*\.png\)"/href=".\/\2"/g' "$html_file" 2>/dev/null || true
+              
+              # Padrão 4: Caminhos absolutos ou relativos complexos
+              sed -i 's/src="\.\.\/[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
+              sed -i 's/href="\.\.\/[^"]*\/\([^"\/]*\.png\)"/href=".\/\1"/g' "$html_file" 2>/dev/null || true
+              
               echo "    ✅ Relatório consolidado: $(basename "$html_file")"
             fi
           done
@@ -701,8 +714,8 @@ jobs:
           find ./gh-pages -name "*.png" -type f | head -10 || echo "Nenhuma imagem encontrada"
           echo ""
           
-          # Criar página com links para estrutura organizada
-          cat > ./gh-pages/assets.html << 'EOF'
+          # Criar página principal (assets como index.html)
+          cat > ./gh-pages/index.html << 'EOF'
           <!DOCTYPE html>
           <html lang="pt-BR">
           <head>
@@ -775,7 +788,7 @@ jobs:
           EOF
           
           # Seção de screenshots (centralizados no consolidado)
-          cat >> ./gh-pages/assets.html << 'EOF'
+          cat >> ./gh-pages/index.html << 'EOF'
               
               <h2>📸 Screenshots Centralizados</h2>
               <div class="asset-card" style="margin: 20px 0;">
@@ -790,7 +803,7 @@ jobs:
           if [ $CONSOLIDATED_SCREENSHOTS -gt 0 ]; then
             echo "✅ Adicionando $CONSOLIDATED_SCREENSHOTS screenshots centralizados"
             
-            cat >> ./gh-pages/assets.html << 'EOF'
+            cat >> ./gh-pages/index.html << 'EOF'
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin: 15px 0;">
           EOF
             
@@ -798,7 +811,7 @@ jobs:
             find ./gh-pages/relatorio-consolidado -name "*.png" -type f 2>/dev/null | sort | while read screenshot; do
               filename=$(basename "$screenshot")
               echo "  📎 Adicionando screenshot centralizado: $filename"
-              cat >> ./gh-pages/assets.html << EOF
+              cat >> ./gh-pages/index.html << EOF
                   <div style="text-align: center; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: white;">
                     <a href="relatorio-consolidado/$filename" target="_blank">
                       <img src="relatorio-consolidado/$filename" alt="$filename" style="max-width: 100%; max-height: 150px; border-radius: 4px;">
@@ -808,17 +821,17 @@ jobs:
           EOF
             done
             
-            echo '</div>' >> ./gh-pages/assets.html
+            echo '</div>' >> ./gh-pages/index.html
           else
             echo "⚠️ Nenhum screenshot encontrado no consolidado"
-            echo '<p style="color: #e76f51;">⚠️ Nenhum screenshot encontrado nesta execução.</p>' >> ./gh-pages/assets.html
+            echo '<p style="color: #e76f51;">⚠️ Nenhum screenshot encontrado nesta execução.</p>' >> ./gh-pages/index.html
           fi
           
-          cat >> ./gh-pages/assets.html << 'EOF'
+          cat >> ./gh-pages/index.html << 'EOF'
               </div>
           
           # Finalizar HTML com informações da estrutura organizada
-          cat >> ./gh-pages/assets.html << 'EOF'
+          cat >> ./gh-pages/index.html << 'EOF'
               
               <h2>ℹ️ Sobre a Organização</h2>
               <div class="asset-card" style="background: #e8f4f8; border-color: #2a9d8f;">
@@ -846,7 +859,32 @@ jobs:
           </html>
           EOF
           
-          echo "✅ Página de assets criada: assets.html"
+          echo "✅ Página principal criada: index.html (estrutura organizada)"
+          
+          # Verificação final e correção adicional de imagens no consolidado
+          echo "🔍 Verificação final dos caminhos de imagem no consolidado..."
+          for html_file in ./gh-pages/relatorio-consolidado/*.html; do
+            if [ -f "$html_file" ]; then
+              # Debug: mostrar algumas linhas com imagens antes da correção
+              echo "  📋 Verificando $(basename "$html_file")..."
+              
+              # Correções adicionais mais específicas
+              sed -i 's/src="tests-results-CI[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
+              sed -i 's/src="[^"]*selenium-screenshot[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
+              sed -i 's/src="[^"]*screenshot[^"]*\/\([^"\/]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
+              
+              # Verificar se ainda há caminhos problemáticos
+              PROBLEM_PATHS=$(grep -c 'src="[^"]*\/[^"]*\.png"' "$html_file" 2>/dev/null || echo "0")
+              if [ "$PROBLEM_PATHS" -gt 0 ]; then
+                echo "    ⚠️ Encontrados $PROBLEM_PATHS caminhos que podem precisar de ajuste"
+                grep 'src="[^"]*\/[^"]*\.png"' "$html_file" | head -3 || true
+              else
+                echo "    ✅ Caminhos verificados em $(basename "$html_file")"
+              fi
+            fi
+          done
+          
+          echo "🎯 Verificação de imagens concluída!"
         continue-on-error: true
 
       - name: Upload Pages artifact
