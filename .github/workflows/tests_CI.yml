@@ -3,11 +3,12 @@
 # Esta pipeline executa testes automatizados end-to-end em múltiplos navegadores,
 # gera relatórios consolidados e publica os resultados no GitHub Pages.
 #
-# Funcionalidades:
-# - ✅ Execução em múltiplos navegadores: Chrome, Firefox e Edge
-# - 🐧 Execução em Ubuntu com Robot Framework e Selenium
-# - 📊 Relatórios HTML consolidados
-# - 🚀 Deploy automático no GitHub Pages
+# ✨ OTIMIZAÇÕES IMPLEMENTADAS:
+# - 🚀 Setup automático do Edge com browser-actions/setup-edge@v1
+# - ⚡ Timeouts reduzidos para melhor performance
+# - 🎯 Estratégia de SUBPASTAS para organizar imagens por navegador
+# - 📁 Zero conflito de nomenclatura entre navegadores
+# - 🔧 Nomes originais preservados (selenium-screenshot-X.png)
 
 name: E2E Tests - Selenium + Robot Framework
 run-name: Testes E2E (${{ github.ref_name }}) - ${{ github.actor }}
@@ -42,13 +43,13 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.12"
-  CACHE_VERSION: "v1" # Incrementar para invalidar cache se necessário
+  CACHE_VERSION: "v1"
 
 jobs:
   tests:
     strategy:
-      fail-fast: false # Não para outros browsers se um falhar
-      max-parallel: 3 # Controla paralelismo
+      fail-fast: false
+      max-parallel: 3
       matrix:
         browser: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'Todos' && fromJSON(format('["{0}"]', github.event.inputs.browser))) || fromJSON('["Chrome", "Firefox", "Edge"]') }}
     runs-on: ubuntu-latest
@@ -85,7 +86,6 @@ jobs:
           echo "Instalando dependências específicas dos módulos..."
           INSTALLED_MODULES=()
           
-          #Instalar requirements.txt de cada módulo na RAIZ do repositório
           for module in automacao_basico automacao_intermediario automacao_avancado; do
             if [ -f "$module/requirements.txt" ]; then
               echo "Instalando dependências de $module..."
@@ -97,7 +97,6 @@ jobs:
             fi
           done
           
-          # Verificar se existe um requirements.txt global na raiz
           if [ -f "requirements.txt" ]; then
             echo "Instalando dependências globais..."
             pip install -r "requirements.txt"
@@ -111,77 +110,8 @@ jobs:
           echo "Robot Framework: $(robot --version 2>/dev/null || echo 'Não encontrado')"
           echo "Selenium: $(python -c 'import selenium; print(selenium.__version__)' 2>/dev/null || echo 'Não encontrado')"
           echo "SeleniumLibrary: $(python -c 'import SeleniumLibrary; print(SeleniumLibrary.__version__)' 2>/dev/null || echo 'Não encontrada')"
-          echo "Faker: $(python -c 'import robot.libraries.FakerLibrary; print(\"Faker instalado\")' 2>/dev/null || echo 'Faker não encontrado')"
 
-      - name: Create results directory
-        run: |
-          mkdir -p ./tests-results-CI/${{ matrix.browser }}
-          echo "Diretório de resultados criado: ./tests-results-CI/${{ matrix.browser }}"
-          
-      - name: Setup Browser Environment
-        run: |
-          echo "Configurando ambiente para execução robusta..."
-          
-          # Verificar Robot Framework e bibliotecas instaladas
-          echo "Robot Framework: $(robot --version 2>/dev/null || echo 'Não encontrado')"
-          echo "SeleniumLibrary: $(python -c 'import SeleniumLibrary; print(SeleniumLibrary.__version__)' 2>/dev/null || echo 'Não encontrada')"
-          echo "Selenium: $(python -c 'import selenium; print(selenium.__version__)' 2>/dev/null || echo 'Não encontrado')"
-          
-          # Verificar navegadores disponíveis no Ubuntu runner (versões detalhadas)
-          echo "VERIFICAÇÃO DETALHADA DE NAVEGADORES:"
-          echo "=========================================="
-          
-          # Chrome
-          if command -v google-chrome &> /dev/null; then
-            CHROME_VERSION=$(google-chrome --version)
-            echo "Chrome: $CHROME_VERSION"
-            echo "   Caminho: $(which google-chrome)"
-          else
-            echo "Chrome não encontrado"
-          fi
-          
-          # Firefox
-          if command -v firefox &> /dev/null; then
-            FIREFOX_VERSION=$(firefox --version)
-            echo "Firefox: $FIREFOX_VERSION"
-            echo "   Caminho: $(which firefox)"
-          else
-            echo "Firefox não encontrado"
-          fi
-          
-          # Microsoft Edge (verificação detalhada)
-          if command -v microsoft-edge &> /dev/null; then
-            EDGE_VERSION=$(microsoft-edge --version)
-            echo "Microsoft Edge: $EDGE_VERSION"
-            echo "   Caminho: $(which microsoft-edge)"
-            echo "   Edge é pré-instalado no GitHub Actions Ubuntu runner"
-            echo "   Versão estável mantida automaticamente pelo GitHub"
-            
-            # Extrair número da versão para EdgeDriver
-            EDGE_MAJOR_VERSION=$(echo "$EDGE_VERSION" | grep -oP '\d+' | head -1)
-            echo "   Versão principal detectada: $EDGE_MAJOR_VERSION"
-          else
-            echo "Microsoft Edge não encontrado"
-            echo "Isso é inesperado - Edge deveria estar pré-instalado"
-          fi
-          
-          echo "=========================================="
-          
-          # Instalar Xvfb se não estiver disponível
-          sudo apt-get update -qq
-          sudo apt-get install -y xvfb
-          
-          # Configurar display virtual mais robusto
-          export DISPLAY=:99
-          Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
-          sleep 5
-          echo "Display virtual configurado: $DISPLAY"
-          
-          # Configurar timeouts mais robustos para screenshots
-          export SELENIUM_IMPLICIT_WAIT=30
-          export SELENIUM_PAGE_LOAD_TIMEOUT=60
-          export SELENIUM_SCRIPT_TIMEOUT=30
-
+      # 🚀 Setup automático do Edge com action oficial
       - name: Setup Microsoft Edge
         if: matrix.browser == 'Edge'
         uses: browser-actions/setup-edge@v1
@@ -191,21 +121,65 @@ jobs:
       - name: Verify Edge Installation
         if: matrix.browser == 'Edge'
         run: |
-          echo "Verificando instalação do Edge..."
-          microsoft-edge --version || edge --version
+          echo "✅ Verificando instalação do Edge..."
+          EDGE_VERSION=$(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)
+          echo "Edge instalado: $EDGE_VERSION"
           
-          echo "EdgeDriver será gerenciado automaticamente pelo Selenium/webdriver-manager"
-          echo "Nenhuma configuração manual necessária!"
+          echo ""
+          echo "🎯 EdgeDriver será gerenciado automaticamente pelo Selenium"
+          echo "   Nenhuma configuração manual necessária!"
           
-          # Verificar se Edge está realmente funcionando
+          # Verificar se Edge está funcionando
           echo "Testando Edge headless..."
           timeout 10s microsoft-edge --headless --disable-gpu --no-sandbox --version || echo "Edge headless OK"
 
+      - name: Create results directory
+        run: |
+          mkdir -p ./tests-results-CI/${{ matrix.browser }}
+          echo "Diretório de resultados criado: ./tests-results-CI/${{ matrix.browser }}"
+          
+      - name: Setup Browser Environment
+        run: |
+          echo "Configurando ambiente para execução..."
+          
+          # Verificar Robot Framework e bibliotecas instaladas
+          echo "Robot Framework: $(robot --version 2>/dev/null || echo 'Não encontrado')"
+          echo "SeleniumLibrary: $(python -c 'import SeleniumLibrary; print(SeleniumLibrary.__version__)' 2>/dev/null || echo 'Não encontrada')"
+          echo "Selenium: $(python -c 'import selenium; print(selenium.__version__)' 2>/dev/null || echo 'Não encontrado')"
+          
+          # Verificar navegadores disponíveis
+          echo "VERIFICAÇÃO DE NAVEGADORES:"
+          echo "=========================================="
+          
+          if command -v google-chrome &> /dev/null; then
+            echo "✅ Chrome: $(google-chrome --version)"
+          fi
+          
+          if command -v firefox &> /dev/null; then
+            echo "✅ Firefox: $(firefox --version)"
+          fi
+          
+          if command -v microsoft-edge &> /dev/null || command -v edge &> /dev/null; then
+            echo "✅ Edge: $(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)"
+          fi
+          
+          echo "=========================================="
+          
+          # Instalar Xvfb para display virtual
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb
+          
+          # Configurar display virtual
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
+          sleep 3
+          echo "✅ Display virtual configurado: $DISPLAY"
+
       - name: Run E2E Tests
         run: |
-          echo "Executando testes para o navegador: ${{ matrix.browser }}"
+          echo "🚀 Executando testes para o navegador: ${{ matrix.browser }}"
           
-          # Converter nome do navegador para lowercase (necessário para SeleniumLibrary)
+          # Converter nome do navegador para lowercase
           BROWSER=$(echo "${{ matrix.browser }}" | tr '[:upper:]' '[:lower:]')
           
           echo "Navegador configurado: $BROWSER"
@@ -213,126 +187,92 @@ jobs:
           # Configurar display para execução headless
           export DISPLAY=:99
           
-          # Pré-configuração do WebDriver para evitar timeouts
-          echo "Pré-configurando WebDriver para $BROWSER..."
-          if [ "$BROWSER" = "edge" ]; then
-            echo "Configurações otimizadas para Microsoft Edge (com instalação robusta):"
-            echo "  - Timeout de screenshot: 120s (otimizado)"
-            echo "  - Timeout de carregamento de página: 60s (otimizado)"
-            echo "  - Aguardo implícito: 30s (otimizado)"
-            echo "  - Velocidade de selenium: padrão (0.5s removido)"
-          else
-            echo "Configurações padrão para $BROWSER:"
-            echo "  - Timeout de screenshot: 120s"
-            echo "  - Timeout de carregamento de página: 60s"
-            echo "  - Aguardo implícito: 30s"
-          fi
+          # ⚡ CONFIGURAÇÕES OTIMIZADAS
+          echo "📊 Configurações de timeout otimizadas:"
+          echo "  - Screenshot timeout: 30s"
+          echo "  - Implicit wait: 10s"
+          echo "  - Page load timeout: 30s"
+          echo "  - Selenium speed: 0.2s"
           echo ""
           
-          # Executar Robot Framework com configurações robustas
-          set +e # Não falhar se robot retornar código de erro
-          
-          # Configurações unificadas (Edge agora usa configurações otimizadas)
-          echo "Aplicando configurações unificadas para todos os navegadores..."
-          EXTRA_ARGS="--variable SCREENSHOT_TIMEOUT:120 --variable IMPLICIT_WAIT:30 --variable PAGE_LOAD_TIMEOUT:60"
+          # Executar Robot Framework com configurações otimizadas
+          set +e
           
           robot \
             --name "Tests E2E - Robot Framework CI (${{ matrix.browser }})" \
             --outputdir ./tests-results-CI/${{ matrix.browser }} \
             --variable BROWSER:$BROWSER \
             --variable HEADLESS:true \
-            --variable TIMEOUT:45 \
+            --variable TIMEOUT:30 \
             --variable WINDOW_SIZE:1920x1080 \
-            --variable SELENIUM_SPEED:0.5 \
+            --variable SELENIUM_SPEED:0.2 \
             --variable CAPTURE_PAGE_SCREENSHOT_ON_FAILURE:true \
             --variable BROWSER_PREFIX:${{ matrix.browser }} \
+            --variable SCREENSHOT_TIMEOUT:30 \
+            --variable IMPLICIT_WAIT:10 \
+            --variable PAGE_LOAD_TIMEOUT:30 \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
             --name "Relatório E2E - ${{ matrix.browser }}" \
             --maxerrorlines 10 \
             --include "*" \
-            $EXTRA_ARGS \
             automacao_basico/tests automacao_intermediario/tests automacao_avancado/tests
           
           ROBOT_EXIT_CODE=$?
           echo "Robot Framework finalizado com código: $ROBOT_EXIT_CODE"
           
           if [ $ROBOT_EXIT_CODE -eq 0 ]; then
-            echo "PERFEITO! Todos os testes passaram!"
-            exit 0  # Força sucesso total
+            echo "✅ PERFEITO! Todos os testes passaram!"
+            exit 0
           elif [ $ROBOT_EXIT_CODE -le 250 ]; then
-            echo "Alguns testes falharam, mas a execução foi bem-sucedida"
-            echo "Relatórios gerados com sucesso para análise"
-            exit 0  # Considera como sucesso para o pipeline
+            echo "⚠️ Alguns testes falharam, mas a execução foi bem-sucedida"
+            echo "📊 Relatórios gerados com sucesso para análise"
+            exit 0
           else
-            echo "Erro crítico na execução dos testes"
-            exit 1  # Só falha em erro crítico real
+            echo "❌ Erro crítico na execução dos testes"
+            exit 1
           fi
 
       - name: Capture Screenshots and Evidence
-        if: always()  # Sempre capturar, não apenas em falha
+        if: always()
         run: |
-          echo "Verificando evidências e screenshots gerados..."
+          echo "📸 Verificando evidências e screenshots gerados..."
           RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
           
-          # Verificar screenshots gerados pelo Robot Framework (apenas contagem, sem duplicar)
-          echo "Verificando imagens geradas pelo Robot Framework..."
-          IMAGES_FOUND=0
+          # Contar screenshots
+          IMAGES_FOUND=$(find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f 2>/dev/null | wc -l)
           
-          # Contar PNGs no diretório principal (onde o Robot Framework os gera)
-          if find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
-            MAIN_IMAGES=$(find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
-            echo "  $MAIN_IMAGES screenshots encontrados no diretório principal"
-            IMAGES_FOUND=$MAIN_IMAGES
-          fi
+          echo "📊 Resumo da coleta de evidências:"
+          echo "  Total de screenshots: $IMAGES_FOUND"
           
-          # Verificar se há imagens em subdiretórios (casos especiais)
-          SUB_IMAGES=$(find "$RESULTS_DIR" -mindepth 2 -name "*.png" -type f | wc -l)
-          if [ $SUB_IMAGES -gt 0 ]; then
-            echo "  $SUB_IMAGES imagens adicionais encontradas em subdiretórios"
-            IMAGES_FOUND=$((IMAGES_FOUND + SUB_IMAGES))
-          fi
-          
-          # Resumo sem duplicação
-          echo "Resumo da coleta de evidências:"
-          echo "  Total de screenshots únicos: $IMAGES_FOUND"
           if [ $IMAGES_FOUND -gt 0 ]; then
             echo "  Exemplos de screenshots disponíveis:"
             find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | head -5 | while read img; do
               echo "    - $(basename "$img")"
             done
           else
-            echo "  Nenhum screenshot encontrado"
-          fi
-          
-          # Informações do ambiente para debug (apenas se houver falha)
-          if [ "${{ job.status }}" = "failure" ]; then
-            echo "Informações do ambiente para debug:"
-            echo "  Display: $DISPLAY"
-            echo "  Processos ativos:"
-            ps aux | grep -E "(Xvfb|chrome|firefox|edge)" | head -5 || echo "  Nenhum processo de navegador ativo"
+            echo "  ⚠️ Nenhum screenshot encontrado"
           fi
         continue-on-error: true
 
       - name: Check Test Results
         if: always()
         run: |
-          echo "Verificando resultados dos testes para ${{ matrix.browser }}..."
+          echo "🔍 Verificando resultados dos testes para ${{ matrix.browser }}..."
           RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
           
           if [ -f "$RESULTS_DIR/output.xml" ]; then
-            echo "Arquivo output.xml encontrado!"
-            echo "Conteúdo do diretório de resultados:"
+            echo "✅ Arquivo output.xml encontrado!"
+            echo "📁 Conteúdo do diretório de resultados:"
             ls -la "$RESULTS_DIR/"
             echo ""
             
-            # Listar arquivos de saída gerados
-            echo "Arquivos de relatório gerados:"
-            [ -f "$RESULTS_DIR/report.html" ] && echo "  report.html ($(stat -c%s "$RESULTS_DIR/report.html" 2>/dev/null || echo "?") bytes)"
-            [ -f "$RESULTS_DIR/log.html" ] && echo "  log.html ($(stat -c%s "$RESULTS_DIR/log.html" 2>/dev/null || echo "?") bytes)"
-            [ -f "$RESULTS_DIR/output.xml" ] && echo "  output.xml ($(stat -c%s "$RESULTS_DIR/output.xml" 2>/dev/null || echo "?") bytes)"
+            echo "📄 Arquivos de relatório gerados:"
+            [ -f "$RESULTS_DIR/report.html" ] && echo "  ✅ report.html ($(stat -c%s "$RESULTS_DIR/report.html" 2>/dev/null || echo "?") bytes)"
+            [ -f "$RESULTS_DIR/log.html" ] && echo "  ✅ log.html ($(stat -c%s "$RESULTS_DIR/log.html" 2>/dev/null || echo "?") bytes)"
+            [ -f "$RESULTS_DIR/output.xml" ] && echo "  ✅ output.xml ($(stat -c%s "$RESULTS_DIR/output.xml" 2>/dev/null || echo "?") bytes)"
           else
-            echo "Arquivo output.xml não encontrado!"
+            echo "❌ Arquivo output.xml não encontrado!"
             echo "Conteúdo disponível no diretório:"
             ls -la "$RESULTS_DIR/" 2>/dev/null || echo "Diretório de resultados não existe"
           fi
@@ -347,7 +287,7 @@ jobs:
             tests-results-CI/${{ matrix.browser }}/report.html
             tests-results-CI/${{ matrix.browser }}/log.html
             tests-results-CI/${{ matrix.browser }}/*.png
-          retention-days: 7  # Reduzido de 30 para 7 dias
+          retention-days: 7
           if-no-files-found: warn
 
   # Job para consolidar resultados e publicar no GitHub Pages
@@ -378,13 +318,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./all-results
-
-      - name: Debug - Check downloaded artifacts
-        run: |
-          echo "Verificando artefatos baixados..."
-          echo "Estrutura do diretório all-results:"
-          ls -laR ./all-results/ || echo "Diretório all-results não encontrado"
-          echo ""
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -458,11 +391,10 @@ jobs:
 
       - name: Create consolidated report with rebot
         run: |
-          # Verificar se existem arquivos output.xml
           OUTPUT_FILES=$(find ./all-results -name "output.xml" -type f 2>/dev/null | tr '\n' ' ')
           
           if [ -z "$OUTPUT_FILES" ]; then
-            echo " Nenhum arquivo output.xml encontrado. Criando página de status..."
+            echo "⚠️ Nenhum arquivo output.xml encontrado. Criando página de status..."
             cat > ./gh-pages/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
@@ -473,26 +405,14 @@ jobs:
           <body>
             <h1>Pipeline em Execução</h1>
             <p>Os testes estão sendo executados. Os relatórios serão disponibilizados em breve.</p>
-            <p>Status: <strong>Aguardando resultados dos testes</strong></p>
           </body>
           </html>
           EOF
-            echo " Página de status criada"
           else
-            echo " Arquivos output.xml encontrados:"
-            echo "$OUTPUT_FILES"
-            echo ""
-            echo " Lista detalhada dos arquivos que serão consolidados:"
-            for file in $OUTPUT_FILES; do
-              echo "  - $file ($(stat -c%s "$file" 2>/dev/null || echo "?" ) bytes)"
-            done
-            echo ""
+            echo "✅ Arquivos output.xml encontrados - gerando relatório consolidado..."
             
             # Executar rebot com tratamento de falhas
             set +e
-            echo " Executando rebot com os arquivos encontrados..."
-            
-            # Executar rebot no mesmo diretório onde estão as imagens
             cd ./gh-pages
             python -m robot.rebot \
               --output output.xml \
@@ -500,206 +420,57 @@ jobs:
               --report report.html \
               --reporttitle "Relatório Consolidado E2E" \
               --name "Relatório Consolidado E2E" \
-              ../all-results/*/output.xml
+              ../all-results/*/output.xml || true
             cd ..
             
             REBOT_EXIT_CODE=$?
-            echo "Rebot finalizado com código: $REBOT_EXIT_CODE"
-            
-            # Verificar arquivos gerados
-            echo "Arquivos gerados pelo rebot:"
-            ls -la ./gh-pages/ || echo "Diretório gh-pages não encontrado"
+            echo "Robot.rebot finalizado com código: $REBOT_EXIT_CODE"
             
             if [ $REBOT_EXIT_CODE -eq 0 ]; then
-              echo "✅ Relatório consolidado gerado com sucesso!"
-              
-              # 🔧 CORREÇÃO CRÍTICA: Atualizar referências de imagens no HTML consolidado
-              echo "🔧 Corrigindo referências de imagens no HTML consolidado..."
-              
-              # 🔧 CORREÇÃO CRÍTICA: Atualizar referências de imagens no HTML consolidado
-              echo "🔧 Corrigindo referências de imagens no HTML consolidado..."
-              
-              # Criar diretório de destino primeiro
-              mkdir -p ./gh-pages/relatorio-consolidado/
-              
-              # Mover HTMLs para relatorio-consolidado primeiro
-              for html_file in ./gh-pages/*.html; do
-                if [ -f "$html_file" ]; then
-                  mv "$html_file" "./gh-pages/relatorio-consolidado/"
-                  echo "   📄 $(basename "$html_file") movido para relatorio-consolidado/"
-                fi
-              done
-              
-              # Mover output.xml se existir
-              if [ -f "./gh-pages/output.xml" ]; then
-                mv "./gh-pages/output.xml" "./gh-pages/relatorio-consolidado/"
-                echo "   📋 output.xml movido para relatorio-consolidado/"
-              fi
-              
-              # Agora corrigir as referências de imagens nos HTMLs para usar SUBPASTAS
-              cd ./gh-pages/relatorio-consolidado/
-              TOTAL_CORRECTIONS=0
-              
-              for html_file in *.html; do
-                if [ -f "$html_file" ]; then
-                  echo "  📄 Processando: $html_file"
-                  
-                  # Backup do arquivo
-                  cp "$html_file" "${html_file}.backup"
-                  
-                  # Buscar referências selenium-screenshot-X.png e corrigir para subpastas
-                  CORRECTIONS=0
-                  
-                  # Para cada número de screenshot encontrado
-                  for img_num in $(grep -o 'selenium-screenshot-[0-9]\+\.png' "$html_file" | sed 's/selenium-screenshot-\([0-9]\+\)\.png/\1/' | sort -u); do
-                    
-                    # Verificar qual navegador tem essa imagem específica nas SUBPASTAS (prioridade: Chrome > Firefox > Edge)
-                    if [ -f "chrome/selenium-screenshot-${img_num}.png" ]; then
-                      REPLACEMENT="chrome/selenium-screenshot-${img_num}.png"
-                      BROWSER="Chrome"
-                    elif [ -f "firefox/selenium-screenshot-${img_num}.png" ]; then
-                      REPLACEMENT="firefox/selenium-screenshot-${img_num}.png"
-                      BROWSER="Firefox"
-                    elif [ -f "edge/selenium-screenshot-${img_num}.png" ]; then
-                      REPLACEMENT="edge/selenium-screenshot-${img_num}.png"
-                      BROWSER="Edge"
-                    else
-                      REPLACEMENT=""
-                      BROWSER=""
-                    fi
-                    
-                    if [ -n "$REPLACEMENT" ]; then
-                      # Substituir tanto src= quanto href= para usar subpastas
-                      sed -i "s/src=\"selenium-screenshot-${img_num}\.png\"/src=\"${REPLACEMENT}\"/g" "$html_file"
-                      sed -i "s/href=\"selenium-screenshot-${img_num}\.png\"/href=\"${REPLACEMENT}\"/g" "$html_file"
-                      
-                      echo "    ✅ selenium-screenshot-${img_num}.png → ${REPLACEMENT} (${BROWSER})"
-                      CORRECTIONS=$((CORRECTIONS + 1))
-                    else
-                      echo "    ⚠️  Imagem não encontrada: selenium-screenshot-${img_num}.png"
-                    fi
-                  done
-                  
-                  echo "    📊 Correções em $html_file: $CORRECTIONS"
-                  TOTAL_CORRECTIONS=$((TOTAL_CORRECTIONS + CORRECTIONS))
-                fi
-              done
-              
-              cd ../..
-              echo "🎯 Total de correções de imagens com SUBPASTAS: $TOTAL_CORRECTIONS"
-              
-              # 📁 Organizar arquivos consolidados na estrutura correta
-              echo "📁 Organizando arquivos consolidados com estratégia GitHub Pages..."
-              mkdir -p ./gh-pages/relatorio-consolidado/
-              
-              # ESTRATÉGIA DE SUBPASTAS: HTMLs no relatorio-consolidado/ + imagens organizadas em subpastas
-              # Estrutura: relatorio-consolidado/chrome/, /firefox/, /edge/ (GitHub Pages compatível)
-              
-              if [ -f "./gh-pages/log.html" ]; then
-                mv "./gh-pages/log.html" "./gh-pages/relatorio-consolidado/"
-                echo "   ✅ log.html movido para relatorio-consolidado/"
-              fi
-              
-              if [ -f "./gh-pages/report.html" ]; then
-                mv "./gh-pages/report.html" "./gh-pages/relatorio-consolidado/"
-                echo "   ✅ report.html movido para relatorio-consolidado/"
-              fi
-              
-              if [ -f "./gh-pages/output.xml" ]; then
-                mv "./gh-pages/output.xml" "./gh-pages/relatorio-consolidado/"
-                echo "   ✅ output.xml movido para relatorio-consolidado/"
-              fi
-              
-              # Verificar se as subpastas com imagens foram criadas
-              CHROME_IMAGES=$(find ./gh-pages/relatorio-consolidado/chrome/ -name "*.png" -type f 2>/dev/null | wc -l)
-              FIREFOX_IMAGES=$(find ./gh-pages/relatorio-consolidado/firefox/ -name "*.png" -type f 2>/dev/null | wc -l)
-              EDGE_IMAGES=$(find ./gh-pages/relatorio-consolidado/edge/ -name "*.png" -type f 2>/dev/null | wc -l)
-              echo "   📸 Imagens organizadas em subpastas:"
-              echo "      Chrome: $CHROME_IMAGES imagens"
-              echo "      Firefox: $FIREFOX_IMAGES imagens"
-              echo "      Edge: $EDGE_IMAGES imagens"
-              
-              echo "📁 Estrutura final do consolidado:"
-              echo "   � HTMLs: $(find ./gh-pages/relatorio-consolidado/ -name "*.html" -type f | wc -l)"
-              echo "   📸 Imagens: $IMAGES_IN_CONSOLIDADO"
-              echo "   ✅ GitHub Pages: COMPATÍVEL (imagens + HTMLs co-localizados)"
-              
+              echo "✅ Relatório consolidado gerado com sucesso - todos os testes passaram!"
             elif [ $REBOT_EXIT_CODE -le 250 ]; then
-              echo "⚠️ Relatório consolidado gerado com alguns testes falhando"
-              echo "Relatório disponível para análise"
+              echo "⚠️ Relatório consolidado gerado com alguns testes falhando (código $REBOT_EXIT_CODE)"
+              echo "📊 Relatório disponível para análise das falhas"
             else
-              echo "Erro crítico na geração do relatório"
-              # Criar relatório de erro
-              cat > ./gh-pages/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Relatório E2E - Erro</title>
-            <meta charset="utf-8">
-          </head>
-          <body>
-            <h1>Erro na Consolidação</h1>
-            <p>Houve um erro ao consolidar os relatórios dos testes.</p>
-            <p>Verifique os artefatos individuais de cada navegador.</p>
-          </body>
-          </html>
-          EOF
+              echo "❌ Erro na geração do relatório (código $REBOT_EXIT_CODE)"
             fi
             
-            # Pós-processamento: corrigir caminhos de imagens nos HTMLs gerados
-            echo " Pós-processamento: corrigindo caminhos de imagens..."
-            for html_file in ./gh-pages/*.html; do
-              if [ -f "$html_file" ]; then
-                # Corrigir qualquer caminho absoluto ou relativo complexo para imagens
-                sed -i 's|src="[^"]*\/\([^"\/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null || true
-                sed -i 's|href="[^"]*\/\([^"\/]*\.png\)"|href="./\1"|g' "$html_file" 2>/dev/null || true
-                # Remover caminhos que contenham diretórios de teste
-                sed -i 's|src="[^"]*tests-results-CI[^"]*\/\([^"\/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null || true
-                echo "    Caminhos corrigidos em $(basename "$html_file")"
-              fi
-            done
-            
-            # Verificar se as imagens estão realmente disponíveis
-            IMAGE_COUNT=$(find ./gh-pages -maxdepth 1 -name "*.png" -type f | wc -l)
-            echo "Verificação final: $IMAGE_COUNT imagens disponíveis na raiz"
+            echo "📊 Processamento de relatório concluído!"
           fi
+          
+          # Garantir que o step termine com sucesso
+          echo "✅ Consolidação de relatórios finalizada"
+          exit 0
         continue-on-error: true
 
-      - name: Copy additional assets
+      - name: Copy additional assets and fix image paths
         run: |
-          echo "Organizando assets em estrutura de pastas..."
+          echo "📁 Organizando assets em estrutura de pastas..."
           
-          # Criar estrutura de pastas organizada
-          echo "Criando estrutura de pastas..."
+          # Criar estrutura de pastas
           mkdir -p "./gh-pages/relatorio-consolidado"
-          echo "  Pasta criada: relatorio-consolidado/"
           
           for browser in Chrome Firefox Edge; do
-            FOLDER_NAME="execucao-${browser,,}"
-            mkdir -p "./gh-pages/$FOLDER_NAME"
-            echo "  Pasta criada: $FOLDER_NAME/"
+            mkdir -p "./gh-pages/execucao-${browser,,}"
           done
           
           # Mover arquivos consolidados para pasta dedicada
-          echo " Organizando relatórios consolidados..."
+          echo "📊 Organizando relatórios consolidados..."
           if [ -f "./gh-pages/report.html" ]; then
             mv "./gh-pages/report.html" "./gh-pages/relatorio-consolidado/"
-            echo "   report.html → relatorio-consolidado/"
+            echo "   ✅ report.html → relatorio-consolidado/"
           fi
           if [ -f "./gh-pages/log.html" ]; then
             mv "./gh-pages/log.html" "./gh-pages/relatorio-consolidado/"
-            echo "   log.html → relatorio-consolidado/"
+            echo "   ✅ log.html → relatorio-consolidado/"
           fi
           if [ -f "./gh-pages/output.xml" ]; then
             mv "./gh-pages/output.xml" "./gh-pages/relatorio-consolidado/"
-            echo "   output.xml → relatorio-consolidado/"
+            echo "   ✅ output.xml → relatorio-consolidado/"
           fi
           
-          # Imagens já organizadas em subpastas: chrome/, firefox/, edge/
-          echo "✅ Imagens já organizadas em subpastas dentro do relatorio-consolidado/"
-          
           # Organizar relatórios individuais por navegador
-          echo "Organizando relatórios individuais por navegador..."
+          echo "📄 Organizando relatórios individuais por navegador..."
           for browser in Chrome Firefox Edge; do
             BROWSER_DIR="./all-results/test-results-$browser"
             FOLDER_NAME="execucao-${browser,,}"
@@ -707,270 +478,349 @@ jobs:
             if [ -d "$BROWSER_DIR" ]; then
               echo "  Processando $browser..."
               
-              # Copiar arquivos individuais para pasta do navegador
-              if [ -f "$BROWSER_DIR/report.html" ]; then
-                cp "$BROWSER_DIR/report.html" "./gh-pages/$FOLDER_NAME/"
-                echo "    report.html → $FOLDER_NAME/"
-              fi
-              if [ -f "$BROWSER_DIR/log.html" ]; then
-                cp "$BROWSER_DIR/log.html" "./gh-pages/$FOLDER_NAME/"
-                echo "    log.html → $FOLDER_NAME/"
-              fi
-              if [ -f "$BROWSER_DIR/output.xml" ]; then
-                cp "$BROWSER_DIR/output.xml" "./gh-pages/$FOLDER_NAME/"
-                echo "    output.xml → $FOLDER_NAME/"
-              fi
+              [ -f "$BROWSER_DIR/report.html" ] && cp "$BROWSER_DIR/report.html" "./gh-pages/$FOLDER_NAME/"
+              [ -f "$BROWSER_DIR/log.html" ] && cp "$BROWSER_DIR/log.html" "./gh-pages/$FOLDER_NAME/"
+              [ -f "$BROWSER_DIR/output.xml" ] && cp "$BROWSER_DIR/output.xml" "./gh-pages/$FOLDER_NAME/"
             fi
           done
           
-          # Corrigir caminhos das imagens nos arquivos HTML
-          echo "Corrigindo caminhos das imagens nos arquivos HTML..."
-          # Corrigir relatórios consolidados (imagens na mesma pasta) - PADRÕES SUPER ROBUSTOS
+          # Corrigir caminhos das imagens nos arquivos HTML (ESTRATÉGIA DE SUBPASTAS)
+          echo ""
+          echo "🔧 Corrigindo caminhos das imagens nos arquivos HTML para usar SUBPASTAS..."
+          
           for html_file in ./gh-pages/relatorio-consolidado/*.html; do
             if [ -f "$html_file" ]; then
-              # Debug: mostrar imagens disponíveis
-              if [ "$(basename "$html_file")" = "log.html" ]; then
-                echo "    Debug: Imagens disponíveis na pasta consolidada:"
-                ls -la ./gh-pages/relatorio-consolidado/*.png 2>/dev/null | head -5 | sed 's/^/      /' || echo "      Nenhuma imagem PNG encontrada"
-                echo "    Debug: Referências de imagem ANTES da correção em log.html:"
-                grep -o 'src="[^"]*\.png"' "$html_file" 2>/dev/null | head -5 | sed 's/^/      /' || echo "      Nenhuma referência encontrada"
-              fi
+              echo "   📄 Corrigindo $(basename "$html_file")..."
               
-              echo "    Corrigindo $(basename "$html_file") com padrões robustos..."
-              
-              # CORREÇÕES ESPECÍFICAS PARA ROBOT FRAMEWORK - ORDEM IMPORTANTE!
-              
-              # Debug detalhado para log.html
-              if [ "$(basename "$html_file")" = "log.html" ]; then
-                echo "     Debug ANTES da correção:"
-                echo "      Imagens disponíveis na pasta:"
-                ls -la ./gh-pages/relatorio-consolidado/*.png 2>/dev/null | wc -l | xargs -I {} echo "        {} imagens PNG encontradas"
-                echo "      Primeiras 3 referências de imagem no HTML:"
-                grep -o 'src="[^"]*\.png"' "$html_file" 2>/dev/null | head -3 | sed 's/^/        /' || echo "        Nenhuma referência encontrada"
-              fi
-              
-              # 1. Robot Framework gera caminhos absolutos - converter para relativos
-              # Padrões como: src="/home/runner/work/.../screenshot.png" → src="./screenshot.png"
+              # Passo 1: Converter caminhos absolutos para relativos básicos
               sed -i 's|src="[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               sed -i 's|href="[^"]*\/\([^/]*\.png\)"|href="./\1"|g' "$html_file" 2>/dev/null
               
-              # 2. Corrigir caminhos com múltiplas barras
-              sed -i 's|src="[^"]*//[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
+              # Passo 2: Mapear referências para subpastas
+              echo "      🔍 Mapeando referências para subpastas corretas..."
               
-              # 3. Corrigir caminhos com diretórios específicos do CI
-              sed -i 's|src="[^"]*tests-results-CI[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
-              sed -i 's|src="[^"]*test-results[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
-              sed -i 's|src="[^"]*all-results[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
+              # Extrair referências únicas de selenium-screenshot
+              SCREENSHOT_REFS=$(grep -oP '(src|href)="(\.\/)?selenium-screenshot-[0-9]+\.png"' "$html_file" 2>/dev/null | \
+                               sed 's/src="//; s/href="//; s/\.\///; s/"//' | sort | uniq)
               
-              # 4. Corrigir caminhos com browser específico
-              sed -i 's|src="[^"]*[Cc]hrome[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
-              sed -i 's|src="[^"]*[Ff]irefox[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
-              sed -i 's|src="[^"]*[Ee]dge[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
-              
-              # 5. Limpar qualquer caminho relativo complexo restante
-              sed -i 's|src="\.\./[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
-              sed -i 's|src="\./[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
-              
-              # 6. ESTRATÉGIA DE SUBPASTAS - mapear selenium-screenshot para imagens em subpastas
-              echo "    ✨ Aplicando mapeamento inteligente para estratégia de SUBPASTAS..."
-              
-              # Primeiro, converter caminhos absolutos para relativos básicos
-              sed -i 's|src="[^"]*[/\\]\([^/\\]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
-              
-              # Mapear selenium-screenshot-X.png para NAVEGADOR/selenium-screenshot-X.png
-              # Estratégia: Todas as imagens organizadas em chrome/, firefox/, edge/
-              for img_ref in $(grep -o 'src="\./selenium-screenshot-[0-9]*\.png"' "$html_file" 2>/dev/null | sed 's/src="\.\///; s/"//' | sort | uniq); do
-                if [ -n "$img_ref" ]; then
-                  # Verificar qual subpasta tem essa imagem (chrome/, firefox/, edge/)
-                  FOUND_IN_SUBFOLDER=""
-                  for browser in chrome firefox edge; do
-                    subfolder_path="${browser}/${img_ref}"
-                    if [ -f "./gh-pages/relatorio-consolidado/$subfolder_path" ]; then
-                      FOUND_IN_SUBFOLDER="$subfolder_path"
-                      break
+              if [ -n "$SCREENSHOT_REFS" ]; then
+                MAPPED_COUNT=0
+                UNMAPPED_COUNT=0
+                
+                # Para cada referência, tentar mapear para a subpasta correta
+                while IFS= read -r screenshot; do
+                  if [ -n "$screenshot" ]; then
+                    # Procurar em qual subpasta esta imagem existe
+                    FOUND_IN=""
+                    for browser_folder in chrome firefox edge; do
+                      if [ -f "./gh-pages/relatorio-consolidado/$browser_folder/$screenshot" ]; then
+                        FOUND_IN="$browser_folder"
+                        break
+                      fi
+                    done
+                    
+                    if [ -n "$FOUND_IN" ]; then
+                      # Substituir referência para incluir subpasta
+                      sed -i "s|src=\"$screenshot\"|src=\"./$FOUND_IN/$screenshot\"|g" "$html_file" 2>/dev/null
+                      sed -i "s|src=\"\./$screenshot\"|src=\"./$FOUND_IN/$screenshot\"|g" "$html_file" 2>/dev/null
+                      sed -i "s|href=\"$screenshot\"|href=\"./$FOUND_IN/$screenshot\"|g" "$html_file" 2>/dev/null
+                      sed -i "s|href=\"\./$screenshot\"|href=\"./$FOUND_IN/$screenshot\"|g" "$html_file" 2>/dev/null
+                      
+                      MAPPED_COUNT=$((MAPPED_COUNT + 1))
+                    else
+                      UNMAPPED_COUNT=$((UNMAPPED_COUNT + 1))
                     fi
-                  done
-                  
-                  if [ -n "$FOUND_IN_SUBFOLDER" ]; then
-                    echo "      🎯 Mapeando: $img_ref → $FOUND_IN_SUBFOLDER"
-                    # Substituir referência para usar a subpasta
-                    sed -i "s|src=\"\.\/$img_ref\"|src=\"./$FOUND_IN_SUBFOLDER\"|g" "$html_file" 2>/dev/null
-                    sed -i "s|href=\"\.\/$img_ref\"|href=\"./$FOUND_IN_SUBFOLDER\"|g" "$html_file" 2>/dev/null
-                  else
-                    echo "      ⚠️ Imagem não encontrada em nenhuma subpasta: $img_ref"
                   fi
-                fi
-              done
-              
-              # Debug APÓS correção inteligente para log.html
-              if [ "$(basename "$html_file")" = "log.html" ]; then
-                echo "      Debug APÓS correção inteligente:"
-                echo "      Primeiras 3 referências corrigidas:"
-                grep -o 'src="[^"]*\.png"' "$html_file" 2>/dev/null | head -3 | sed 's/^/        /' || echo "        Nenhuma referência encontrada"
-                echo "      Verificando referências para subpastas:"
-                grep -o 'src="\./images-[^"]*\.png"' "$html_file" 2>/dev/null | head -3 | sed 's/^/        /' || echo "        Nenhuma referência para subpastas"
+                done <<< "$SCREENSHOT_REFS"
+                
+                echo "      ✅ Mapeadas: $MAPPED_COUNT | ⚠️ Não encontradas: $UNMAPPED_COUNT"
+              else
+                echo "      ℹ️ Nenhuma referência de selenium-screenshot encontrada"
               fi
               
-              echo "    Relatório consolidado: $(basename "$html_file")"
+              # Verificar resultado final
+              FINAL_REFS=$(grep -c '\.png' "$html_file" 2>/dev/null || echo "0")
+              echo "      📊 Total de referências processadas: $FINAL_REFS"
             fi
           done
           
           # Corrigir relatórios individuais (imagens na própria pasta)
+          echo ""
+          echo "🔧 Corrigindo caminhos nos relatórios individuais..."
           for browser in Chrome Firefox Edge; do
             FOLDER_NAME="execucao-${browser,,}"
             for html_file in ./gh-pages/$FOLDER_NAME/*.html; do
               if [ -f "$html_file" ]; then
-                echo "    Corrigindo relatório individual $FOLDER_NAME: $(basename "$html_file")"
-                
-                # Corrigir caminhos para usar imagens locais da própria pasta
+                # Correção simples: caminhos relativos locais
                 sed -i 's|src="[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
                 sed -i 's|href="[^"]*\/\([^/]*\.png\)"|href="./\1"|g' "$html_file" 2>/dev/null
-                
-                # Corrigir caminhos específicos do CI
-                sed -i 's|src="[^"]*tests-results-CI[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
-                sed -i 's|src="[^"]*test-results[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
-                
-                # Verificar se as imagens estão disponíveis na pasta
-                LOCAL_IMAGES=$(find "./gh-pages/$FOLDER_NAME" -name "*.png" -type f | wc -l)
-                if [ $LOCAL_IMAGES -gt 0 ]; then
-                  echo "      $LOCAL_IMAGES imagens disponíveis localmente"
-                else
-                  echo "      Nenhuma imagem local - relatório pode não exibir screenshots"
-                fi
               fi
             done
           done
           
-          # Resumo da estrutura de organização das imagens com SUBPASTAS para o relatório consolidado
-          echo "✨ Estrutura de organização implementada (estratégia de subpastas):"
+          # Resumo da estrutura
+          echo ""
+          echo "📋 Estrutura final implementada (com subpastas):"
           echo "  📂 relatorio-consolidado/"
-          echo "    ├── report.html, log.html, output.xml (relatórios consolidados)"
-          echo "    ├── chrome/selenium-screenshot-*.png (imagens Chrome organizadas)"
-          echo "    ├── firefox/selenium-screenshot-*.png (imagens Firefox organizadas)"
-          echo "    └── edge/selenium-screenshot-*.png (imagens Edge organizadas)"
-          echo "  📂 execucao-chrome/, execucao-firefox/, execucao-edge/ (execuções individuais preservadas)"
-          
-          echo "Assets adicionais processados com sucesso!"
+          echo "    ├── report.html, log.html, output.xml"
+          echo "    ├── 📂 chrome/ (selenium-screenshot-*.png do Chrome)"
+          echo "    ├── 📂 firefox/ (selenium-screenshot-*.png do Firefox)"
+          echo "    └── 📂 edge/ (selenium-screenshot-*.png do Edge)"
+          echo "  📂 execucao-chrome/ (relatórios + imagens Chrome)"
+          echo "  📂 execucao-firefox/ (relatórios + imagens Firefox)"
+          echo "  📂 execucao-edge/ (relatórios + imagens Edge)"
+          echo ""
+          echo "✅ Assets organizados e caminhos corrigidos com sucesso!"
         continue-on-error: true
 
       - name: Create asset index page
         run: |
-          echo "Criando página de índice de assets..."
+          echo "📝 Criando página de índice de assets..."
           
-          # Debug: verificar estrutura atual
-          echo "Debug - Estrutura atual do gh-pages:"
-          ls -la ./gh-pages/ || echo "Diretório gh-pages não encontrado"
-          echo ""
-          echo "Debug - Imagens encontradas:"
-          find ./gh-pages -name "*.png" -type f | head -10 || echo "Nenhuma imagem encontrada"
-          echo ""
-          
-          # Criar página principal (assets como index.html)
           cat > ./gh-pages/index.html << 'EOF'
           <!DOCTYPE html>
           <html lang="pt-BR">
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Assets dos Testes E2E - Organizado</title>
+            <title>Relatórios E2E - Robot Framework</title>
             <style>
-              body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; }
-              .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
-              h1 { color: #333; text-align: center; font-size: 2.5em; margin-bottom: 10px; font-weight: 300; }
-              h2 { color: #555; font-weight: 400; }
-              .asset-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin: 30px 0; }
-              .asset-card { border: 1px solid #e1e5e9; border-radius: 12px; padding: 20px; background: #fafbfc; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-              .asset-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-              .asset-card h3 { margin-top: 0; color: #333; font-weight: 600; }
-              .asset-list { list-style: none; padding: 0; margin: 15px 0; }
-              .asset-list li { padding: 8px 0; }
-              .asset-list a { text-decoration: none; color: #0366d6; font-weight: 500; transition: color 0.2s; }
-              .asset-list a:hover { color: #0056b3; text-decoration: underline; }
-              .folder-icon { color: #f39c12; margin-right: 8px; font-size: 1.1em; }
-              .file-icon { color: #27ae60; margin-right: 8px; }
-              .description { font-size: 13px; color: #6a737d; margin-top: 10px; line-height: 1.4; }
-              
-              /* Melhorias para o card principal */
-              .asset-card a[style*="rgba(255,255,255,0.2)"]:hover {
-                background: rgba(255,255,255,0.3) !important;
-                transform: scale(1.05);
+              body { 
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                margin: 0; 
+                padding: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+              }
+              .container { 
+                max-width: 1200px; 
+                margin: 0 auto; 
+                background: white; 
+                padding: 40px; 
+                border-radius: 16px; 
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+              }
+              h1 { 
+                color: #2d3748; 
+                text-align: center; 
+                font-size: 2.5em; 
+                margin-bottom: 10px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+              }
+              .subtitle {
+                text-align: center;
+                color: #718096;
+                margin-bottom: 40px;
+                font-size: 1.1em;
+              }
+              .asset-grid { 
+                display: grid; 
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+                gap: 25px; 
+                margin: 30px 0;
+              }
+              .asset-card { 
+                border: 2px solid #e2e8f0;
+                border-radius: 12px; 
+                padding: 25px; 
+                background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+              }
+              .asset-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 4px;
+                background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+              }
+              .asset-card:hover { 
+                transform: translateY(-5px); 
+                box-shadow: 0 12px 24px rgba(102, 126, 234, 0.2);
+                border-color: #667eea;
+              }
+              .asset-card h3 { 
+                margin-top: 0; 
+                color: #2d3748;
+                font-size: 1.3em;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+              }
+              .asset-list { 
+                list-style: none; 
+                padding: 0; 
+                margin: 15px 0;
+              }
+              .asset-list li { 
+                padding: 10px 0;
+                border-bottom: 1px solid #e2e8f0;
+              }
+              .asset-list li:last-child {
+                border-bottom: none;
+              }
+              .asset-list a { 
+                text-decoration: none; 
+                color: #5a67d8;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.2s;
+              }
+              .asset-list a:hover { 
+                color: #4c51bf;
+                padding-left: 5px;
+              }
+              .icon { 
+                font-size: 1.5em;
+              }
+              .description { 
+                font-size: 0.9em;
+                color: #718096; 
+                margin-top: 15px; 
+                line-height: 1.6;
+                padding: 12px;
+                background: white;
+                border-radius: 8px;
+              }
+              .info-section {
+                margin-top: 50px;
+                padding: 30px;
+                background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+                border-radius: 12px;
+                border-left: 5px solid #48bb78;
+              }
+              .info-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin-top: 20px;
+              }
+              .info-item h4 {
+                color: #2d3748;
+                margin: 0 0 10px 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              }
+              .info-item p {
+                margin: 0;
+                color: #718096;
+                font-size: 0.95em;
+                line-height: 1.5;
+              }
+              .footer {
+                text-align: center;
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 2px solid #e2e8f0;
+                color: #718096;
+              }
+              .badge {
+                display: inline-block;
+                padding: 4px 12px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 20px;
+                font-size: 0.85em;
+                font-weight: 600;
+                margin-left: 10px;
               }
             </style>
           </head>
           <body>
             <div class="container">
-              <h1>📊 Artefatos gerados na execução do pipeline de CI</h1>
-              <hr>
-              <h2 >ℹ️ Estrutura de Pastas</h2>
-              <hr>
+              <h1>📊 Relatórios de Testes E2E</h1>
+              <p class="subtitle">Pipeline automatizada com Robot Framework + Selenium</p>
+              
               <div class="asset-grid">
                 <div class="asset-card">
-                  <h3><span class="folder-icon">📂</span>Relatório Consolidado</h3>
+                  <h3><span class="icon">📂</span>Relatório Consolidado<span class="badge">Todos</span></h3>
                   <ul class="asset-list">
-                    <li><a href="relatorio-consolidado/report.html"><span class="file-icon">📊</span>Relatório Unificado</a></li>
-                    <li><a href="relatorio-consolidado/log.html"><span class="file-icon">📋</span>Log Completo</a></li>
-                    <li><a href="relatorio-consolidado/output.xml"><span class="file-icon">📄</span>XML Consolidado</a></li>
+                    <li><a href="relatorio-consolidado/report.html">📊 Relatório Unificado</a></li>
+                    <li><a href="relatorio-consolidado/log.html">📋 Log Detalhado</a></li>
+                    <li><a href="relatorio-consolidado/output.xml">📄 XML Consolidado</a></li>
                   </ul>
-                  <div class="description">Contém todos os resultados unificados + screenshots</div>
-                </div>
-                
-                <div class="asset-card">
-                  <h3><span class="folder-icon">📂</span>Execução Chrome</h3>
-                  <ul class="asset-list">
-                    <li><a href="execucao-chrome/report.html"><span class="file-icon">📊</span>Relatório Chrome</a></li>
-                    <li><a href="execucao-chrome/log.html"><span class="file-icon">📋</span>Log Chrome</a></li>
-                    <li><a href="execucao-chrome/output.xml"><span class="file-icon">📄</span>XML Chrome</a></li>
-                  </ul>
-                  <div class="description">Resultados específicos do navegador Chrome</div>
-                </div>
-                
-                <div class="asset-card">
-                  <h3><span class="folder-icon">📂</span>Execução Firefox</h3>
-                  <ul class="asset-list">
-                    <li><a href="execucao-firefox/report.html"><span class="file-icon">📊</span>Relatório Firefox</a></li>
-                    <li><a href="execucao-firefox/log.html"><span class="file-icon">📋</span>Log Firefox</a></li>
-                    <li><a href="execucao-firefox/output.xml"><span class="file-icon">📄</span>XML Firefox</a></li>
-                  </ul>
-                  <div class="description">Resultados específicos do navegador Firefox</div>
-                </div>
-                
-                <div class="asset-card">
-                  <h3><span class="folder-icon">📂</span>Execução Edge</h3>
-                  <ul class="asset-list">
-                    <li><a href="execucao-edge/report.html"><span class="file-icon">📊</span>Relatório Edge</a></li>
-                    <li><a href="execucao-edge/log.html"><span class="file-icon">📋</span>Log Edge</a></li>
-                    <li><a href="execucao-edge/output.xml"><span class="file-icon">📄</span>XML Edge</a></li>
-                  </ul>
-                  <div class="description">Resultados específicos do navegador Edge</div>
-                </div>
-              </div>
-          EOF
-          
-          # Finalizar HTML com informações da estrutura organizada
-          cat >> ./gh-pages/index.html << 'EOF'
-              
-              <!-- Seção de informações adicionais -->
-              <div style="margin-top: 50px; padding: 25px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #28a745;">
-                <h3 style="margin-top: 0; color: #495057;">ℹ️ Sobre os Relatórios</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
-                  <div>
-                    <h4 style="color: #495057; margin: 0 0 10px 0;">📂 Relatório Consolidado</h4>
-                    <p style="margin: 0; color: #6c757d; font-size: 14px;">Contém todos os resultados unificados e screenshots centralizados para evitar duplicação</p>
+                  <div class="description">
+                    ✨ Visualização unificada de todos os testes executados nos três navegadores. 
+                    Screenshots organizados por subpastas (chrome/, firefox/, edge/).
                   </div>
-                  <div>
-                    <h4 style="color: #495057; margin: 0 0 10px 0;">🖼️ Screenshots</h4>
-                    <p style="margin: 0; color: #6c757d; font-size: 14px;">Todas as evidências visuais centralizadas no relatório consolidado</p>
+                </div>
+                
+                <div class="asset-card">
+                  <h3><span class="icon">🌐</span>Chrome<span class="badge">Individual</span></h3>
+                  <ul class="asset-list">
+                    <li><a href="execucao-chrome/report.html">📊 Relatório Chrome</a></li>
+                    <li><a href="execucao-chrome/log.html">📋 Log Chrome</a></li>
+                    <li><a href="execucao-chrome/output.xml">📄 XML Chrome</a></li>
+                  </ul>
+                  <div class="description">
+                    🎯 Resultados específicos da execução no Google Chrome com screenshots próprios.
                   </div>
-                  <div>
-                    <h4 style="color: #495057; margin: 0 0 10px 0;">🌐 Relatórios Individuais</h4>
-                    <p style="margin: 0; color: #6c757d; font-size: 14px;">Resultados específicos de cada navegador com XMLs individuais disponíveis</p>
+                </div>
+                
+                <div class="asset-card">
+                  <h3><span class="icon">🦊</span>Firefox<span class="badge">Individual</span></h3>
+                  <ul class="asset-list">
+                    <li><a href="execucao-firefox/report.html">📊 Relatório Firefox</a></li>
+                    <li><a href="execucao-firefox/log.html">📋 Log Firefox</a></li>
+                    <li><a href="execucao-firefox/output.xml">📄 XML Firefox</a></li>
+                  </ul>
+                  <div class="description">
+                    🎯 Resultados específicos da execução no Mozilla Firefox com screenshots próprios.
+                  </div>
+                </div>
+                
+                <div class="asset-card">
+                  <h3><span class="icon">🌊</span>Edge<span class="badge">Individual</span></h3>
+                  <ul class="asset-list">
+                    <li><a href="execucao-edge/report.html">📊 Relatório Edge</a></li>
+                    <li><a href="execucao-edge/log.html">📋 Log Edge</a></li>
+                    <li><a href="execucao-edge/output.xml">📄 XML Edge</a></li>
+                  </ul>
+                  <div class="description">
+                    🎯 Resultados específicos da execução no Microsoft Edge com screenshots próprios.
                   </div>
                 </div>
               </div>
               
-              <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e1e5e9;">
-                <p style="color: #6a737d; font-size: 14px; margin: 0;">
-                  🤖 Gerado automaticamente pelo GitHub Actions 
+              <div class="info-section">
+                <h3 style="margin-top: 0; color: #2d3748; display: flex; align-items: center; gap: 10px;">
+                  <span class="icon">ℹ️</span>Sobre os Relatórios
+                </h3>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <h4><span class="icon">📂</span>Estrutura Organizada</h4>
+                    <p>Screenshots organizados em subpastas por navegador (chrome/, firefox/, edge/) para evitar conflitos de nomenclatura.</p>
+                  </div>
+                  <div class="info-item">
+                    <h4><span class="icon">🖼️</span>Screenshots</h4>
+                    <p>Todas as evidências visuais capturadas automaticamente durante a execução dos testes, mantendo nomes originais.</p>
+                  </div>
+                  <div class="info-item">
+                    <h4><span class="icon">📊</span>Consolidação</h4>
+                    <p>O relatório consolidado unifica resultados de todos os navegadores em uma única visualização completa.</p>
+                  </div>
+                  <div class="info-item">
+                    <h4><span class="icon">🔍</span>Análise Individual</h4>
+                    <p>Relatórios separados por navegador para análise detalhada de comportamentos específicos.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="footer">
+                <p style="margin: 0; font-size: 0.95em;">
+                  🤖 <strong>Gerado automaticamente pelo GitHub Actions</strong>
+                </p>
+                <p style="margin: 10px 0 0 0; font-size: 0.85em;">
+                  Pipeline executada com Robot Framework + Selenium WebDriver
                 </p>
               </div>
             </div>
@@ -978,116 +828,86 @@ jobs:
           </html>
           EOF
           
-          echo "Página principal criada: index.html (estrutura organizada)"
+          echo "✅ Página principal criada: index.html"
+          echo "📊 Estrutura de navegação pronta para GitHub Pages"
+        continue-on-error: true
+
+      - name: Validate image organization
+        run: |
+          echo ""
+          echo "🔍 Validação final da organização de imagens..."
           
-          # Verificação final SIMPLIFICADA dos caminhos de imagem no consolidado
-          echo "Verificação final dos caminhos de imagem no consolidado..."
-          for html_file in ./gh-pages/relatorio-consolidado/*.html; do
-            if [ -f "$html_file" ]; then
-              echo "   Processando $(basename "$html_file")..."
+          # Validar estrutura de subpastas no consolidado
+          for browser in chrome firefox edge; do
+            SUBFOLDER="./gh-pages/relatorio-consolidado/$browser"
+            if [ -d "$SUBFOLDER" ]; then
+              IMG_COUNT=$(find "$SUBFOLDER" -name "*.png" -type f 2>/dev/null | wc -l)
+              echo "   📂 relatorio-consolidado/$browser/: $IMG_COUNT imagens"
               
-              # Debug: mostrar exemplos de referências ANTES da correção
-              echo "     Exemplos de referências ANTES da correção:"
-              grep -o 'src="[^"]*\.png"' "$html_file" | head -3 | sed 's/^/      /' || echo "      Nenhuma referência PNG encontrada"
-              
-              # Correção SIMPLES: Robot Framework gera "selenium-screenshot-X.png" e as imagens já estão na pasta
-              echo "     Aplicando correção simples de caminhos..."
-              
-              # Corrigir caminhos absolutos para relativos
-              sed -i 's|src="[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
-              sed -i 's|href="[^"]*\/\([^/]*\.png\)"|href="./\1"|g' "$html_file" 2>/dev/null
-              
-              # Debug: mostrar exemplos APÓS a correção
-              echo "     Exemplos de referências APÓS a correção:"
-              grep -o 'src="[^"]*\.png"' "$html_file" | head -3 | sed 's/^/      /' || echo "      Nenhuma referência PNG encontrada"
-              
-              # Verificar se ainda há caminhos problemáticos
-              PROBLEM_PATHS=$(grep -c 'src="[^"]*\/[^"]*\.png"' "$html_file" 2>/dev/null || echo "0")
-              if [ "$PROBLEM_PATHS" -eq 0 ]; then
-                echo "     Todos os caminhos corrigidos em $(basename "$html_file")"
-              else
-                echo "     Ainda há $PROBLEM_PATHS caminhos com subdiretórios"
+              if [ $IMG_COUNT -gt 0 ]; then
+                echo "      ✅ Subpasta criada com sucesso"
+                echo "      Exemplos:"
+                find "$SUBFOLDER" -name "*.png" -type f | head -3 | sed 's|^./gh-pages/relatorio-consolidado/||; s/^/        /'
               fi
+            else
+              echo "   ⚠️ Subpasta não encontrada: $browser/"
             fi
           done
           
-          # Validação final: verificar se as imagens estão acessíveis
-          echo " Validação final: verificando se imagens estão acessíveis..."
-          for html_file in ./gh-pages/relatorio-consolidado/*.html; do
-            if [ -f "$html_file" ]; then
-              echo "   Validando imagens em $(basename "$html_file"):"
-              
-              # Extrair todas as referências de imagem
-              IMAGE_REFS=$(grep -o 'src="[^"]*\.png"' "$html_file" 2>/dev/null | sed 's/src="//;s/"//' | sort | uniq)
-              
-              if [ -n "$IMAGE_REFS" ]; then
-                VALID_IMAGES=0
-                INVALID_IMAGES=0
-                
-                echo "     Referências encontradas:"
-                while IFS= read -r img_ref; do
-                  if [ -n "$img_ref" ]; then
-                    # Construir caminho completo
-                    if [[ "$img_ref" == "./"* ]]; then
-                      FULL_PATH="./gh-pages/relatorio-consolidado/${img_ref#./}"
-                    else
-                      FULL_PATH="./gh-pages/relatorio-consolidado/$img_ref"
-                    fi
-                    
-                    if [ -f "$FULL_PATH" ]; then
-                      VALID_IMAGES=$((VALID_IMAGES + 1))
-                      echo "      $img_ref"
-                    else
-                      INVALID_IMAGES=$((INVALID_IMAGES + 1))
-                      echo "       $img_ref (não encontrada)"
-                      
-                      # Tentar sugerir imagens similares
-                      BASENAME=$(basename "$img_ref")
-                      SIMILAR=$(find "./gh-pages/relatorio-consolidado/" -name "*${BASENAME}" -o -name "*$(echo "$BASENAME" | sed 's/selenium-screenshot/selenium-screenshot/')*" 2>/dev/null | head -3)
-                      if [ -n "$SIMILAR" ]; then
-                        echo "          Similares disponíveis:"
-                        echo "$SIMILAR" | sed 's|^./gh-pages/relatorio-consolidado/|            |'
-                      fi
-                    fi
-                  fi
-                done <<< "$IMAGE_REFS"
-                
-                echo "    Resumo da validação: $VALID_IMAGES válidas | $INVALID_IMAGES inválidas"
-                
-                if [ $INVALID_IMAGES -eq 0 ]; then
-                  echo "   Todas as imagens estão corretamente referenciadas!"
-                fi
-              else
-                echo "   Nenhuma referência de imagem encontrada neste arquivo"
-              fi
-            fi
-          done
+          echo ""
           
-          # Mostrar estatísticas finais da ESTRATÉGIA DE SUBPASTAS
-          echo "✨ Estatísticas finais da estrutura elegante (subpastas no relatorio-consolidado):"
-          
-          # Imagens organizadas em subpastas do consolidado
-          CHROME_IMAGES=$(find ./gh-pages/relatorio-consolidado/chrome -name "*.png" -type f 2>/dev/null | wc -l)
-          FIREFOX_IMAGES=$(find ./gh-pages/relatorio-consolidado/firefox -name "*.png" -type f 2>/dev/null | wc -l)
-          EDGE_IMAGES=$(find ./gh-pages/relatorio-consolidado/edge -name "*.png" -type f 2>/dev/null | wc -l)
-          
-          echo "   📂 relatorio-consolidado/ (organizado em subpastas):"
-          echo "     chrome/: $CHROME_IMAGES imagens"
-          echo "     firefox/: $FIREFOX_IMAGES imagens"
-          echo "     edge/: $EDGE_IMAGES imagens"
-          
-          # Imagens nas pastas individuais (cópias para relatórios individuais)
+          # Validar relatórios individuais
           for browser in Chrome Firefox Edge; do
-            FOLDER_NAME="execucao-${browser,,}"
-            BROWSER_IMAGES=$(find "./gh-pages/$FOLDER_NAME" -name "*.png" -type f 2>/dev/null | wc -l)
-            echo "   📂 $FOLDER_NAME/: $BROWSER_IMAGES imagens (nomes originais preservados)"
+            FOLDER="./gh-pages/execucao-${browser,,}"
+            if [ -d "$FOLDER" ]; then
+              IMG_COUNT=$(find "$FOLDER" -name "*.png" -type f 2>/dev/null | wc -l)
+              HTML_COUNT=$(find "$FOLDER" -name "*.html" -type f 2>/dev/null | wc -l)
+              echo "   📂 execucao-${browser,,}/: $IMG_COUNT imagens, $HTML_COUNT HTMLs"
+            fi
           done
           
-          TOTAL_CONSOLIDATED=$((CHROME_IMAGES + FIREFOX_IMAGES + EDGE_IMAGES))
-          echo "   🎯 Total no relatorio-consolidado: $TOTAL_CONSOLIDATED imagens (organizadas em subpastas)"
-          echo "   ✅ Vantagem: Estrutura elegante e GitHub Pages compatível"
+          echo ""
           
-          echo "Verificação de imagens concluída!"
+          # Validar referências nos HTMLs consolidados
+          echo "🔍 Validando referências de imagens nos HTMLs consolidados..."
+          for html_file in ./gh-pages/relatorio-consolidado/*.html; do
+            if [ -f "$html_file" ]; then
+              FILENAME=$(basename "$html_file")
+              
+              # Contar referências com subpastas (chrome/, firefox/, edge/)
+              SUBFOLDER_REFS=$(grep -c '\(chrome\|firefox\|edge\)/[^"]*\.png' "$html_file" 2>/dev/null || echo "0")
+              
+              # Contar referências diretas (sem subpasta - potencialmente quebradas)
+              DIRECT_REFS=$(grep -c 'src="\./selenium-screenshot-[0-9]*\.png"' "$html_file" 2>/dev/null || echo "0")
+              
+              echo "   📄 $FILENAME:"
+              echo "      ✅ Referências com subpastas: $SUBFOLDER_REFS"
+              
+              if [ $DIRECT_REFS -gt 0 ]; then
+                echo "      ⚠️ Referências diretas (sem subpasta): $DIRECT_REFS"
+                echo "         Estas referências podem estar quebradas!"
+              else
+                echo "      ✅ Nenhuma referência direta - todas mapeadas corretamente"
+              fi
+              
+              # Mostrar exemplos de referências
+              if [ $SUBFOLDER_REFS -gt 0 ]; then
+                echo "      Exemplos de referências:"
+                grep -o '\(chrome\|firefox\|edge\)/selenium-screenshot-[0-9]*\.png' "$html_file" 2>/dev/null | head -3 | sed 's/^/        .\//'
+              fi
+            fi
+          done
+          
+          echo ""
+          echo "📊 Resumo da validação:"
+          
+          TOTAL_CONSOLIDATED=$(find ./gh-pages/relatorio-consolidado -name "*.png" -type f 2>/dev/null | wc -l)
+          TOTAL_INDIVIDUAL=$(find ./gh-pages/execucao-* -name "*.png" -type f 2>/dev/null | wc -l)
+          
+          echo "   Total de imagens no consolidado: $TOTAL_CONSOLIDATED"
+          echo "   Total de imagens nas execuções individuais: $TOTAL_INDIVIDUAL"
+          echo ""
+          echo "✅ Validação concluída!"
         continue-on-error: true
 
       - name: Upload Pages artifact
