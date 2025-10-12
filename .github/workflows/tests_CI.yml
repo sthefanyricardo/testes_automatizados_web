@@ -4,13 +4,10 @@
 # gera relatórios consolidados e publica os resultados no GitHub Pages.
 #
 # Funcionalidades:
-# - ✅ Execução paralela em Chrome, Firefox e Edge
+# - ✅ Execução em múltiplos navegadores: Chrome, Firefox e Edge
 # - 🐧 Execução em Ubuntu com Robot Framework e Selenium
 # - 📊 Relatórios HTML consolidados
 # - 🚀 Deploy automático no GitHub Pages
-# - 📸 Captura de screenshots em caso de falha
-# - 💬 Notificações e comentários em PRs
-# - 🎯 Cache inteligente para otimizar performance
 
 name: E2E Tests - Selenium + Robot Framework
 run-name: Testes E2E (${{ github.ref_name }}) - ${{ github.actor }}
@@ -393,74 +390,70 @@ jobs:
         uses: actions/configure-pages@v4
         continue-on-error: true
 
-      - name: Copy images before consolidation
+      - name: Copy images before consolidation (Subfolder Strategy)
         run: |
-          echo "ESTRATÉGIA DE PREFIXOS: Todas as imagens no relatorio-consolidado com prefixos por navegador..."
+          echo "🎯 ESTRATÉGIA DE SUBPASTAS: Organizar imagens por navegador em subpastas..."
           mkdir -p ./gh-pages
           mkdir -p ./gh-pages/relatorio-consolidado
           
           IMAGES_FOUND=0
           
-          echo "Estratégia de organização para as imagens:"
-          echo "1. Manter nomes originais das imagens (selenium-screenshot-X.png) para as execuções unitarias por navegador"
-          echo "2. Pastas separadas apenas para relatórios individuais - Organizar em pastas separadas por navegador"
-          echo "3. Cópias individuais nas pastas execucao-* (nomes originais)"
-          echo "4. Todas as imagens que precisam ficar em relatorio-consolidado/ (na raiz da pasta)"
-          echo "5. Prefixos por navegador: chrome-, firefox-, edge- para as imagens no relatorio-consolidado/"
-          echo "6. Nomes: chrome-selenium-screenshot-X.png, firefox-selenium-screenshot-X.png"
-          echo "7. Raiz do artifact LIMPA (só index.html)"
-          echo "8. Compatível com GitHub Pages (imagens na mesma pasta dos HTMLs)"
+          echo "✨ Estratégia de organização com SUBPASTAS:"
+          echo "1. ✅ Subpastas por navegador dentro do relatorio-consolidado/"
+          echo "2. ✅ relatorio-consolidado/chrome/, /firefox/, /edge/"
+          echo "3. ✅ Nomes originais mantidos (selenium-screenshot-X.png)"
+          echo "4. ✅ Sem conflito de nomes entre navegadores"
+          echo "5. ✅ Execuções individuais mantêm suas próprias imagens"
+          echo "6. ✅ GitHub Pages: Totalmente compatível com caminhos relativos"
+          echo ""
 
-          # Processar cada navegador com estratégia de PREFIXOS
+          # Processar cada navegador com SUBPASTAS
           for browser in Chrome Firefox Edge; do
             BROWSER_DIR="./all-results/test-results-$browser"
             BROWSER_INDIVIDUAL="./gh-pages/execucao-${browser,,}"
-            PREFIX="${browser,,}-"
+            BROWSER_CONSOLIDATED_SUBFOLDER="./gh-pages/relatorio-consolidado/${browser,,}"
             
             if [ -d "$BROWSER_DIR" ]; then
-              echo "  Processando $browser..."
+              echo "📂 Processando $browser..."
               mkdir -p "$BROWSER_INDIVIDUAL"
+              mkdir -p "$BROWSER_CONSOLIDATED_SUBFOLDER"
               
               # Verificar se há PNGs
               if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
                 PNG_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
                 
-                # 1. Copiar para pasta individual com nomes originais
+                # 1. Copiar para pasta individual (nomes originais)
                 find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "$BROWSER_INDIVIDUAL/" \;
-                echo "    Copiadas para $BROWSER_INDIVIDUAL/ (nomes originais)"
+                echo "   ✅ $PNG_COUNT imagens → $BROWSER_INDIVIDUAL/ (nomes originais)"
                 
-                # 2. Copiar para relatorio-consolidado COM PREFIXOS
-                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | while read img; do
-                  filename=$(basename "$img")
-                  new_name="${PREFIX}${filename}"
-                  cp "$img" "./gh-pages/relatorio-consolidado/$new_name"
-                done
+                # 2. Copiar para subpasta no relatorio-consolidado (nomes originais)
+                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "$BROWSER_CONSOLIDATED_SUBFOLDER/" \;
+                echo "   ✅ $PNG_COUNT imagens → $BROWSER_CONSOLIDATED_SUBFOLDER/ (nomes originais)"
                 
-                echo "    Copiadas para relatorio-consolidado/ com prefixo '$PREFIX'"
-                IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT * 2))  # Individual + consolidado
-
-                # Mostrar exemplos de imagens copiadas sem renomeação
-                echo "    Exemplos copiados na pasta individual:"
-                find "$BROWSER_INDIVIDUAL" -name "*.png" -type f | head -3 | sed 's/^/      /'
-
-                # Mostrar exemplos das imagens copiadas com prefixos
-                echo "    Exemplos com prefixos criados no consolidado:"
-                ls -1 "./gh-pages/relatorio-consolidado/${PREFIX}"*.png 2>/dev/null | head -3 | sed 's/^/      /'
+                IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT * 2))
+                
+                # Mostrar exemplos
+                echo "   📸 Exemplos copiados:"
+                find "$BROWSER_CONSOLIDATED_SUBFOLDER" -name "*.png" -type f | head -3 | sed 's/^/      /'
                 
               else
-                echo "    Nenhuma imagem encontrada em $browser"
+                echo "   ⚠️ Nenhuma imagem encontrada em $browser"
               fi
             else
-              echo "    Diretório não encontrado: $BROWSER_DIR"
+              echo "   ❌ Diretório não encontrado: $BROWSER_DIR"
             fi
           done
 
           echo ""
-          echo "📊 RESUMO DA ESTRATÉGIA DE PREFIXOS:"
+          echo "📊 RESUMO DA ESTRATÉGIA DE SUBPASTAS:"
           echo "   Total de imagens organizadas: $IMAGES_FOUND"
-          echo "   🎯 Todas as imagens do consolidado em: ./gh-pages/relatorio-consolidado/"
-          echo "   🚫 Raiz do artifact: LIMPA (0 imagens)"
-          echo "   ✅ GitHub Pages: Compatível (imagens co-localizadas com HTMLs)"
+          echo "   🎯 relatorio-consolidado/chrome/ (imagens Chrome)"
+          echo "   🎯 relatorio-consolidado/firefox/ (imagens Firefox)"
+          echo "   🎯 relatorio-consolidado/edge/ (imagens Edge)"
+          echo "   🎯 execucao-chrome/, firefox/, edge/ (imagens individuais)"
+          echo "   ✅ Nomes originais preservados em TODAS as pastas"
+          echo "   ✅ Zero conflito de nomenclatura"
+          echo "   ✅ GitHub Pages: Compatível com caminhos relativos"
         continue-on-error: true
 
       - name: Create consolidated report with rebot
@@ -518,9 +511,121 @@ jobs:
             ls -la ./gh-pages/ || echo "Diretório gh-pages não encontrado"
             
             if [ $REBOT_EXIT_CODE -eq 0 ]; then
-              echo "Relatório consolidado gerado com sucesso!"
+              echo "✅ Relatório consolidado gerado com sucesso!"
+              
+              # 🔧 CORREÇÃO CRÍTICA: Atualizar referências de imagens no HTML consolidado
+              echo "🔧 Corrigindo referências de imagens no HTML consolidado..."
+              
+              # 🔧 CORREÇÃO CRÍTICA: Atualizar referências de imagens no HTML consolidado
+              echo "🔧 Corrigindo referências de imagens no HTML consolidado..."
+              
+              # Criar diretório de destino primeiro
+              mkdir -p ./gh-pages/relatorio-consolidado/
+              
+              # Mover HTMLs para relatorio-consolidado primeiro
+              for html_file in ./gh-pages/*.html; do
+                if [ -f "$html_file" ]; then
+                  mv "$html_file" "./gh-pages/relatorio-consolidado/"
+                  echo "   📄 $(basename "$html_file") movido para relatorio-consolidado/"
+                fi
+              done
+              
+              # Mover output.xml se existir
+              if [ -f "./gh-pages/output.xml" ]; then
+                mv "./gh-pages/output.xml" "./gh-pages/relatorio-consolidado/"
+                echo "   📋 output.xml movido para relatorio-consolidado/"
+              fi
+              
+              # Agora corrigir as referências de imagens nos HTMLs para usar SUBPASTAS
+              cd ./gh-pages/relatorio-consolidado/
+              TOTAL_CORRECTIONS=0
+              
+              for html_file in *.html; do
+                if [ -f "$html_file" ]; then
+                  echo "  📄 Processando: $html_file"
+                  
+                  # Backup do arquivo
+                  cp "$html_file" "${html_file}.backup"
+                  
+                  # Buscar referências selenium-screenshot-X.png e corrigir para subpastas
+                  CORRECTIONS=0
+                  
+                  # Para cada número de screenshot encontrado
+                  for img_num in $(grep -o 'selenium-screenshot-[0-9]\+\.png' "$html_file" | sed 's/selenium-screenshot-\([0-9]\+\)\.png/\1/' | sort -u); do
+                    
+                    # Verificar qual navegador tem essa imagem específica nas SUBPASTAS (prioridade: Chrome > Firefox > Edge)
+                    if [ -f "chrome/selenium-screenshot-${img_num}.png" ]; then
+                      REPLACEMENT="chrome/selenium-screenshot-${img_num}.png"
+                      BROWSER="Chrome"
+                    elif [ -f "firefox/selenium-screenshot-${img_num}.png" ]; then
+                      REPLACEMENT="firefox/selenium-screenshot-${img_num}.png"
+                      BROWSER="Firefox"
+                    elif [ -f "edge/selenium-screenshot-${img_num}.png" ]; then
+                      REPLACEMENT="edge/selenium-screenshot-${img_num}.png"
+                      BROWSER="Edge"
+                    else
+                      REPLACEMENT=""
+                      BROWSER=""
+                    fi
+                    
+                    if [ -n "$REPLACEMENT" ]; then
+                      # Substituir tanto src= quanto href= para usar subpastas
+                      sed -i "s/src=\"selenium-screenshot-${img_num}\.png\"/src=\"${REPLACEMENT}\"/g" "$html_file"
+                      sed -i "s/href=\"selenium-screenshot-${img_num}\.png\"/href=\"${REPLACEMENT}\"/g" "$html_file"
+                      
+                      echo "    ✅ selenium-screenshot-${img_num}.png → ${REPLACEMENT} (${BROWSER})"
+                      CORRECTIONS=$((CORRECTIONS + 1))
+                    else
+                      echo "    ⚠️  Imagem não encontrada: selenium-screenshot-${img_num}.png"
+                    fi
+                  done
+                  
+                  echo "    📊 Correções em $html_file: $CORRECTIONS"
+                  TOTAL_CORRECTIONS=$((TOTAL_CORRECTIONS + CORRECTIONS))
+                fi
+              done
+              
+              cd ../..
+              echo "🎯 Total de correções de imagens com SUBPASTAS: $TOTAL_CORRECTIONS"
+              
+              # 📁 Organizar arquivos consolidados na estrutura correta
+              echo "📁 Organizando arquivos consolidados com estratégia GitHub Pages..."
+              mkdir -p ./gh-pages/relatorio-consolidado/
+              
+              # ESTRATÉGIA DE SUBPASTAS: HTMLs no relatorio-consolidado/ + imagens organizadas em subpastas
+              # Estrutura: relatorio-consolidado/chrome/, /firefox/, /edge/ (GitHub Pages compatível)
+              
+              if [ -f "./gh-pages/log.html" ]; then
+                mv "./gh-pages/log.html" "./gh-pages/relatorio-consolidado/"
+                echo "   ✅ log.html movido para relatorio-consolidado/"
+              fi
+              
+              if [ -f "./gh-pages/report.html" ]; then
+                mv "./gh-pages/report.html" "./gh-pages/relatorio-consolidado/"
+                echo "   ✅ report.html movido para relatorio-consolidado/"
+              fi
+              
+              if [ -f "./gh-pages/output.xml" ]; then
+                mv "./gh-pages/output.xml" "./gh-pages/relatorio-consolidado/"
+                echo "   ✅ output.xml movido para relatorio-consolidado/"
+              fi
+              
+              # Verificar se as subpastas com imagens foram criadas
+              CHROME_IMAGES=$(find ./gh-pages/relatorio-consolidado/chrome/ -name "*.png" -type f 2>/dev/null | wc -l)
+              FIREFOX_IMAGES=$(find ./gh-pages/relatorio-consolidado/firefox/ -name "*.png" -type f 2>/dev/null | wc -l)
+              EDGE_IMAGES=$(find ./gh-pages/relatorio-consolidado/edge/ -name "*.png" -type f 2>/dev/null | wc -l)
+              echo "   📸 Imagens organizadas em subpastas:"
+              echo "      Chrome: $CHROME_IMAGES imagens"
+              echo "      Firefox: $FIREFOX_IMAGES imagens"
+              echo "      Edge: $EDGE_IMAGES imagens"
+              
+              echo "📁 Estrutura final do consolidado:"
+              echo "   � HTMLs: $(find ./gh-pages/relatorio-consolidado/ -name "*.html" -type f | wc -l)"
+              echo "   📸 Imagens: $IMAGES_IN_CONSOLIDADO"
+              echo "   ✅ GitHub Pages: COMPATÍVEL (imagens + HTMLs co-localizados)"
+              
             elif [ $REBOT_EXIT_CODE -le 250 ]; then
-              echo "Relatório consolidado gerado com alguns testes falhando"
+              echo "⚠️ Relatório consolidado gerado com alguns testes falhando"
               echo "Relatório disponível para análise"
             else
               echo "Erro crítico na geração do relatório"
@@ -590,8 +695,8 @@ jobs:
             echo "   output.xml → relatorio-consolidado/"
           fi
           
-          # NÃO mover imagens soltas - elas ficarão organizadas apenas nas pastas por navegador
-          echo "Imagens já organizadas diretamente no relatorio-consolidado com prefixos por navegador"
+          # Imagens já organizadas em subpastas: chrome/, firefox/, edge/
+          echo "✅ Imagens já organizadas em subpastas dentro do relatorio-consolidado/"
           
           # Organizar relatórios individuais por navegador
           echo "Organizando relatórios individuais por navegador..."
@@ -666,33 +771,33 @@ jobs:
               sed -i 's|src="\.\./[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               sed -i 's|src="\./[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               
-              # 6. ESTRATÉGIA DE PREFIXOS - mapear selenium-screenshot para imagens com prefixos
-              echo "    Aplicando mapeamento inteligente para estratégia de PREFIXOS..."
+              # 6. ESTRATÉGIA DE SUBPASTAS - mapear selenium-screenshot para imagens em subpastas
+              echo "    ✨ Aplicando mapeamento inteligente para estratégia de SUBPASTAS..."
               
               # Primeiro, converter caminhos absolutos para relativos básicos
               sed -i 's|src="[^"]*[/\\]\([^/\\]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               
-              # Mapear selenium-screenshot-X.png para NAVEGADOR-selenium-screenshot-X.png
-              # Estratégia: Todas as imagens renomeadas com prefixos estão na RAIZ do relatorio-consolidado
+              # Mapear selenium-screenshot-X.png para NAVEGADOR/selenium-screenshot-X.png
+              # Estratégia: Todas as imagens organizadas em chrome/, firefox/, edge/
               for img_ref in $(grep -o 'src="\./selenium-screenshot-[0-9]*\.png"' "$html_file" 2>/dev/null | sed 's/src="\.\///; s/"//' | sort | uniq); do
                 if [ -n "$img_ref" ]; then
-                  # Verificar qual imagem com prefixo existe (chrome-, firefox-, edge-)
-                  FOUND_WITH_PREFIX=""
-                  for prefix in chrome firefox edge; do
-                    prefixed_name="${prefix}-${img_ref}"
-                    if [ -f "./gh-pages/relatorio-consolidado/$prefixed_name" ]; then
-                      FOUND_WITH_PREFIX="$prefixed_name"
+                  # Verificar qual subpasta tem essa imagem (chrome/, firefox/, edge/)
+                  FOUND_IN_SUBFOLDER=""
+                  for browser in chrome firefox edge; do
+                    subfolder_path="${browser}/${img_ref}"
+                    if [ -f "./gh-pages/relatorio-consolidado/$subfolder_path" ]; then
+                      FOUND_IN_SUBFOLDER="$subfolder_path"
                       break
                     fi
                   done
                   
-                  if [ -n "$FOUND_WITH_PREFIX" ]; then
-                    echo "      Mapeando: $img_ref → $FOUND_WITH_PREFIX"
-                    # Substituir referência para usar a imagem com prefixo
-                    sed -i "s|src=\"\.\/$img_ref\"|src=\"./$FOUND_WITH_PREFIX\"|g" "$html_file" 2>/dev/null
-                    sed -i "s|href=\"\.\/$img_ref\"|href=\"./$FOUND_WITH_PREFIX\"|g" "$html_file" 2>/dev/null
+                  if [ -n "$FOUND_IN_SUBFOLDER" ]; then
+                    echo "      🎯 Mapeando: $img_ref → $FOUND_IN_SUBFOLDER"
+                    # Substituir referência para usar a subpasta
+                    sed -i "s|src=\"\.\/$img_ref\"|src=\"./$FOUND_IN_SUBFOLDER\"|g" "$html_file" 2>/dev/null
+                    sed -i "s|href=\"\.\/$img_ref\"|href=\"./$FOUND_IN_SUBFOLDER\"|g" "$html_file" 2>/dev/null
                   else
-                    echo "      Imagem não encontrada com nenhum prefixo: $img_ref"
+                    echo "      ⚠️ Imagem não encontrada em nenhuma subpasta: $img_ref"
                   fi
                 fi
               done
@@ -736,14 +841,14 @@ jobs:
             done
           done
           
-          # Resumo da estrutura de organização das imagens com PREFIXOS somente para o relatório consolidado
-          echo "Estrutura de organização implementada:"
+          # Resumo da estrutura de organização das imagens com SUBPASTAS para o relatório consolidado
+          echo "✨ Estrutura de organização implementada (estratégia de subpastas):"
           echo "  📂 relatorio-consolidado/"
           echo "    ├── report.html, log.html, output.xml (relatórios consolidados)"
-          echo "    ├── chrome-selenium-screenshot-*.png (imagens Chrome)"
-          echo "    ├── firefox-selenium-screenshot-*.png (imagens Firefox)"
-          echo "    └── edge-selenium-screenshot-*.png (imagens Edge)"
-          echo "  📂 execucao-chrome/, execucao-firefox/, execucao-edge/ (imagens individuais e sem renomeação)"
+          echo "    ├── chrome/selenium-screenshot-*.png (imagens Chrome organizadas)"
+          echo "    ├── firefox/selenium-screenshot-*.png (imagens Firefox organizadas)"
+          echo "    └── edge/selenium-screenshot-*.png (imagens Edge organizadas)"
+          echo "  📂 execucao-chrome/, execucao-firefox/, execucao-edge/ (execuções individuais preservadas)"
           
           echo "Assets adicionais processados com sucesso!"
         continue-on-error: true
@@ -958,29 +1063,29 @@ jobs:
             fi
           done
           
-          # Mostrar estatísticas finais da ESTRATÉGIA DE PREFIXOS
-          echo " Estatísticas finais da nova estrutura (prefixos no relatorio-consolidado):"
+          # Mostrar estatísticas finais da ESTRATÉGIA DE SUBPASTAS
+          echo "✨ Estatísticas finais da estrutura elegante (subpastas no relatorio-consolidado):"
           
-          # Imagens com prefixos na raiz do consolidado
-          CHROME_IMAGES=$(find ./gh-pages/relatorio-consolidado -maxdepth 1 -name "chrome-*.png" -type f 2>/dev/null | wc -l)
-          FIREFOX_IMAGES=$(find ./gh-pages/relatorio-consolidado -maxdepth 1 -name "firefox-*.png" -type f 2>/dev/null | wc -l)
-          EDGE_IMAGES=$(find ./gh-pages/relatorio-consolidado -maxdepth 1 -name "edge-*.png" -type f 2>/dev/null | wc -l)
+          # Imagens organizadas em subpastas do consolidado
+          CHROME_IMAGES=$(find ./gh-pages/relatorio-consolidado/chrome -name "*.png" -type f 2>/dev/null | wc -l)
+          FIREFOX_IMAGES=$(find ./gh-pages/relatorio-consolidado/firefox -name "*.png" -type f 2>/dev/null | wc -l)
+          EDGE_IMAGES=$(find ./gh-pages/relatorio-consolidado/edge -name "*.png" -type f 2>/dev/null | wc -l)
           
-          echo "   relatorio-consolidado/ (com prefixos):"
-          echo "     chrome-*.png: $CHROME_IMAGES imagens"
-          echo "     firefox-*.png: $FIREFOX_IMAGES imagens"
-          echo "     edge-*.png: $EDGE_IMAGES imagens"
+          echo "   📂 relatorio-consolidado/ (organizado em subpastas):"
+          echo "     chrome/: $CHROME_IMAGES imagens"
+          echo "     firefox/: $FIREFOX_IMAGES imagens"
+          echo "     edge/: $EDGE_IMAGES imagens"
           
           # Imagens nas pastas individuais (cópias para relatórios individuais)
           for browser in Chrome Firefox Edge; do
             FOLDER_NAME="execucao-${browser,,}"
             BROWSER_IMAGES=$(find "./gh-pages/$FOLDER_NAME" -name "*.png" -type f 2>/dev/null | wc -l)
-            echo "   $FOLDER_NAME/: $BROWSER_IMAGES imagens (nomes originais)"
+            echo "   📂 $FOLDER_NAME/: $BROWSER_IMAGES imagens (nomes originais preservados)"
           done
           
-          TOTAL_CONSOLIDATED=$(find ./gh-pages/relatorio-consolidado -maxdepth 1 -name "*.png" -type f 2>/dev/null | wc -l)
-          echo "   Total no relatorio-consolidado: $TOTAL_CONSOLIDATED imagens (todas com prefixos)"
-          echo "   Vantagem: GitHub Pages compatível - imagens co-localizadas com HTMLs"
+          TOTAL_CONSOLIDATED=$((CHROME_IMAGES + FIREFOX_IMAGES + EDGE_IMAGES))
+          echo "   🎯 Total no relatorio-consolidado: $TOTAL_CONSOLIDATED imagens (organizadas em subpastas)"
+          echo "   ✅ Vantagem: Estrutura elegante e GitHub Pages compatível"
           
           echo "Verificação de imagens concluída!"
         continue-on-error: true
