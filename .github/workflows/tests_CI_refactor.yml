@@ -593,49 +593,98 @@ jobs:
 
       - name: Copy additional assets
         run: |
-          echo "📁 Finalizando cópia de assets adicionais..."
+          echo "📁 Organizando assets em estrutura de pastas..."
           
-          # Copiar relatórios e XMLs individuais para acesso direto
-          echo "📄 Copiando relatórios e arquivos XML individuais..."
+          # Criar estrutura de pastas organizada
+          echo "📂 Criando estrutura de pastas..."
+          mkdir -p "./gh-pages/relatorio-consolidado"
+          echo "  📁 Pasta criada: relatorio-consolidado/"
+          
+          for browser in Chrome Firefox Edge; do
+            FOLDER_NAME="execucao-${browser,,}"
+            mkdir -p "./gh-pages/$FOLDER_NAME"
+            echo "  📁 Pasta criada: $FOLDER_NAME/"
+          done
+          
+          # Mover arquivos consolidados para pasta dedicada
+          echo "📄 Organizando relatórios consolidados..."
+          if [ -f "./gh-pages/index.html" ]; then
+            mv "./gh-pages/index.html" "./gh-pages/relatorio-consolidado/"
+            echo "  ✅ index.html → relatorio-consolidado/"
+          fi
+          if [ -f "./gh-pages/log.html" ]; then
+            mv "./gh-pages/log.html" "./gh-pages/relatorio-consolidado/"
+            echo "  ✅ log.html → relatorio-consolidado/"
+          fi
+          if [ -f "./gh-pages/output.xml" ]; then
+            mv "./gh-pages/output.xml" "./gh-pages/relatorio-consolidado/"
+            echo "  ✅ output.xml → relatorio-consolidado/"
+          fi
+          
+          # Mover imagens para pasta do relatório consolidado
+          echo "🖼️ Organizando imagens..."
+          IMAGE_COUNT=$(find ./gh-pages -maxdepth 1 -name "*.png" -type f | wc -l)
+          if [ $IMAGE_COUNT -gt 0 ]; then
+            find ./gh-pages -maxdepth 1 -name "*.png" -type f -exec mv {} "./gh-pages/relatorio-consolidado/" \;
+            echo "  ✅ $IMAGE_COUNT imagens → relatorio-consolidado/"
+          fi
+          
+          # Organizar relatórios individuais por navegador
+          echo "🌐 Organizando relatórios individuais por navegador..."
           for browser in Chrome Firefox Edge; do
             BROWSER_DIR="./all-results/test-results-$browser"
-            if [ -f "$BROWSER_DIR/report.html" ]; then
-              cp "$BROWSER_DIR/report.html" "./gh-pages/report-$browser.html"
-              echo "  ✅ report-$browser.html copiado"
-            fi
-            if [ -f "$BROWSER_DIR/log.html" ]; then
-              cp "$BROWSER_DIR/log.html" "./gh-pages/log-$browser.html"
-              echo "  ✅ log-$browser.html copiado"
-            fi
-            if [ -f "$BROWSER_DIR/output.xml" ]; then
-              cp "$BROWSER_DIR/output.xml" "./gh-pages/output-$browser.xml"
-              echo "  ✅ output-$browser.xml copiado"
+            FOLDER_NAME="execucao-${browser,,}"
+            
+            if [ -d "$BROWSER_DIR" ]; then
+              echo "  📂 Processando $browser..."
+              
+              # Copiar arquivos individuais para pasta do navegador
+              if [ -f "$BROWSER_DIR/report.html" ]; then
+                cp "$BROWSER_DIR/report.html" "./gh-pages/$FOLDER_NAME/"
+                echo "    ✅ report.html → $FOLDER_NAME/"
+              fi
+              if [ -f "$BROWSER_DIR/log.html" ]; then
+                cp "$BROWSER_DIR/log.html" "./gh-pages/$FOLDER_NAME/"
+                echo "    ✅ log.html → $FOLDER_NAME/"
+              fi
+              if [ -f "$BROWSER_DIR/output.xml" ]; then
+                cp "$BROWSER_DIR/output.xml" "./gh-pages/$FOLDER_NAME/"
+                echo "    ✅ output.xml → $FOLDER_NAME/"
+              fi
             fi
           done
           
           # Corrigir caminhos das imagens nos arquivos HTML
           echo "� Corrigindo caminhos das imagens nos arquivos HTML..."
-          for html_file in ./gh-pages/*.html; do
+          # Corrigir relatórios consolidados (imagens na mesma pasta)
+          for html_file in ./gh-pages/relatorio-consolidado/*.html; do
             if [ -f "$html_file" ]; then
-              # Corrigir links relativos de imagens para apontar para a raiz
               sed -i 's/src="[^"]*\/\([^"]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
               sed -i 's/href="[^"]*\/\([^"]*\.png\)"/href=".\/\1"/g' "$html_file" 2>/dev/null || true
-              # Corrigir caminhos que podem estar com diretórios extras
               sed -i 's/src="[^"]*tests-results-CI[^"]*\/\([^"]*\.png\)"/src=".\/\1"/g' "$html_file" 2>/dev/null || true
-              echo "    ✅ Caminhos corrigidos em $(basename "$html_file")"
+              echo "    ✅ Relatório consolidado: $(basename "$html_file")"
             fi
           done
           
-          # Listar assets finais copiados
-          echo "📋 Assets finais disponíveis:"
-          FINAL_IMAGES=$(find ./gh-pages -maxdepth 1 -name "*.png" -type f | wc -l)
-          echo "  🖼️ Screenshots na raiz: $FINAL_IMAGES arquivos"
-          if [ $FINAL_IMAGES -gt 0 ]; then
-            echo "  📁 Amostras de screenshots:"
-            find ./gh-pages -maxdepth 1 -name "*.png" -type f | head -3 | while read img; do
-              echo "    - $(basename "$img")"
+          # Corrigir relatórios individuais (imagens no consolidado)
+          for browser in Chrome Firefox Edge; do
+            FOLDER_NAME="execucao-${browser,,}"
+            for html_file in ./gh-pages/$FOLDER_NAME/*.html; do
+              if [ -f "$html_file" ]; then
+                sed -i 's/src="[^"]*\/\([^"]*\.png\)"/src="..\/relatorio-consolidado\/\1"/g' "$html_file" 2>/dev/null || true
+                sed -i 's/href="[^"]*\/\([^"]*\.png\)"/href="..\/relatorio-consolidado\/\1"/g' "$html_file" 2>/dev/null || true
+                sed -i 's/src="[^"]*tests-results-CI[^"]*\/\([^"]*\.png\)"/src="..\/relatorio-consolidado\/\1"/g' "$html_file" 2>/dev/null || true
+                echo "    ✅ Relatório individual $FOLDER_NAME: $(basename "$html_file")"
+              fi
             done
-          fi
+          done
+          
+          # Resumo da estrutura organizada
+          echo "📋 Estrutura final organizada:"
+          echo "  📂 relatorio-consolidado/ - Relatórios consolidados + todas as imagens"
+          echo "  📂 execucao-chrome/ - Relatórios Chrome (referencia imagens do consolidado)"
+          echo "  📂 execucao-firefox/ - Relatórios Firefox (referencia imagens do consolidado)"
+          echo "  📂 execucao-edge/ - Relatórios Edge (referencia imagens do consolidado)"
           
           echo "✅ Assets adicionais processados com sucesso!"
         continue-on-error: true
@@ -652,14 +701,14 @@ jobs:
           find ./gh-pages -name "*.png" -type f | head -10 || echo "Nenhuma imagem encontrada"
           echo ""
           
-          # Criar página com links para todos os relatórios e assets
+          # Criar página com links para estrutura organizada
           cat > ./gh-pages/assets.html << 'EOF'
           <!DOCTYPE html>
           <html lang="pt-BR">
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Assets dos Testes E2E</title>
+            <title>Assets dos Testes E2E - Organizado</title>
             <style>
               body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
               .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -672,106 +721,124 @@ jobs:
               .asset-list li { padding: 5px 0; }
               .asset-list a { text-decoration: none; color: #007acc; }
               .asset-list a:hover { text-decoration: underline; }
-              .screenshot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
-              .screenshot-card { text-align: center; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: white; }
-              .screenshot-card img { max-width: 100%; height: auto; border-radius: 4px; }
-              .screenshot-card p { margin: 10px 0 0 0; font-size: 12px; color: #666; }
+              .folder-icon { color: #f4a261; margin-right: 5px; }
+              .file-icon { color: #2a9d8f; margin-right: 5px; }
+              .description { font-size: 12px; color: #666; margin-top: 5px; }
             </style>
           </head>
           <body>
             <div class="container">
-              <h1>📊 Assets dos Testes E2E</h1>
+              <h1>📊 Assets dos Testes E2E - Estrutura Organizada</h1>
               
-              <h2>📄 Relatórios</h2>
+              <h2>� Estrutura de Pastas</h2>
               <div class="asset-grid">
                 <div class="asset-card">
-                  <h3>🎯 Relatório Consolidado</h3>
+                  <h3><span class="folder-icon">📂</span>Relatório Consolidado</h3>
                   <ul class="asset-list">
-                    <li><a href="index.html">📊 Relatório Principal</a></li>
-                    <li><a href="log.html">📋 Log Consolidado</a></li>
-                    <li><a href="output.xml">📄 XML Consolidado</a></li>
+                    <li><a href="relatorio-consolidado/index.html"><span class="file-icon">📊</span>Relatório Unificado</a></li>
+                    <li><a href="relatorio-consolidado/log.html"><span class="file-icon">📋</span>Log Completo</a></li>
+                    <li><a href="relatorio-consolidado/output.xml"><span class="file-icon">📄</span>XML Consolidado</a></li>
                   </ul>
+                  <div class="description">Contém todos os resultados unificados + screenshots</div>
                 </div>
-          EOF
-          
-          # Adicionar links para relatórios individuais por navegador
-          for browser in Chrome Firefox Edge; do
-            if [ -f "./gh-pages/report-$browser.html" ]; then
-              cat >> ./gh-pages/assets.html << EOF
+                
                 <div class="asset-card">
-                  <h3>🌐 $browser</h3>
+                  <h3><span class="folder-icon">📂</span>Execução Chrome</h3>
                   <ul class="asset-list">
-                    <li><a href="report-$browser.html">📊 Relatório $browser</a></li>
-                    <li><a href="log-$browser.html">📋 Log $browser</a></li>
-                    <li><a href="output-$browser.xml">📄 XML $browser</a></li>
+                    <li><a href="execucao-chrome/report-Chrome.html"><span class="file-icon">📊</span>Relatório Chrome</a></li>
+                    <li><a href="execucao-chrome/log-Chrome.html"><span class="file-icon">📋</span>Log Chrome</a></li>
+                    <li><a href="execucao-chrome/output.xml"><span class="file-icon">📄</span>XML Chrome</a></li>
                   </ul>
+                  <div class="description">Resultados específicos do navegador Chrome</div>
                 </div>
-          EOF
-            fi
-          done
-          
-          # Seção de screenshots
-          cat >> ./gh-pages/assets.html << 'EOF'
+                
+                <div class="asset-card">
+                  <h3><span class="folder-icon">📂</span>Execução Firefox</h3>
+                  <ul class="asset-list">
+                    <li><a href="execucao-firefox/report-Firefox.html"><span class="file-icon">📊</span>Relatório Firefox</a></li>
+                    <li><a href="execucao-firefox/log-Firefox.html"><span class="file-icon">📋</span>Log Firefox</a></li>
+                    <li><a href="execucao-firefox/output.xml"><span class="file-icon">📄</span>XML Firefox</a></li>
+                  </ul>
+                  <div class="description">Resultados específicos do navegador Firefox</div>
+                </div>
+                
+                <div class="asset-card">
+                  <h3><span class="folder-icon">📂</span>Execução Edge</h3>
+                  <ul class="asset-list">
+                    <li><a href="execucao-edge/report-Edge.html"><span class="file-icon">📊</span>Relatório Edge</a></li>
+                    <li><a href="execucao-edge/log-Edge.html"><span class="file-icon">📋</span>Log Edge</a></li>
+                    <li><a href="execucao-edge/output.xml"><span class="file-icon">📄</span>XML Edge</a></li>
+                  </ul>
+                  <div class="description">Resultados específicos do navegador Edge</div>
+                </div>
               </div>
-              
-              <h2>📸 Screenshots</h2>
           EOF
           
-          # Adicionar screenshots se existirem (agora na raiz do gh-pages)
-          SCREENSHOT_COUNT=$(find ./gh-pages -maxdepth 1 -name "*.png" -type f 2>/dev/null | wc -l)
-          echo "📸 Debug: Encontrados $SCREENSHOT_COUNT screenshots na raiz"
+          # Seção de screenshots (centralizados no consolidado)
+          cat >> ./gh-pages/assets.html << 'EOF'
+              
+              <h2>📸 Screenshots Centralizados</h2>
+              <div class="asset-card" style="margin: 20px 0;">
+                <h3><span class="folder-icon">�️</span>Galeria de Screenshots</h3>
+                <p class="description">Todos os screenshots são centralizados na pasta do relatório consolidado para evitar duplicação</p>
+          EOF
           
-          if [ $SCREENSHOT_COUNT -gt 0 ]; then
-            echo "✅ Adicionando $SCREENSHOT_COUNT screenshots à página"
-            echo '<div class="screenshot-grid">' >> ./gh-pages/assets.html
+          # Verificar screenshots na pasta consolidada
+          CONSOLIDATED_SCREENSHOTS=$(find ./gh-pages/relatorio-consolidado -name "*.png" -type f 2>/dev/null | wc -l)
+          echo "📸 Debug: Encontrados $CONSOLIDATED_SCREENSHOTS screenshots no consolidado"
+          
+          if [ $CONSOLIDATED_SCREENSHOTS -gt 0 ]; then
+            echo "✅ Adicionando $CONSOLIDATED_SCREENSHOTS screenshots centralizados"
             
-            # Adicionar cada screenshot
-            find ./gh-pages -maxdepth 1 -name "*.png" -type f 2>/dev/null | sort | while read screenshot; do
+            cat >> ./gh-pages/assets.html << 'EOF'
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin: 15px 0;">
+          EOF
+            
+            # Adicionar cada screenshot do consolidado
+            find ./gh-pages/relatorio-consolidado -name "*.png" -type f 2>/dev/null | sort | while read screenshot; do
               filename=$(basename "$screenshot")
-              echo "  📎 Adicionando: $filename"
+              echo "  📎 Adicionando screenshot centralizado: $filename"
               cat >> ./gh-pages/assets.html << EOF
-                <div class="screenshot-card">
-                  <a href="$filename" target="_blank">
-                    <img src="$filename" alt="$filename" style="max-height: 150px;">
-                  </a>
-                  <p>$filename</p>
-                </div>
+                  <div style="text-align: center; border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: white;">
+                    <a href="relatorio-consolidado/$filename" target="_blank">
+                      <img src="relatorio-consolidado/$filename" alt="$filename" style="max-width: 100%; max-height: 150px; border-radius: 4px;">
+                    </a>
+                    <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">$filename</p>
+                  </div>
           EOF
             done
+            
             echo '</div>' >> ./gh-pages/assets.html
           else
-            echo "⚠️ Nenhum screenshot encontrado - verificando diretórios alternativos..."
-            
-            # Verificar se existem em subdiretórios (fallback)
-            ALT_SCREENSHOTS=$(find ./gh-pages -name "*.png" -type f 2>/dev/null | wc -l)
-            if [ $ALT_SCREENSHOTS -gt 0 ]; then
-              echo "📸 Encontrados $ALT_SCREENSHOTS screenshots em subdiretórios"
-              echo '<div class="screenshot-grid">' >> ./gh-pages/assets.html
-              find ./gh-pages -name "*.png" -type f 2>/dev/null | sort | while read screenshot; do
-                filename=$(basename "$screenshot")
-                relative_path=$(echo "$screenshot" | sed 's|./gh-pages/||')
-                cat >> ./gh-pages/assets.html << EOF
-                <div class="screenshot-card">
-                  <a href="$relative_path" target="_blank">
-                    <img src="$relative_path" alt="$filename" style="max-height: 150px;">
-                  </a>
-                  <p>$filename</p>
-                </div>
-          EOF
-              done
-              echo '</div>' >> ./gh-pages/assets.html
-            else
-              echo '<p>⚠️ Nenhum screenshot encontrado para esta execução.</p>' >> ./gh-pages/assets.html
-            fi
+            echo "⚠️ Nenhum screenshot encontrado no consolidado"
+            echo '<p style="color: #e76f51;">⚠️ Nenhum screenshot encontrado nesta execução.</p>' >> ./gh-pages/assets.html
           fi
           
-          # Finalizar HTML
           cat >> ./gh-pages/assets.html << 'EOF'
+              </div>
+          
+          # Finalizar HTML com informações da estrutura organizada
+          cat >> ./gh-pages/assets.html << 'EOF'
+              
+              <h2>ℹ️ Sobre a Organização</h2>
+              <div class="asset-card" style="background: #e8f4f8; border-color: #2a9d8f;">
+                <h3>📋 Estrutura Organizada</h3>
+                <ul style="margin: 10px 0; color: #333;">
+                  <li><strong>📂 relatorio-consolidado/</strong> - Contém todos os relatórios unificados e screenshots centralizados</li>
+                  <li><strong>📂 execucao-[navegador]/</strong> - Contém os relatórios específicos de cada navegador</li>
+                  <li><strong>🖼️ Screenshots</strong> - Centralizados no consolidado para evitar duplicação</li>
+                  <li><strong>📄 XMLs individuais</strong> - Disponíveis em cada pasta de execução</li>
+                </ul>
+                <p style="margin-top: 15px; color: #666; font-size: 14px;">
+                  Esta organização melhora a navegação e evita duplicação de arquivos, mantendo uma estrutura lógica e limpa.
+                </p>
+              </div>
               
               <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
                 <p style="color: #666; font-size: 14px;">
                   🤖 Gerado automaticamente pelo GitHub Actions • 
-                  <a href="index.html">Voltar ao Relatório Principal</a>
+                  <a href="relatorio-consolidado/index.html">📊 Relatório Principal</a> • 
+                  <a href="relatorio-consolidado/log.html">📋 Log Completo</a>
                 </p>
               </div>
             </div>
