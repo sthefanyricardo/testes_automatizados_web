@@ -119,8 +119,64 @@ jobs:
         run: |
           mkdir -p ./tests-results-CI/${{ matrix.browser }}
           echo "Diretório de resultados criado: ./tests-results-CI/${{ matrix.browser }}"
+
+      - name: Debug and Verify Environment
+        run: |
+          echo "🔍 DIAGNÓSTICO COMPLETO DO AMBIENTE"
+          echo "=================================="
           
-      # 🚀 Configuração otimizada usando recursos nativos do Ubuntu Runner
+          echo ""
+          echo "📋 1. Informações básicas do sistema:"
+          pwd
+          whoami
+          echo "Diretório atual: $(pwd)"
+          
+          echo ""
+          echo "📂 2. Estrutura do workspace:"
+          ls -la
+          
+          echo ""
+          echo "🐍 3. Verificando instalação do Python e Robot Framework:"
+          which python3 || echo "❌ python3 não encontrado"
+          python3 --version || echo "❌ Erro ao verificar versão do Python"
+          which robot || echo "❌ robot não encontrado"
+          
+          # Tentar executar robot --version de forma segura
+          if command -v robot >/dev/null 2>&1; then
+            robot --version || echo "❌ Erro ao executar 'robot --version'"
+          else
+            echo "❌ Comando 'robot' não está disponível no PATH"
+            echo "📋 PATH atual: $PATH"
+          fi
+          
+          echo ""
+          echo "� 4. Verificando módulos Python:"
+          python3 -c "import sys; print('Python path:', sys.path)" 2>/dev/null || echo "❌ Erro ao acessar sys.path"
+          python3 -c "import robot; print('Robot Framework encontrado:', robot.__version__)" 2>/dev/null || echo "❌ Robot Framework não importado"
+          python3 -c "import selenium; print('Selenium encontrado:', selenium.__version__)" 2>/dev/null || echo "❌ Selenium não importado"
+          
+          echo ""
+          echo "🔍 5. Procurando arquivos de teste:"
+          echo "Procurando arquivos .robot em todo o projeto..."
+          find . -name "*.robot" -type f | head -10 || echo "❌ Nenhum arquivo .robot encontrado"
+          
+          echo ""
+          echo "📁 6. Verificando estrutura de diretórios esperada:"
+          for test_dir in automacao_basico/tests automacao_intermediario/tests automacao_avancado/tests tests test; do
+            if [ -d "$test_dir" ]; then
+              echo "  ✅ $test_dir existe"
+              echo "     Conteúdo:"
+              ls -la "$test_dir" 2>/dev/null | head -5
+            else
+              echo "  ❌ $test_dir NÃO EXISTE"
+            fi
+          done
+          
+          echo ""
+          echo "🔍 7. Verificação final:"
+          echo "Se chegou até aqui, o ambiente básico está funcionando!"
+
+      # �🚀 Configuração otimizada usando recursos nativos do Ubuntu Runner
       - name: Setup Browser Environment
         run: |
           echo "🚀 Configurando ambiente otimizado..."
@@ -144,41 +200,15 @@ jobs:
           echo "✅ Display virtual ativo: $DISPLAY"
           echo "✅ Navegador configurado: ${{ matrix.browser }}"
           
-          # Verificação rápida de dependências essenciais
-          robot --version
-          python -c "import selenium; print(f'Selenium: {selenium.__version__}')"
-
-      - name: Debug and Verify Environment
-        run: |
-          echo "🔍 Verificando estrutura do projeto e diretórios de teste..."
+          # Verificação SEGURA de dependências essenciais
+          if command -v robot >/dev/null 2>&1; then
+            robot --version || echo "⚠️ Robot Framework instalado mas com erro na versão"
+          else
+            echo "❌ ERRO CRÍTICO: Robot Framework não encontrado!"
+            exit 1
+          fi
           
-          echo "📂 Estrutura atual do workspace:"
-          ls -la
-          
-          echo ""
-          echo "🔍 Verificando diretórios de teste específicos:"
-          for test_dir in automacao_basico/tests automacao_intermediario/tests automacao_avancado/tests; do
-            if [ -d "$test_dir" ]; then
-              echo "  ✅ $test_dir existe"
-              echo "     Arquivos: $(find "$test_dir" -name "*.robot" -o -name "*.resource" | wc -l) arquivos .robot/.resource"
-              ls -la "$test_dir" | head -5
-            else
-              echo "  ❌ $test_dir NÃO EXISTE!"
-            fi
-          done
-          
-          echo ""
-          echo "🔍 Procurando qualquer arquivo .robot no projeto:"
-          find . -name "*.robot" -type f | head -10
-          
-          echo ""
-          echo "🔍 Verificando se há testes em outros locais:"
-          for possible_dir in tests test src .; do
-            if find "$possible_dir" -maxdepth 2 -name "*.robot" -type f 2>/dev/null | grep -q .; then
-              echo "  📁 Encontrados arquivos .robot em: $possible_dir"
-              find "$possible_dir" -maxdepth 2 -name "*.robot" -type f | head -5
-            fi
-          done
+          python3 -c "import selenium; print(f'Selenium: {selenium.__version__}')" || echo "⚠️ Selenium não disponível"
 
       - name: Run E2E Tests
         run: |
