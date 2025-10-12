@@ -552,7 +552,7 @@ jobs:
             python -m robot.rebot \
               --output output.xml \
               --log log.html \
-              --report index.html \
+              --report report.html \
               --reporttitle "Relatório Consolidado E2E" \
               --name "Relatório Consolidado E2E" \
               ../all-results/*/output.xml
@@ -627,7 +627,7 @@ jobs:
           echo " Organizando relatórios consolidados..."
           if [ -f "./gh-pages/index.html" ]; then
             mv "./gh-pages/index.html" "./gh-pages/relatorio-consolidado/"
-            echo "   index.html → relatorio-consolidado/"
+            echo "   report.html → relatorio-consolidado/"
           fi
           if [ -f "./gh-pages/log.html" ]; then
             mv "./gh-pages/log.html" "./gh-pages/relatorio-consolidado/"
@@ -819,7 +819,7 @@ jobs:
           # Resumo da NOVA estrutura organizada 
           echo " 📋 Resumo da NOVA estrutura organizada:"
           echo "   📂 relatorio-consolidado/"
-          echo "     ├── index.html, log.html, output.xml (relatórios consolidados)"
+          echo "     ├── report.html, log.html, output.xml (relatórios consolidados)"
           echo "     ├── selenium-screenshot-*.png (imagens Chrome na raiz)"
           echo "     ├── 📂 images-chrome/ (todas as imagens Chrome organizadas)"
           echo "     ├── 📂 images-firefox/ (todas as imagens Firefox organizadas)"
@@ -891,7 +891,7 @@ jobs:
                 <div class="asset-card">
                   <h3><span class="folder-icon">📂</span>Relatório Consolidado</h3>
                   <ul class="asset-list">
-                    <li><a href="relatorio-consolidado/index.html"><span class="file-icon">📊</span>Relatório Unificado</a></li>
+                    <li><a href="relatorio-consolidado/report.html"><span class="file-icon">📊</span>Relatório Unificado</a></li>
                     <li><a href="relatorio-consolidado/log.html"><span class="file-icon">📋</span>Log Completo</a></li>
                     <li><a href="relatorio-consolidado/output.xml"><span class="file-icon">📄</span>XML Consolidado</a></li>
                   </ul>
