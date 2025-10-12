@@ -989,31 +989,3 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: ./gh-pages
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: publish-results
-    runs-on: ubuntu-latest
-    if: always()
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-        continue-on-error: true
-        
-      - name: Display Pages URL
-        if: always()
-        run: |
-          if [ "${{ steps.deployment.outputs.page_url }}" != "" ]; then
-            echo "GitHub Pages URL: ${{ steps.deployment.outputs.page_url }}"
-            echo "Relatórios disponíveis em: ${{ steps.deployment.outputs.page_url }}"
-          else
-            echo "GitHub Pages não configurado - Relatórios disponíveis nos artefatos"
-          fi
