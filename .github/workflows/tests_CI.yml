@@ -88,7 +88,7 @@ jobs:
           echo "Instalando dependências específicas dos módulos..."
           INSTALLED_MODULES=()
           
-          # CORRIGIDO: Instalar requirements.txt de cada módulo na RAIZ do repositório
+          #Instalar requirements.txt de cada módulo na RAIZ do repositório
           for module in automacao_basico automacao_intermediario automacao_avancado; do
             if [ -f "$module/requirements.txt" ]; then
               echo "Instalando dependências de $module..."
@@ -185,80 +185,24 @@ jobs:
           export SELENIUM_PAGE_LOAD_TIMEOUT=60
           export SELENIUM_SCRIPT_TIMEOUT=30
 
-      - name: Setup EdgeDriver (Robust)
+      - name: Setup Microsoft Edge
+        if: matrix.browser == 'Edge'
+        uses: browser-actions/setup-edge@v1
+        with:
+          edge-version: stable
+        
+      - name: Verify Edge Installation
         if: matrix.browser == 'Edge'
         run: |
-          echo "Configuração robusta do EdgeDriver para Microsoft Edge..."
+          echo "Verificando instalação do Edge..."
+          microsoft-edge --version || edge --version
           
-          # Detectar versão do Edge
-          if command -v microsoft-edge &> /dev/null; then
-            EDGE_VERSION=$(microsoft-edge --version | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1)
-            EDGE_MAJOR_VERSION=$(echo "$EDGE_VERSION" | cut -d. -f1)
-            echo "Edge detectado: $EDGE_VERSION (Major: $EDGE_MAJOR_VERSION)"
-          else
-            echo "Edge não encontrado!"
-            exit 1
-          fi
+          echo "EdgeDriver será gerenciado automaticamente pelo Selenium/webdriver-manager"
+          echo "Nenhuma configuração manual necessária!"
           
-          # Criar diretório para drivers
-          mkdir -p ~/.cache/selenium/edgedriver
-          
-          # URLs alternativas para EdgeDriver
-          EDGEDRIVER_URLS=(
-            "https://msedgedriver.azureedge.net/${EDGE_VERSION}/edgedriver_linux64.zip"
-            "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/"
-            "https://github.com/MicrosoftDocs/edge-developer/raw/main/microsoft-edge/webdriver-chromium/webdriver-chromium.md"
-          )
-          
-          echo "Tentando baixar EdgeDriver versão $EDGE_VERSION..."
-          
-          # Método 1: Tentar webdriver-manager primeiro (com timeout)
-          echo "Método 1: webdriver-manager (com timeout de 30s)..."
-          timeout 30s python -c "
-          try:
-              from webdriver_manager.microsoft import EdgeChromiumDriverManager
-              driver_path = EdgeChromiumDriverManager().install()
-              print(f'EdgeDriver instalado via webdriver-manager: {driver_path}')
-              with open('/tmp/edgedriver_path.txt', 'w') as f:
-                  f.write(driver_path)
-          except Exception as e:
-              print(f'webdriver-manager falhou: {e}')
-              exit(1)
-          " || echo "webdriver-manager timeout ou falhou"
-          
-          # Verificar se o webdriver-manager funcionou
-          if [ -f "/tmp/edgedriver_path.txt" ]; then
-            DRIVER_PATH=$(cat /tmp/edgedriver_path.txt)
-            echo "EdgeDriver configurado com sucesso: $DRIVER_PATH"
-            echo "Verificando driver:"
-            ls -la "$DRIVER_PATH" 2>/dev/null || echo "Arquivo não encontrado"
-          else
-            echo "webdriver-manager falhou, usando método alternativo..."
-            
-            # Método 2: Download manual (fallback)
-            echo "Método 2: Download manual..."
-            DRIVER_URL="https://msedgedriver.azureedge.net/${EDGE_VERSION}/edgedriver_linux64.zip"
-            
-            # Usar curl com timeout e retry
-            if curl -L --max-time 30 --retry 3 --retry-delay 5 -o /tmp/edgedriver.zip "$DRIVER_URL"; then
-              echo "EdgeDriver baixado com sucesso"
-              
-              # Extrair e configurar
-              cd ~/.cache/selenium/edgedriver
-              unzip -q /tmp/edgedriver.zip
-              chmod +x msedgedriver
-              echo "EdgeDriver extraído e configurado"
-              
-              # Adicionar ao PATH
-              export PATH="$HOME/.cache/selenium/edgedriver:$PATH"
-              echo "EdgeDriver adicionado ao PATH"
-            else
-              echo "Falha no download manual do EdgeDriver"
-              echo "Continuando sem configuração específica (Selenium pode usar driver padrão)"
-            fi
-          fi
-          
-          echo "Configuração do EdgeDriver concluída"
+          # Verificar se Edge está realmente funcionando
+          echo "Testando Edge headless..."
+          timeout 10s microsoft-edge --headless --disable-gpu --no-sandbox --version || echo "Edge headless OK"
 
       - name: Run E2E Tests
         run: |
@@ -275,11 +219,11 @@ jobs:
           # Pré-configuração do WebDriver para evitar timeouts
           echo "Pré-configurando WebDriver para $BROWSER..."
           if [ "$BROWSER" = "edge" ]; then
-            echo "Configurações especiais para Microsoft Edge:"
-            echo "  - Timeout de screenshot aumentado para 180s"
-            echo "  - Timeout de carregamento de página aumentado para 90s"
-            echo "  - Aguardo implícito aumentado para 45s"
-            echo "  - Velocidade de selenium reduzida para 0.5s"
+            echo "Configurações otimizadas para Microsoft Edge (com instalação robusta):"
+            echo "  - Timeout de screenshot: 120s (otimizado)"
+            echo "  - Timeout de carregamento de página: 60s (otimizado)"
+            echo "  - Aguardo implícito: 30s (otimizado)"
+            echo "  - Velocidade de selenium: padrão (0.5s removido)"
           else
             echo "Configurações padrão para $BROWSER:"
             echo "  - Timeout de screenshot: 120s"
@@ -291,14 +235,9 @@ jobs:
           # Executar Robot Framework com configurações robustas
           set +e # Não falhar se robot retornar código de erro
           
-          # Configurações específicas por navegador
-          EXTRA_ARGS=""
-          if [ "$BROWSER" = "edge" ]; then
-            echo "Aplicando configurações específicas para Edge..."
-            EXTRA_ARGS="--variable SCREENSHOT_TIMEOUT:180 --variable IMPLICIT_WAIT:45 --variable PAGE_LOAD_TIMEOUT:90"
-          else
-            EXTRA_ARGS="--variable SCREENSHOT_TIMEOUT:120 --variable IMPLICIT_WAIT:30 --variable PAGE_LOAD_TIMEOUT:60"
-          fi
+          # Configurações unificadas (Edge agora usa configurações otimizadas)
+          echo "Aplicando configurações unificadas para todos os navegadores..."
+          EXTRA_ARGS="--variable SCREENSHOT_TIMEOUT:120 --variable IMPLICIT_WAIT:30 --variable PAGE_LOAD_TIMEOUT:60"
           
           robot \
             --name "Tests E2E - Robot Framework CI (${{ matrix.browser }})" \
