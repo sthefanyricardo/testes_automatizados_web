@@ -2,9 +2,10 @@
 
 ![Robot Framework](https://img.shields.io/badge/Robot_Framework-Testing-43B02A?logo=robotframework)
 ![Selenium](https://img.shields.io/badge/Selenium-43B02A?logo=selenium&logoColor=white)
-![CI/CD](https://img.shields.io/github/actions/workflow/status/sthefanyricardo/robot-actions/tests_CI.yml?label=CI/CD&logo=github) 
-[![GitHub Pages](https://img.shields.io/badge/GitHub-Pages-222222?logo=github)](https://sthefanyricardo.github.io/robot-actions/)
-![Último commit](https://img.shields.io/github/last-commit/sthefanyricardo/robot-actions?label=Último%20commit&style=flat&logo=git&color=orange)
+![CI/CD](https://img.shields.io/github/actions/workflow/status/sthefanyricardo/testes_automatizados_web/tests_CI.yml?label=CI/CD&logo=github) 
+[![E2E Tests](https://github.com/sthefanyricardo/testes_automatizados_web/actions/workflows/tests_CI.yml/badge.svg)](https://github.com/sthefanyricardo/testes_automatizados_web/actions/workflows/tests_CI.yml)
+[![GitHub Pages](https://img.shields.io/badge/GitHub-Pages-222222?logo=github)](https://sthefanyricardo.github.io/testes_automatizados_web/)
+![Último commit](https://img.shields.io/github/last-commit/sthefanyricardo/testes_automatizados_web?label=Último%20commit&style=flat&logo=git&color=orange)
 
 ---
 
@@ -107,7 +108,7 @@ Este projeto implementa **integração contínua** usando **GitHub Actions** par
   
 Os relatórios de execução dos testes estão disponíveis publicamente:
 
-🔗 **[Acessar Relatórios no GitHub Pages](https://sthefanyricardo.github.io/robot-actions/)**
+🔗 **[Acessar Relatórios no GitHub Pages](https://sthefanyricardo.github.io/testes_automatizados_web/)**
 
 ---
 
@@ -278,7 +279,7 @@ O repositório está organizado em pastas, cada uma correspondente a um nível d
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/sthefanyricardo/)
 [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:sthefannyricardo@gmail.com)
 [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sthefanyricardo)
-[![Portfolio](https://img.shields.io/badge/Portfolio-D14836?style=for-the-badge&logo=todoist&logoColor=white)](https://sthefanyricardo.github.io/robot-actions/)
+[![Portfolio](https://img.shields.io/badge/Portfolio-D14836?style=for-the-badge&logo=todoist&logoColor=white)](https://sthefanyricardo.github.io/testes_automatizados_web/)
 
 </div>
 
@@ -288,7 +289,7 @@ O repositório está organizado em pastas, cada uma correspondente a um nível d
 
 **Feito com ❤️ e muito ☕**
 
-*Última atualização: ![Último commit](https://img.shields.io/github/last-commit/sthefanyricardo/robot-actions?label=Último%20commit&style=flat&logo=git&color=orange)*
+*Última atualização: ![Último commit](https://img.shields.io/github/last-commit/sthefanyricardo/testes_automatizados_web?label=Último%20commit&style=flat&logo=git&color=orange)*
 
 ⭐ Se este projeto foi útil para você, considere dar uma estrela!
 
