@@ -336,42 +336,37 @@ jobs:
       - name: Capture Screenshots and Evidence
         if: always()  # Sempre capturar, não apenas em falha
         run: |
-          echo "📸 Coletando evidências e screenshots..."
+          echo "📸 Verificando evidências e screenshots gerados..."
           RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
           
-          # Criar diretório para screenshots se não existir
-          mkdir -p "$RESULTS_DIR/screenshots"
-          
-          # Procurar por todos os PNGs gerados pelo Robot Framework
-          echo "🔍 Procurando por imagens geradas..."
+          # Verificar screenshots gerados pelo Robot Framework (apenas contagem, sem duplicar)
+          echo "🔍 Verificando imagens geradas pelo Robot Framework..."
           IMAGES_FOUND=0
           
-          # Copiar PNGs do diretório principal
+          # Contar PNGs no diretório principal (onde o Robot Framework os gera)
           if find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
-            find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "$RESULTS_DIR/screenshots/" \;
             MAIN_IMAGES=$(find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
-            echo "  ✅ $MAIN_IMAGES imagens encontradas no diretório principal"
-            IMAGES_FOUND=$((IMAGES_FOUND + MAIN_IMAGES))
+            echo "  ✅ $MAIN_IMAGES screenshots encontrados no diretório principal"
+            IMAGES_FOUND=$MAIN_IMAGES
           fi
           
-          # Procurar por PNGs em subdiretórios (exceto screenshots para evitar duplicação)
-          if find "$RESULTS_DIR" -name "*.png" -type f -not -path "*/screenshots/*" | grep -q .; then
-            find "$RESULTS_DIR" -name "*.png" -type f -not -path "*/screenshots/*" -exec cp {} "$RESULTS_DIR/screenshots/" \;
-            SUB_IMAGES=$(find "$RESULTS_DIR" -name "*.png" -type f -not -path "*/screenshots/*" | wc -l)
-            echo "  ✅ $SUB_IMAGES imagens encontradas em subdiretórios"
+          # Verificar se há imagens em subdiretórios (casos especiais)
+          SUB_IMAGES=$(find "$RESULTS_DIR" -mindepth 2 -name "*.png" -type f | wc -l)
+          if [ $SUB_IMAGES -gt 0 ]; then
+            echo "  📂 $SUB_IMAGES imagens adicionais encontradas em subdiretórios"
             IMAGES_FOUND=$((IMAGES_FOUND + SUB_IMAGES))
           fi
           
-          # Listar evidências coletadas
+          # Resumo sem duplicação
           echo "📊 Resumo da coleta de evidências:"
-          echo "  📁 Total de imagens coletadas: $IMAGES_FOUND"
+          echo "  📁 Total de screenshots únicos: $IMAGES_FOUND"
           if [ $IMAGES_FOUND -gt 0 ]; then
-            echo "  🖼️ Screenshots disponíveis:"
-            ls -la "$RESULTS_DIR/screenshots/" | head -10
-            echo "  📋 Nomes dos arquivos de screenshot:"
-            ls "$RESULTS_DIR/screenshots/" | head -5
+            echo "  🖼️ Exemplos de screenshots disponíveis:"
+            find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | head -5 | while read img; do
+              echo "    - $(basename "$img")"
+            done
           else
-            echo "  ⚠️ Nenhuma imagem encontrada"
+            echo "  ⚠️ Nenhum screenshot encontrado"
           fi
           
           # Informações do ambiente para debug (apenas se houver falha)
@@ -416,7 +411,6 @@ jobs:
             tests-results-CI/${{ matrix.browser }}/report.html
             tests-results-CI/${{ matrix.browser }}/log.html
             tests-results-CI/${{ matrix.browser }}/*.png
-            tests-results-CI/${{ matrix.browser }}/screenshots/
           retention-days: 7  # Reduzido de 30 para 7 dias
           if-no-files-found: warn
 
@@ -472,20 +466,27 @@ jobs:
             if [ -d "$BROWSER_DIR" ]; then
               echo "  📂 Copiando imagens de $browser..."
               
-              # Copiar PNGs do diretório raiz
+              # Copiar PNGs do diretório raiz (onde o Robot Framework os gera naturalmente)
               if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
-                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} ./gh-pages/ \;
+                # Copiar com renomeação para evitar conflitos entre navegadores
+                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | while read img; do
+                  filename=$(basename "$img")
+                  # Renomear apenas se não tiver prefixo de navegador já
+                  if [[ "$filename" == *"$browser"* ]] || [[ "$filename" == *"$(echo $browser | tr '[:upper:]' '[:lower:]')"* ]]; then
+                    cp "$img" "./gh-pages/$filename"
+                  else
+                    cp "$img" "./gh-pages/${browser,,}-$filename"
+                  fi
+                done
                 PNG_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
-                echo "    ✅ $PNG_COUNT imagens copiadas"
+                echo "    ✅ $PNG_COUNT imagens copiadas (com prefixo $browser se necessário)"
                 IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT))
               fi
               
-              # Copiar PNGs do diretório screenshots
-              if [ -d "$BROWSER_DIR/screenshots" ] && find "$BROWSER_DIR/screenshots" -name "*.png" -type f | grep -q .; then
-                find "$BROWSER_DIR/screenshots" -name "*.png" -type f -exec cp {} ./gh-pages/ \;
-                SCREENSHOT_COUNT=$(find "$BROWSER_DIR/screenshots" -name "*.png" -type f | wc -l)
-                echo "    ✅ $SCREENSHOT_COUNT screenshots copiados"
-                IMAGES_FOUND=$((IMAGES_FOUND + SCREENSHOT_COUNT))
+              # Verificar se há imagens em subdiretórios (casos especiais, não duplicar)
+              SUB_IMAGES=$(find "$BROWSER_DIR" -mindepth 2 -name "*.png" -type f | wc -l)
+              if [ $SUB_IMAGES -gt 0 ]; then
+                echo "    📂 $SUB_IMAGES imagens adicionais encontradas em subdiretórios (não copiadas para evitar duplicação)"
               fi
             fi
           done
