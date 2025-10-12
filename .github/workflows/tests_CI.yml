@@ -510,6 +510,36 @@ jobs:
           else
             echo "✅ Arquivos output.xml encontrados - gerando relatório consolidado..."
             
+            # CRUCIAL: Copiar TODAS as imagens dos screenshots_* para onde o rebot vai executar
+            echo "🔧 Copiando imagens das pastas screenshots_* para consolidação..."
+            
+            TOTAL_COPIED=0
+            for browser in Chrome Firefox Edge; do
+              BROWSER_DIR="./all-results/test-results-$browser"
+              BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
+              
+              if [ -d "$BROWSER_DIR" ]; then
+                # Copiar imagens do diretório principal (se houver)
+                if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
+                  MAIN_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
+                  find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "./gh-pages/" \;
+                  TOTAL_COPIED=$((TOTAL_COPIED + MAIN_COUNT))
+                  echo "   📸 $MAIN_COUNT imagens principais do $browser copiadas"
+                fi
+                
+                # IMPORTANTE: Copiar imagens das pastas screenshots_* criadas pelo Set Screenshot Directory
+                find "$BROWSER_DIR" -type d -name "screenshots_*" | while read screenshot_dir; do
+                  if [ -d "$screenshot_dir" ] && find "$screenshot_dir" -name "*.png" -type f | grep -q .; then
+                    SUBDIR_COUNT=$(find "$screenshot_dir" -name "*.png" -type f | wc -l)
+                    find "$screenshot_dir" -name "*.png" -type f -exec cp {} "./gh-pages/" \;
+                    echo "   ✨ $SUBDIR_COUNT imagens de $(basename "$screenshot_dir") copiadas"
+                  fi
+                done
+              fi
+            done
+            
+            echo "📊 Total de imagens copiadas para consolidação: $TOTAL_COPIED"
+            
             cd ./gh-pages
             python -m robot.rebot \
               --output output.xml \
@@ -562,7 +592,42 @@ jobs:
             echo "   ✅ output.xml → relatorio-consolidado/"
           fi
           
-          # Organizar relatórios individuais por navegador
+          # CRUCIAL: Organizar imagens mantendo a estrutura screenshots_* do Set Screenshot Directory
+          echo "📸 Organizando imagens com estrutura screenshots_*..."
+          
+          # Criar as pastas screenshots_* no relatorio-consolidado
+          for browser in Chrome Firefox Edge; do
+            BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
+            mkdir -p "./gh-pages/relatorio-consolidado/screenshots_$BROWSER_LOWERCASE"
+          done
+          
+          # Mover imagens das pastas originais screenshots_* para o relatorio-consolidado
+          for browser in Chrome Firefox Edge; do
+            BROWSER_DIR="./all-results/test-results-$browser"
+            BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
+            
+            if [ -d "$BROWSER_DIR" ]; then
+              # Procurar por pastas screenshots_* no resultado deste navegador
+              find "$BROWSER_DIR" -type d -name "screenshots_*" | while read screenshot_dir; do
+                if [ -d "$screenshot_dir" ] && find "$screenshot_dir" -name "*.png" -type f | grep -q .; then
+                  FOLDER_NAME=$(basename "$screenshot_dir")
+                  mkdir -p "./gh-pages/relatorio-consolidado/$FOLDER_NAME"
+                  
+                  COPIED_COUNT=$(find "$screenshot_dir" -name "*.png" -type f | wc -l)
+                  find "$screenshot_dir" -name "*.png" -type f -exec cp {} "./gh-pages/relatorio-consolidado/$FOLDER_NAME/" \;
+                  echo "   📸 $COPIED_COUNT imagens copiadas para relatorio-consolidado/$FOLDER_NAME/"
+                fi
+              done
+            fi
+          done
+          
+          # Também mover qualquer imagem que ficou no diretório principal do gh-pages
+          if find "./gh-pages" -maxdepth 1 -name "*.png" -type f | grep -q .; then
+            echo "   📸 Movendo imagens soltas do diretório principal..."
+            find "./gh-pages" -maxdepth 1 -name "*.png" -type f -exec mv {} "./gh-pages/relatorio-consolidado/" \;
+          fi
+          
+          # Organizar relatórios individuais por navegador (mantendo estrutura screenshots_*)
           echo "📄 Organizando relatórios individuais por navegador..."
           for browser in Chrome Firefox Edge; do
             BROWSER_DIR="./all-results/test-results-$browser"
@@ -571,54 +636,82 @@ jobs:
             if [ -d "$BROWSER_DIR" ]; then
               echo "  Processando $browser..."
               
+              # Copiar arquivos HTML/XML
               [ -f "$BROWSER_DIR/report.html" ] && cp "$BROWSER_DIR/report.html" "./gh-pages/$FOLDER_NAME/"
               [ -f "$BROWSER_DIR/log.html" ] && cp "$BROWSER_DIR/log.html" "./gh-pages/$FOLDER_NAME/"
               [ -f "$BROWSER_DIR/output.xml" ] && cp "$BROWSER_DIR/output.xml" "./gh-pages/$FOLDER_NAME/"
+              
+              # IMPORTANTE: Copiar pastas screenshots_* mantendo a estrutura do Set Screenshot Directory
+              find "$BROWSER_DIR" -type d -name "screenshots_*" | while read screenshot_dir; do
+                if [ -d "$screenshot_dir" ] && find "$screenshot_dir" -name "*.png" -type f | grep -q .; then
+                  FOLDER_NAME_SCREENSHOTS=$(basename "$screenshot_dir")
+                  mkdir -p "./gh-pages/$FOLDER_NAME/$FOLDER_NAME_SCREENSHOTS"
+                  
+                  COPIED_COUNT=$(find "$screenshot_dir" -name "*.png" -type f | wc -l)
+                  find "$screenshot_dir" -name "*.png" -type f -exec cp {} "./gh-pages/$FOLDER_NAME/$FOLDER_NAME_SCREENSHOTS/" \;
+                  echo "    📸 $COPIED_COUNT imagens copiadas para $FOLDER_NAME/$FOLDER_NAME_SCREENSHOTS/"
+                fi
+              done
+              
+              # Copiar também imagens do diretório principal se houver
+              if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
+                MAIN_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
+                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "./gh-pages/$FOLDER_NAME/" \;
+                echo "    📸 $MAIN_COUNT imagens principais copiadas para $FOLDER_NAME/"
+              fi
             fi
           done
           
-          # Corrigir caminhos das imagens nos arquivos HTML (ESTRATÉGIA DE SUBPASTAS)
+          # Corrigir caminhos das imagens nos arquivos HTML (estrutura screenshots_*)
           echo ""
-          echo "🔧 Corrigindo caminhos das imagens nos arquivos HTML para usar SUBPASTAS..."
+          echo "🔧 Corrigindo caminhos das imagens nos arquivos HTML para usar estrutura screenshots_*..."
           
           for html_file in ./gh-pages/relatorio-consolidado/*.html; do
             if [ -f "$html_file" ]; then
               echo "   📄 Corrigindo $(basename "$html_file")..."
               
-              # Passo 1: Converter caminhos absolutos para relativos básicos
+              # Primeiro, deixar os caminhos simples (sem path)
               sed -i 's|src="[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               sed -i 's|href="[^"]*\/\([^/]*\.png\)"|href="./\1"|g' "$html_file" 2>/dev/null
               
-              # Passo 2: Mapear referências para subpastas
-              echo "      🔍 Mapeando referências para subpastas corretas..."
+              # Mapear imagens para as pastas screenshots_* corretas
+              echo "      🔍 Mapeando referências para pastas screenshots_*..."
               
-              # Extrair referências únicas de selenium-screenshot
-              SCREENSHOT_REFS=$(grep -oP '(src|href)="(\.\/)?selenium-screenshot-[0-9]+\.png"' "$html_file" 2>/dev/null | \
+              # Extrair todas as referências de imagens PNG
+              SCREENSHOT_REFS=$(grep -oP '(src|href)="(\.\/)?[^"]*\.png"' "$html_file" 2>/dev/null | \
                                sed 's/src="//; s/href="//; s/\.\///; s/"//' | sort | uniq)
               
               if [ -n "$SCREENSHOT_REFS" ]; then
                 MAPPED_COUNT=0
                 UNMAPPED_COUNT=0
                 
-                # Para cada referência, tentar mapear para a subpasta correta
                 while IFS= read -r screenshot; do
                   if [ -n "$screenshot" ]; then
-                    # Procurar em qual subpasta esta imagem existe
+                    # Procurar a imagem nas pastas screenshots_*
                     FOUND_IN=""
-                    for browser_folder in chrome firefox edge; do
-                      if [ -f "./gh-pages/relatorio-consolidado/$browser_folder/$screenshot" ]; then
-                        FOUND_IN="$browser_folder"
+                    for screenshots_folder in $(find "./gh-pages/relatorio-consolidado" -type d -name "screenshots_*" | sort); do
+                      if [ -f "$screenshots_folder/$screenshot" ]; then
+                        FOUND_IN=$(basename "$screenshots_folder")
                         break
                       fi
                     done
                     
-                    if [ -n "$FOUND_IN" ]; then
-                      # Substituir referência para incluir subpasta
+                    # Se não encontrou nas pastas screenshots_*, verificar se está no diretório principal
+                    if [ -z "$FOUND_IN" ] && [ -f "./gh-pages/relatorio-consolidado/$screenshot" ]; then
+                      # Imagem está no diretório principal, deixar como está
+                      FOUND_IN="main"
+                    fi
+                    
+                    if [ -n "$FOUND_IN" ] && [ "$FOUND_IN" != "main" ]; then
+                      # Substituir referência para incluir pasta screenshots_*
                       sed -i "s|src=\"$screenshot\"|src=\"./$FOUND_IN/$screenshot\"|g" "$html_file" 2>/dev/null
                       sed -i "s|src=\"\./$screenshot\"|src=\"./$FOUND_IN/$screenshot\"|g" "$html_file" 2>/dev/null
                       sed -i "s|href=\"$screenshot\"|href=\"./$FOUND_IN/$screenshot\"|g" "$html_file" 2>/dev/null
                       sed -i "s|href=\"\./$screenshot\"|href=\"./$FOUND_IN/$screenshot\"|g" "$html_file" 2>/dev/null
                       
+                      MAPPED_COUNT=$((MAPPED_COUNT + 1))
+                    elif [ "$FOUND_IN" = "main" ]; then
+                      # Imagem no diretório principal, não precisa alterar
                       MAPPED_COUNT=$((MAPPED_COUNT + 1))
                     else
                       UNMAPPED_COUNT=$((UNMAPPED_COUNT + 1))
@@ -637,16 +730,46 @@ jobs:
             fi
           done
           
-          # Corrigir relatórios individuais (imagens na própria pasta)
+          # Corrigir relatórios individuais (com estrutura screenshots_*)
           echo ""
           echo "🔧 Corrigindo caminhos nos relatórios individuais..."
           for browser in Chrome Firefox Edge; do
             FOLDER_NAME="execucao-${browser,,}"
+            
             for html_file in ./gh-pages/$FOLDER_NAME/*.html; do
               if [ -f "$html_file" ]; then
-                # Correção simples: caminhos relativos locais
+                echo "   📄 Corrigindo $(basename "$html_file") para $browser..."
+                
+                # Primeiro, normalizar caminhos
                 sed -i 's|src="[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
                 sed -i 's|href="[^"]*\/\([^/]*\.png\)"|href="./\1"|g' "$html_file" 2>/dev/null
+                
+                # Mapear imagens para pastas screenshots_* se existirem
+                SCREENSHOT_REFS=$(grep -oP '(src|href)="(\.\/)?[^"]*\.png"' "$html_file" 2>/dev/null | \
+                                 sed 's/src="//; s/href="//; s/\.\///; s/"//' | sort | uniq)
+                
+                if [ -n "$SCREENSHOT_REFS" ]; then
+                  while IFS= read -r screenshot; do
+                    if [ -n "$screenshot" ]; then
+                      # Procurar nas pastas screenshots_* deste navegador
+                      FOUND_IN=""
+                      for screenshots_folder in $(find "./gh-pages/$FOLDER_NAME" -type d -name "screenshots_*" 2>/dev/null | sort); do
+                        if [ -f "$screenshots_folder/$screenshot" ]; then
+                          FOUND_IN=$(basename "$screenshots_folder")
+                          break
+                        fi
+                      done
+                      
+                      if [ -n "$FOUND_IN" ]; then
+                        # Atualizar referência para incluir pasta screenshots_*
+                        sed -i "s|src=\"$screenshot\"|src=\"./$FOUND_IN/$screenshot\"|g" "$html_file" 2>/dev/null
+                        sed -i "s|src=\"\./$screenshot\"|src=\"./$FOUND_IN/$screenshot\"|g" "$html_file" 2>/dev/null
+                        sed -i "s|href=\"$screenshot\"|href=\"./$FOUND_IN/$screenshot\"|g" "$html_file" 2>/dev/null
+                        sed -i "s|href=\"\./$screenshot\"|href=\"./$FOUND_IN/$screenshot\"|g" "$html_file" 2>/dev/null
+                      fi
+                    fi
+                  done <<< "$SCREENSHOT_REFS"
+                fi
               fi
             done
           done
