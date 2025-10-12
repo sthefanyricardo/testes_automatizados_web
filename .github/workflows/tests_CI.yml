@@ -237,20 +237,45 @@ jobs:
         run: |
           echo "📸 Verificando evidências e screenshots gerados..."
           RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
+          BROWSER_LOWERCASE=$(echo "${{ matrix.browser }}" | tr '[:upper:]' '[:lower:]')
+          SCREENSHOTS_DIR="$RESULTS_DIR/screenshots_$BROWSER_LOWERCASE"
           
-          # Contar screenshots
-          IMAGES_FOUND=$(find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f 2>/dev/null | wc -l)
+          echo "🔍 Verificando em múltiplos locais:"
+          echo "  📁 Diretório principal: $RESULTS_DIR"
+          echo "  📁 Subpasta de screenshots: $SCREENSHOTS_DIR"
+          
+          # Contar screenshots no diretório principal
+          IMAGES_MAIN=$(find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f 2>/dev/null | wc -l)
+          
+          # Contar screenshots na subpasta screenshots_${browser}
+          IMAGES_SUBDIR=0
+          if [ -d "$SCREENSHOTS_DIR" ]; then
+            IMAGES_SUBDIR=$(find "$SCREENSHOTS_DIR" -name "*.png" -type f 2>/dev/null | wc -l)
+          fi
+          
+          TOTAL_IMAGES=$((IMAGES_MAIN + IMAGES_SUBDIR))
           
           echo "📊 Resumo da coleta de evidências:"
-          echo "  Total de screenshots: $IMAGES_FOUND"
+          echo "  Screenshots no diretório principal: $IMAGES_MAIN"
+          echo "  Screenshots na subpasta screenshots_$BROWSER_LOWERCASE/: $IMAGES_SUBDIR"
+          echo "  ✅ Total de screenshots: $TOTAL_IMAGES"
           
-          if [ $IMAGES_FOUND -gt 0 ]; then
-            echo "  Exemplos de screenshots disponíveis:"
-            find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | head -5 | while read img; do
+          if [ $IMAGES_MAIN -gt 0 ]; then
+            echo "  📸 Exemplos do diretório principal:"
+            find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | head -3 | while read img; do
               echo "    - $(basename "$img")"
             done
-          else
-            echo "  ⚠️ Nenhum screenshot encontrado"
+          fi
+          
+          if [ $IMAGES_SUBDIR -gt 0 ]; then
+            echo "  ✨ Exemplos da subpasta screenshots_$BROWSER_LOWERCASE/:"
+            find "$SCREENSHOTS_DIR" -name "*.png" -type f | head -3 | while read img; do
+              echo "    - $(basename "$img")"
+            done
+          fi
+          
+          if [ $TOTAL_IMAGES -eq 0 ]; then
+            echo "  ⚠️ Nenhum screenshot encontrado em ambos os locais"
           fi
         continue-on-error: true
 
@@ -344,22 +369,41 @@ jobs:
             BROWSER_DIR="./all-results/test-results-$browser"
             BROWSER_INDIVIDUAL="./gh-pages/execucao-${browser,,}"
             BROWSER_CONSOLIDATED_SUBFOLDER="./gh-pages/relatorio-consolidado/${browser,,}"
+            BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
+            SCREENSHOTS_SUBDIR="$BROWSER_DIR/screenshots_$BROWSER_LOWERCASE"
             
             if [ -d "$BROWSER_DIR" ]; then
               echo "📂 Processando $browser..."
               mkdir -p "$BROWSER_INDIVIDUAL"
               mkdir -p "$BROWSER_CONSOLIDATED_SUBFOLDER"
               
-              # Verificar se há PNGs
+              PNG_COUNT=0
+              
+              # Verificar PNGs no diretório principal
               if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
-                PNG_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
+                MAIN_PNG_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
+                PNG_COUNT=$((PNG_COUNT + MAIN_PNG_COUNT))
                 
-                # 1. Copiar para pasta individual (nomes originais)
+                # Copiar PNGs do diretório principal
                 find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "$BROWSER_INDIVIDUAL/" \;
-                echo "   ✅ $PNG_COUNT imagens → $BROWSER_INDIVIDUAL/ (nomes originais)"
-                
-                # 2. Copiar para subpasta no relatorio-consolidado (nomes originais)
                 find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "$BROWSER_CONSOLIDATED_SUBFOLDER/" \;
+                echo "   ✅ $MAIN_PNG_COUNT imagens do diretório principal copiadas"
+              fi
+              
+              # Verificar PNGs na subpasta screenshots_${browser}
+              if [ -d "$SCREENSHOTS_SUBDIR" ] && find "$SCREENSHOTS_SUBDIR" -name "*.png" -type f | grep -q .; then
+                SUBDIR_PNG_COUNT=$(find "$SCREENSHOTS_SUBDIR" -name "*.png" -type f | wc -l)
+                PNG_COUNT=$((PNG_COUNT + SUBDIR_PNG_COUNT))
+                
+                # Copiar PNGs da subpasta screenshots_${browser}
+                find "$SCREENSHOTS_SUBDIR" -name "*.png" -type f -exec cp {} "$BROWSER_INDIVIDUAL/" \;
+                find "$SCREENSHOTS_SUBDIR" -name "*.png" -type f -exec cp {} "$BROWSER_CONSOLIDATED_SUBFOLDER/" \;
+                echo "   ✨ $SUBDIR_PNG_COUNT imagens da subpasta screenshots_$BROWSER_LOWERCASE/ copiadas"
+              fi
+              
+              if [ $PNG_COUNT -gt 0 ]; then
+                echo "   📊 Total de imagens para $browser: $PNG_COUNT"
+                echo "   ✅ $PNG_COUNT imagens → $BROWSER_INDIVIDUAL/ (nomes originais)"
                 echo "   ✅ $PNG_COUNT imagens → $BROWSER_CONSOLIDATED_SUBFOLDER/ (nomes originais)"
                 
                 IMAGES_FOUND=$((IMAGES_FOUND + PNG_COUNT * 2))
@@ -367,6 +411,11 @@ jobs:
                 # Mostrar exemplos
                 echo "   📸 Exemplos copiados:"
                 find "$BROWSER_CONSOLIDATED_SUBFOLDER" -name "*.png" -type f | head -3 | sed 's/^/      /'
+                
+                # Identificar tipos de screenshots
+                SELENIUM_COUNT=$(find "$BROWSER_CONSOLIDATED_SUBFOLDER" -name "selenium-screenshot-*.png" -type f | wc -l)
+                CUSTOM_COUNT=$((PNG_COUNT - SELENIUM_COUNT))
+                echo "   🎯 Tipos: 🤖 Automáticos: $SELENIUM_COUNT | ✨ Personalizados: $CUSTOM_COUNT"
                 
               else
                 echo "   ⚠️ Nenhuma imagem encontrada em $browser"
