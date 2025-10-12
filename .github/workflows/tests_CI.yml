@@ -456,25 +456,29 @@ jobs:
 
       - name: Copy images before consolidation
         run: |
-          echo "Organizando imagens por navegador ANTES da consolidação..."
+          echo "Nova estratégia: Todas as imagens no relatorio-consolidado com prefixos..."
           mkdir -p ./gh-pages
+          mkdir -p ./gh-pages/relatorio-consolidado
           
-          # Estratégia SIMPLIFICADA: manter nomes originais e organizar por pastas
           IMAGES_FOUND=0
           
           echo "  Nova estratégia de organização:"
-          echo "    1. Manter nomes originais das imagens (selenium-screenshot-X.png)"
-          echo "    2. Organizar em pastas separadas por navegador"
-          echo "    3. Consolidado usa imagens do Chrome como padrão"
-          
-          # Criar estrutura de pastas para cada navegador
+          echo "    1. Manter nomes originais das imagens (selenium-screenshot-X.png) para as execuções unitarias por navegador"
+          echo "    2. Pastas separadas apenas para relatórios individuais"
+          echo "    3. Organizar em pastas separadas por navegador"
+          echo "    4. Todas as imagens que precisam ficar em relatorio-consolidado/ (na raiz da pasta)"
+          echo "    5. Prefixos por navegador: chrome-, firefox-, edge-"
+          echo "    6. Nenhuma imagem na raiz do artifact"
+
+          # Processar cada navegador e copiar diretamente para relatorio-consolidado
           for browser in Chrome Firefox Edge; do
             BROWSER_DIR="./all-results/test-results-$browser"
-            BROWSER_FOLDER="./gh-pages/images-${browser,,}"
+            BROWSER_INDIVIDUAL="./gh-pages/execucao-${browser,,}"
+            PREFIX="${browser,,}-"
             
             if [ -d "$BROWSER_DIR" ]; then
-              echo "  Processando imagens de $browser..."
-              mkdir -p "$BROWSER_FOLDER"
+              echo "  Processando $browser..."
+              mkdir -p "$BROWSER_INDIVIDUAL"
               
               # Copiar PNGs mantendo nomes originais
               if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
@@ -498,6 +502,8 @@ jobs:
                 # Mostrar exemplos de imagens copiadas
                 echo "    Exemplos copiados:"
                 find "$BROWSER_FOLDER" -name "*.png" -type f | head -3 | sed 's/^/      /'
+                echo "    Exemplo no consolidado:"
+                ls -1 "./gh-pages/relatorio-consolidado/${PREFIX}"*.png 2>/dev/null | head -2 | sed 's/^/      /'
                 
               else
                 echo "    Nenhuma imagem encontrada em $browser"
@@ -507,7 +513,7 @@ jobs:
             fi
           done
 
-          echo "Total: $IMAGES_FOUND arquivos de imagem organizados"
+          echo "Total: $IMAGES_FOUND arquivos organizados (consolidado + individuais)"
           echo "Vantagem: Nomes originais preservados, organização por pastas"
         continue-on-error: true
 
@@ -627,7 +633,7 @@ jobs:
           echo " Organizando relatórios consolidados..."
           if [ -f "./gh-pages/report.html" ]; then
             mv "./gh-pages/report.html" "./gh-pages/relatorio-consolidado/"
-            echo "   ✅ report.html → relatorio-consolidado/"
+            echo "   report.html → relatorio-consolidado/"
           fi
           if [ -f "./gh-pages/log.html" ]; then
             mv "./gh-pages/log.html" "./gh-pages/relatorio-consolidado/"
@@ -635,33 +641,11 @@ jobs:
           fi
           if [ -f "./gh-pages/output.xml" ]; then
             mv "./gh-pages/output.xml" "./gh-pages/relatorio-consolidado/"
-            echo "   ✅ output.xml → relatorio-consolidado/"
+            echo "   output.xml → relatorio-consolidado/"
           fi
           
           # NÃO mover imagens soltas - elas ficarão organizadas apenas nas pastas por navegador
-          
-          # Mover pastas de imagens para dentro do relatorio-consolidado
-          echo "Movendo pastas de imagens para relatorio-consolidado..."
-          for browser in Chrome Firefox Edge; do
-            BROWSER_FOLDER="./gh-pages/images-${browser,,}"
-            TARGET_CONSOLIDATED="./gh-pages/relatorio-consolidado/images-${browser,,}"
-            TARGET_INDIVIDUAL="./gh-pages/execucao-${browser,,}"
-            
-            if [ -d "$BROWSER_FOLDER" ]; then
-              BROWSER_IMAGE_COUNT=$(find "$BROWSER_FOLDER" -name "*.png" -type f | wc -l)
-              if [ $BROWSER_IMAGE_COUNT -gt 0 ]; then
-                # Mover pasta inteira para dentro do relatorio-consolidado
-                mv "$BROWSER_FOLDER" "$TARGET_CONSOLIDATED"
-                echo "  📂 images-${browser,,}/ → relatorio-consolidado/ ($BROWSER_IMAGE_COUNT imagens)"
-                
-                # Copiar imagens para pastas individuais de execução (para relatórios individuais)
-                if [ -d "$TARGET_INDIVIDUAL" ]; then
-                  find "$TARGET_CONSOLIDATED" -name "*.png" -type f -exec cp {} "$TARGET_INDIVIDUAL/" \;
-                  echo "  📸 Imagens ${browser} também copiadas para execucao-${browser,,}/"
-                fi
-              fi
-            fi
-          done
+          echo "Imagens já organizadas diretamente no relatorio-consolidado com prefixos por navegador"
           
           # Organizar relatórios individuais por navegador
           echo "Organizando relatórios individuais por navegador..."
@@ -756,12 +740,12 @@ jobs:
                   done
                   
                   if [ -n "$FOUND_IN_FOLDER" ]; then
-                    echo "      🔄 Mapeando: $img_ref → $FOUND_IN_FOLDER/$img_ref"
+                    echo "      Mapeando: $img_ref → $FOUND_IN_FOLDER/$img_ref"
                     # Substituir referência para apontar para a pasta correta
                     sed -i "s|src=\"\.\/$img_ref\"|src=\"./$FOUND_IN_FOLDER/$img_ref\"|g" "$html_file" 2>/dev/null
                     sed -i "s|href=\"\.\/$img_ref\"|href=\"./$FOUND_IN_FOLDER/$img_ref\"|g" "$html_file" 2>/dev/null
                   else
-                    echo "      ❌ Imagem não encontrada em nenhuma subpasta: $img_ref"
+                    echo "      Imagem não encontrada em nenhuma subpasta: $img_ref"
                   fi
                 fi
               done
@@ -805,22 +789,14 @@ jobs:
             done
           done
           
-          # Resumo da NOVA estrutura organizada 
-          echo " 📋 Resumo da NOVA estrutura organizada:"
-          echo "   📂 relatorio-consolidado/"
-          echo "     ├── report.html, log.html, output.xml (relatórios consolidados)"
-          echo "     ├── 📂 images-chrome/ (todas as imagens Chrome organizadas)"
-          echo "     ├── 📂 images-firefox/ (todas as imagens Firefox organizadas)"
-          echo "     └── 📂 images-edge/ (todas as imagens Edge organizadas)"
-          echo "   📂 execucao-chrome/ (relatórios + imagens Chrome locais)"
-          echo "   📂 execucao-firefox/ (relatórios + imagens Firefox locais)"
-          echo "   📂 execucao-edge/ (relatórios + imagens Edge locais)"
-          echo ""
-          echo " ✅ Vantagens da nova estrutura:"
-          echo "   🎯 Imagens organizadas por navegador dentro do consolidado"
-          echo "   🗂️ Sem repetição de pastas na raiz (images-* movidas para dentro)"
-          echo "   📱 Estrutura mais limpa e organizada"
-          echo "   🔗 Referências inteligentes apontam para as pastas corretas"
+          # Resumo da NOVA estrutura com PREFIXOS
+          echo "📋 Nova Estrutura Implementada:"
+          echo "  📂 relatorio-consolidado/"
+          echo "    ├── report.html, log.html, output.xml (relatórios consolidados)"
+          echo "    ├── chrome-selenium-screenshot-*.png (imagens Chrome)"
+          echo "    ├── firefox-selenium-screenshot-*.png (imagens Firefox)"
+          echo "    └── edge-selenium-screenshot-*.png (imagens Edge)"
+          echo "  📂 execucao-chrome/, execucao-firefox/, execucao-edge/ (imagens individuais e sem renomeação)"
           
           echo "Assets adicionais processados com sucesso!"
         continue-on-error: true
@@ -1036,36 +1012,28 @@ jobs:
           done
           
           # Mostrar estatísticas finais da NOVA ESTRUTURA ORGANIZADA
-          echo " 📈 Estatísticas finais da nova estrutura (pastas dentro do relatorio-consolidado):"
+          echo " Estatísticas finais da nova estrutura (pastas dentro do relatorio-consolidado):"
           
           # Imagens na raiz do consolidado (Chrome)
           ROOT_IMAGES=$(find ./gh-pages/relatorio-consolidado -maxdepth 1 -name "*.png" -type f 2>/dev/null | wc -l)
-          echo "   📂 relatorio-consolidado/ (raiz): $ROOT_IMAGES imagens Chrome"
+          echo "   relatorio-consolidado/ (raiz): $ROOT_IMAGES imagens Chrome"
           
           # Imagens nas subpastas por navegador (dentro do consolidado)
           for browser in chrome firefox edge; do
             SUBFOLDER_IMAGES=$(find "./gh-pages/relatorio-consolidado/images-$browser" -name "*.png" -type f 2>/dev/null | wc -l)
-            echo "   📂 relatorio-consolidado/images-$browser/: $SUBFOLDER_IMAGES imagens"
+            echo "   relatorio-consolidado/images-$browser/: $SUBFOLDER_IMAGES imagens"
           done
           
           # Imagens nas pastas individuais (cópias para relatórios individuais)
           for browser in Chrome Firefox Edge; do
             FOLDER_NAME="execucao-${browser,,}"
             BROWSER_IMAGES=$(find "./gh-pages/$FOLDER_NAME" -name "*.png" -type f 2>/dev/null | wc -l)
-            echo "   📂 $FOLDER_NAME/: $BROWSER_IMAGES imagens (cópias locais)"
+            echo "   $FOLDER_NAME/: $BROWSER_IMAGES imagens (cópias locais)"
           done
           
-          # Estrutura detalhada
-          echo "   📋 Estrutura da nova organização:"
-          echo "     📂 relatorio-consolidado/"
-          echo "       ├── selenium-screenshot-*.png (Chrome na raiz)"
-          echo "       ├── 📂 images-chrome/ (screenshots Chrome)"
-          echo "       ├── 📂 images-firefox/ (screenshots Firefox)"
-          echo "       └── 📂 images-edge/ (screenshots Edge)"
-          
           TOTAL_CONSOLIDATED=$(find ./gh-pages/relatorio-consolidado -name "*.png" -type f 2>/dev/null | wc -l)
-          echo "   🎯 Total no relatorio-consolidado: $TOTAL_CONSOLIDATED imagens (todas organizadas)"
-          echo "   ✅ Vantagem: Pastas de imagens centralizadas, sem duplicação na raiz"
+          echo "   Total no relatorio-consolidado: $TOTAL_CONSOLIDATED imagens (todas organizadas)"
+          echo "   Vantagem: Pastas de imagens centralizadas, sem duplicação na raiz"
           
           echo "Verificação de imagens concluída!"
         continue-on-error: true
