@@ -22,13 +22,13 @@ on:
       browser:
         description: "Em qual navegador os testes devem ser executados?"
         required: false
-        default: "Todos"
+        default: "todos"
         type: choice
         options:
-          - Todos
-          - Chrome
-          - Firefox
-          - Edge
+          - todos
+          - chrome
+          - firefox
+          - edge
 
 permissions:
   contents: read
@@ -50,9 +50,22 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        browser: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'Todos' && fromJSON(format('["{0}"]', github.event.inputs.browser))) || fromJSON('["Chrome", "Firefox", "Edge"]') }}
+        # Matriz simplificada - sempre lowercase, elimina conversão posterior
+        browser: ${{ 
+          github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'todos' 
+          ? fromJSON(format('["{0}"]', github.event.inputs.browser)) 
+          : fromJSON('["chrome", "firefox", "edge"]') 
+        }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    
+    # 🚀 ALTERNATIVA MODERNA: Service container para Xvfb (descomente se preferir)
+    # services:
+    #   xvfb:
+    #     image: ghcr.io/browserless/base:latest
+    #     options: >-
+    #       --tmpfs /tmp:exec,noatime
+    #       --shm-size=2gb
 
     steps:
       - name: Checkout code
@@ -76,11 +89,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           
-          # Instalar webdriver-manager com versão específica mais estável
-          pip install webdriver-manager==4.0.1
+          # Instalar webdriver-manager (versão mais recente compatível)
+          pip install "webdriver-manager>=4.0.0,<5.0.0"
           
-          # Instalar dependências básicas com versões estáveis para CI
-          pip install selenium==4.15.0
+          # Instalar Selenium (versão LTS estável)
+          pip install "selenium>=4.15.0,<5.0.0"
           
           echo "Instalando dependências específicas dos módulos..."
           INSTALLED_MODULES=()
@@ -164,22 +177,19 @@ jobs:
           
           echo "=========================================="
           
-          # Instalar Xvfb para display virtual
-          sudo apt-get update -qq
-          sudo apt-get install -y xvfb
-          
-          # Configurar display virtual com resolução maior para Firefox
+          # Ubuntu runners já têm Xvfb instalado - apenas configurar
           export DISPLAY=:99
-          Xvfb :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
-          sleep 3
-          echo "✅ Display virtual configurado: $DISPLAY (1920x1200 para suporte completo ao Firefox)"
+          # Usar Xvfb nativo do runner com otimizações
+          Xvfb :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
+          sleep 2
+          echo "✅ Display virtual otimizado: $DISPLAY (1920x1200, Xvfb nativo do runner)"
 
       - name: Run E2E Tests
         run: |
           echo "🚀 Executando testes para o navegador: ${{ matrix.browser }}"
           
-          # Converter nome do navegador para lowercase
-          BROWSER=$(echo "${{ matrix.browser }}" | tr '[:upper:]' '[:lower:]')
+          # Browser já vem em lowercase da matriz - sem conversão necessária
+          BROWSER="${{ matrix.browser }}"
           
           echo "Navegador configurado: $BROWSER"
           
@@ -1116,7 +1126,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     needs: publish-results
     runs-on: ubuntu-latest
-    if: github.ref_name == 'main'
+    if: github.ref_name == 'main' && github.event.inputs.browser == 'todos'
     permissions:
       contents: read
       pages: write
