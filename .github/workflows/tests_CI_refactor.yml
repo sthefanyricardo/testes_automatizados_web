@@ -594,8 +594,8 @@ jobs:
         run: |
           echo "📁 Finalizando cópia de assets adicionais..."
           
-          # Copiar relatórios HTML individuais para acesso direto
-          echo "📄 Copiando relatórios HTML individuais..."
+          # Copiar relatórios e XMLs individuais para acesso direto
+          echo "📄 Copiando relatórios e arquivos XML individuais..."
           for browser in Chrome Firefox Edge; do
             BROWSER_DIR="./all-results/test-results-$browser"
             if [ -f "$BROWSER_DIR/report.html" ]; then
@@ -605,6 +605,10 @@ jobs:
             if [ -f "$BROWSER_DIR/log.html" ]; then
               cp "$BROWSER_DIR/log.html" "./gh-pages/log-$browser.html"
               echo "  ✅ log-$browser.html copiado"
+            fi
+            if [ -f "$BROWSER_DIR/output.xml" ]; then
+              cp "$BROWSER_DIR/output.xml" "./gh-pages/output-$browser.xml"
+              echo "  ✅ output-$browser.xml copiado"
             fi
           done
           
@@ -683,6 +687,8 @@ jobs:
                   <h3>🎯 Relatório Consolidado</h3>
                   <ul class="asset-list">
                     <li><a href="index.html">📊 Relatório Principal</a></li>
+                    <li><a href="log.html">📋 Log Consolidado</a></li>
+                    <li><a href="output.xml">📄 XML Consolidado</a></li>
                   </ul>
                 </div>
           EOF
@@ -696,6 +702,7 @@ jobs:
                   <ul class="asset-list">
                     <li><a href="report-$browser.html">📊 Relatório $browser</a></li>
                     <li><a href="log-$browser.html">📋 Log $browser</a></li>
+                    <li><a href="output-$browser.xml">📄 XML $browser</a></li>
                   </ul>
                 </div>
           EOF
