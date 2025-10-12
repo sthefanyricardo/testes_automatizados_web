@@ -460,18 +460,33 @@ jobs:
           mkdir -p ./consolidation-dir
           echo "📁 Diretório de consolidação criado: ./consolidation-dir"
 
-          # Copiar todos os XMLs e PNGs para o diretório de consolidação
-          echo "➕ Copiando todos os arquivos output.xml e *.png para o diretório de consolidação..."
-          find ./all-results -type f \( -name "output.xml" -o -name "*.png" \) -exec cp {} ./consolidation-dir/ \;
+          # Copiar e RENOMEAR arquivos output.xml para evitar sobreposição
+          echo "➕ Copiando e renomeando arquivos output.xml..."
+          for dir in ./all-results/test-results-*; do
+            if [ -d "$dir" ]; then
+              browser=$(basename "$dir" | sed 's/test-results-//')
+              if [ -f "$dir/output.xml" ]; then
+                echo "  - Copiando relatório de $browser"
+                cp "$dir/output.xml" "./consolidation-dir/output-$browser.xml"
+              else
+                echo "  - ⚠️  output.xml não encontrado em $dir"
+              fi
+            fi
+          done
+
+          # Copiar todos os arquivos PNG para o diretório de consolidação
+          # Isso assume que os nomes dos screenshots são únicos entre as execuções
+          echo "🖼️ Copiando todos os arquivos *.png para o diretório de consolidação..."
+          find ./all-results -type f -name "*.png" -exec cp {} ./consolidation-dir/ \;
           
           echo "📂 Conteúdo do diretório de consolidação:"
           ls -la ./consolidation-dir/
           
           # Verificar se existem arquivos output.xml
-          OUTPUT_FILES=$(find ./consolidation-dir -name "output.xml" -type f 2>/dev/null)
+          OUTPUT_FILES=$(find ./consolidation-dir -name "output-*.xml" -type f 2>/dev/null)
           
           if [ -z "$OUTPUT_FILES" ]; then
-            echo "⚠️ Nenhum arquivo output.xml encontrado. Criando página de status..."
+            echo "⚠️ Nenhum arquivo output-*.xml encontrado. Criando página de status..."
             mkdir -p ./gh-pages
             cat > ./gh-pages/index.html << 'EOF'
           <!DOCTYPE html>
@@ -811,7 +826,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     needs: publish-results
     runs-on: ubuntu-latest
-    if: always()
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
     permissions:
       contents: read
       pages: write
