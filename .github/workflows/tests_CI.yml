@@ -217,11 +217,18 @@ jobs:
           # Ubuntu runners já têm Xvfb instalado - configurar com resolução expandida
           export DISPLAY=:99
           
-          # Configuração padrão do Xvfb para todos os navegadores
-          # Usando resolução expandida (1920x1400) para evitar problemas de viewport
-          Xvfb :99 -screen 0 1920x1400x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
-          sleep 2
-          echo "Display virtual configurado: $DISPLAY (1920x1400 - Padrão para todos os navegadores)"
+          # Configuração do Xvfb - resolução extra large para Firefox
+          if [[ "${{ matrix.browser }}" == "firefox" ]]; then
+            echo "Firefox detectado - Configurando Xvfb com resolução extra expandida"
+            Xvfb :99 -screen 0 2560x1600x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
+            sleep 3
+            echo "Display virtual configurado: $DISPLAY (2560x1600 - Extra Large para Firefox)"
+          else
+            echo "Configurando Xvfb com resolução padrão expandida"
+            Xvfb :99 -screen 0 1920x1400x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
+            sleep 2
+            echo "Display virtual configurado: $DISPLAY (1920x1400 - Padrão para Chrome/Edge)"
+          fi
 
       - name: Run E2E Tests
         run: |
@@ -263,6 +270,18 @@ jobs:
             echo "  - Edge options: $EDGE_OPTIONS"
           fi
           
+          # Configurações específicas do Firefox (forçar resolução extra expandida)
+          if [ "$BROWSER" = "firefox" ]; then
+            echo "Firefox: Forçando resolução EXTRA expandida para resolver viewport (1092, 762) out of bounds"
+            WINDOW_SIZE="2048x1536"  # Resolução bem maior que 1920x1200
+            
+            # Argumentos específicos do Firefox para garantir resolução correta
+            export FIREFOX_OPTIONS="--width=2048 --height=1536 --no-sandbox --disable-dev-shm-usage --disable-extensions"
+            echo "  - Firefox options: $FIREFOX_OPTIONS"
+            echo "  - Window size forçado: $WINDOW_SIZE (EXTRA LARGE)"
+            echo "  - Target fix: (1092, 762) agora deve caber dentro de (2048, 1536)"
+          fi
+          
           echo "Configurações aplicadas:"
           echo "  - Screenshot timeout: ${SCREENSHOT_TIMEOUT}s"
           echo "  - Window size: $WINDOW_SIZE"
@@ -282,7 +301,7 @@ jobs:
             --variable TIMEOUT:${SCREENSHOT_TIMEOUT} \
             --variable WINDOW_SIZE:$WINDOW_SIZE \
             --variable FORCE_WINDOW_SIZE:true \
-            --variable SET_WINDOW_SIZE:1920x1200 \
+            --variable SET_WINDOW_SIZE:$WINDOW_SIZE \
             --variable MAXIMIZE_BROWSER_WINDOW:false \
             --variable SELENIUM_SPEED:$SELENIUM_SPEED \
             --variable CAPTURE_PAGE_SCREENSHOT_ON_FAILURE:true \
@@ -296,6 +315,7 @@ jobs:
             --variable AUTO_SCROLL_BEHAVIOR:always \
             --variable VIEWPORT_FIX:true \
             --variable EDGE_OPTIONS:"${EDGE_OPTIONS:-}" \
+            --variable FIREFOX_OPTIONS:"${FIREFOX_OPTIONS:-}" \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
             --name "Relatório E2E - ${{ matrix.browser }}" \
