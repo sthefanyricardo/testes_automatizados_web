@@ -127,20 +127,35 @@ jobs:
         with:
           edge-version: stable
         
-      - name: Verify Edge Installation
+      - name: Optimize Edge Configuration
         if: matrix.browser == 'edge'
         run: |
-          echo "Verificando instalação do Edge..."
+          echo "Configurando Edge para melhor performance..."
           EDGE_VERSION=$(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)
           echo "Edge instalado: $EDGE_VERSION"
           
+          # Pre-download EdgeDriver para evitar timeout durante execução
+          echo "Pre-baixando EdgeDriver para evitar timeouts..."
+          python -c "
+          from selenium import webdriver
+          from selenium.webdriver.edge.service import Service
+          from webdriver_manager.microsoft import EdgeChromiumDriverManager
+          import os
           
-          echo "EdgeDriver será gerenciado automaticamente pelo Selenium"
-          echo "   Nenhuma configuração manual necessária!"
+          # Configurar timeout mais longo para download do driver
+          os.environ['WDM_TIMEOUT'] = '300'  # 5 minutos para download
           
-          # Verificar se Edge está funcionando
-          echo "Testando Edge headless..."
-          timeout 10s microsoft-edge --headless --disable-gpu --no-sandbox --version || echo "Edge headless OK"
+          try:
+              driver_path = EdgeChromiumDriverManager().install()
+              print(f'EdgeDriver baixado com sucesso: {driver_path}')
+          except Exception as e:
+              print(f'Erro ao baixar EdgeDriver: {e}')
+              print('Continuando com configuração padrão...')
+          "
+          
+          # Teste rápido do Edge
+          echo "Testando Edge headless com timeouts otimizados..."
+          timeout 30s microsoft-edge --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --version || echo "Edge testado OK"
 
       - name: Create results directory
         run: |
@@ -174,12 +189,21 @@ jobs:
           
           echo "=========================================="
           
-          # Ubuntu runners já têm Xvfb instalado - apenas configurar
+          # Ubuntu runners já têm Xvfb instalado - configurar com resolução expandida
           export DISPLAY=:99
-          # Usar Xvfb nativo do runner com otimizações
-          Xvfb :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
-          sleep 2
-          echo "Display virtual otimizado: $DISPLAY (1920x1200, Xvfb nativo do runner)"
+          
+          # Resolução expandida para evitar MoveTargetOutOfBounds especialmente no Firefox
+          if [[ "${{ matrix.browser }}" == "firefox" ]]; then
+            # Firefox precisa de viewport maior devido ao erro MoveTargetOutOfBounds
+            Xvfb :99 -screen 0 2048x1536x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
+            sleep 3
+            echo "Display virtual para Firefox: $DISPLAY (2048x1536 - Resolução expandida)"
+          else
+            # Outros browsers usam resolução padrão otimizada
+            Xvfb :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
+            sleep 2
+            echo "Display virtual padrão: $DISPLAY (1920x1200)"
+          fi
 
       - name: Run E2E Tests
         run: |
@@ -196,16 +220,37 @@ jobs:
           # CONFIGURAÇÕES ESPECÍFICAS POR NAVEGADOR
           if [ "$BROWSER" = "firefox" ]; then
             echo "FIREFOX - Configurações específicas para evitar MoveTargetOutOfBounds:"
-            echo "  - Window Size: 1920x1200 (viewport maior)"
-            echo "  - Selenium Speed: 0.5s (mais lento para estabilidade)"
+            echo "  - Window Size: 1920x1400 (viewport expandido significativamente)"
+            echo "  - Selenium Speed: 0.3s (mais lento para estabilidade)"
             echo "  - Implicit Wait: 15s (aumentado para Firefox)"
-            echo "  - Scroll Behavior: auto (scroll automático para elementos)"
+            echo "  - Scroll Behavior: smooth (scroll suave para elementos)"
+            echo "  - Firefox Args: --width=1920 --height=1400 + safe-mode"
+            echo "  - Xvfb expandido: 2048x1536 (resolução muito maior)"
             
-            WINDOW_SIZE="1920x1200"
-            SELENIUM_SPEED="0.5"
+            WINDOW_SIZE="1920x1400"
+            SELENIUM_SPEED="0.3"
             IMPLICIT_WAIT="15"
-            SCROLL_BEHAVIOR="auto"
+            SCROLL_BEHAVIOR="smooth"
             PAGE_LOAD_TIMEOUT="45"
+            SCREENSHOT_TIMEOUT="35"
+            
+            # Configurações específicas do Firefox para evitar viewport pequeno
+            export MOZ_HEADLESS=1
+            export FIREFOX_ARGS="--width=1920 --height=1400 --safe-mode --new-instance"
+          elif [ "$BROWSER" = "edge" ]; then
+            echo "EDGE - Configurações específicas para evitar timeouts:"
+            echo "  - Window Size: 1920x1080 (padrão otimizado)"
+            echo "  - Selenium Speed: 1.0s (mais lento para estabilidade do Edge)"
+            echo "  - Implicit Wait: 20s (aumentado significativamente para Edge)"
+            echo "  - Page Load Timeout: 60s (timeout maior para Edge)"
+            echo "  - Screenshot Timeout: 45s (timeout específico para screenshots)"
+            
+            WINDOW_SIZE="1920x1080"
+            SELENIUM_SPEED="1.0"
+            IMPLICIT_WAIT="20"
+            SCROLL_BEHAVIOR="auto"
+            PAGE_LOAD_TIMEOUT="60"
+            SCREENSHOT_TIMEOUT="45"
           else
             echo "$BROWSER - Configurações padrão otimizadas:"
             echo "  - Window Size: 1920x1080"
@@ -217,11 +262,19 @@ jobs:
             IMPLICIT_WAIT="10"
             SCROLL_BEHAVIOR="smooth"
             PAGE_LOAD_TIMEOUT="30"
+            SCREENSHOT_TIMEOUT="30"
           fi
           
           
+          # Configurações específicas do Edge para melhor performance
+          if [[ "${{ matrix.browser }}" == "edge" ]]; then
+            export EDGE_OPTIONS="--disable-web-security --disable-features=VizDisplayCompositor --disable-extensions --disable-gpu --no-sandbox --disable-dev-shm-usage --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-background-networking"
+            echo "Edge: Aplicando argumentos otimizados para performance"
+            echo "  - Edge options: $EDGE_OPTIONS"
+          fi
+          
           echo "Configurações aplicadas:"
-          echo "  - Screenshot timeout: 30s"
+          echo "  - Screenshot timeout: ${SCREENSHOT_TIMEOUT}s"
           echo "  - Window size: $WINDOW_SIZE"
           echo "  - Selenium speed: $SELENIUM_SPEED"
           echo "  - Implicit wait: ${IMPLICIT_WAIT}s"
@@ -237,17 +290,22 @@ jobs:
             --outputdir ./tests-results-CI/${{ matrix.browser }} \
             --variable BROWSER:$BROWSER \
             --variable HEADLESS:true \
-            --variable TIMEOUT:30 \
+            --variable TIMEOUT:${SCREENSHOT_TIMEOUT} \
             --variable WINDOW_SIZE:$WINDOW_SIZE \
             --variable SELENIUM_SPEED:$SELENIUM_SPEED \
             --variable CAPTURE_PAGE_SCREENSHOT_ON_FAILURE:true \
             --variable BROWSER_PREFIX:${{ matrix.browser }} \
-            --variable SCREENSHOT_TIMEOUT:30 \
+            --variable SCREENSHOT_TIMEOUT:${SCREENSHOT_TIMEOUT} \
             --variable IMPLICIT_WAIT:$IMPLICIT_WAIT \
             --variable PAGE_LOAD_TIMEOUT:$PAGE_LOAD_TIMEOUT \
             --variable SCROLL_BEHAVIOR:$SCROLL_BEHAVIOR \
             --variable SCROLL_INTO_VIEW:true \
             --variable FIREFOX_SAFE_MODE:true \
+            --variable FIREFOX_ARGS:"${FIREFOX_ARGS:-}" \
+            --variable FIREFOX_VIEWPORT_FIX:true \
+            --variable FORCE_SCROLL_ON_CLICK:true \
+            --variable AUTO_SCROLL_MARGIN:100 \
+            --variable EDGE_OPTIONS:"${EDGE_OPTIONS:-}" \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
             --name "Relatório E2E - ${{ matrix.browser }}" \
