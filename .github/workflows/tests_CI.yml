@@ -52,8 +52,6 @@ env:
   CACHE_VERSION: "v1"             # Versão do cache (incrementar para invalidar)
   
   # ⏱️ Configurações de Timeout (segundos) - Padrão para Chrome/Firefox
-  SELENIUM_SPEED: "0.5"           # Delay entre comandos Selenium
-  IMPLICIT_WAIT: "15"             # Timeout padrão para elementos
   PAGE_LOAD_TIMEOUT: "45"         # Timeout para carregamento de páginas
   SCREENSHOT_TIMEOUT: "35"        # Timeout para captura de screenshots
   
@@ -302,17 +300,12 @@ jobs:
           
           # Configurações únicas para todos os navegadores
           WINDOW_SIZE="1920x1200"
-          SELENIUM_SPEED="0.5"
-          IMPLICIT_WAIT="15" 
-          SCROLL_BEHAVIOR="smooth"
           PAGE_LOAD_TIMEOUT="45"
           SCREENSHOT_TIMEOUT="35"
           
           # Configurações específicas do Edge (timeouts e argumentos otimizados)
           if [ "$BROWSER" = "edge" ]; then
             echo "Edge: Aplicando timeouts estendidos e argumentos otimizados"
-            SELENIUM_SPEED="1.0"
-            IMPLICIT_WAIT="25"
             PAGE_LOAD_TIMEOUT="60"
             SCREENSHOT_TIMEOUT="50"
             
@@ -331,10 +324,7 @@ jobs:
           echo "Configurações aplicadas:"
           echo "  - Screenshot timeout: ${SCREENSHOT_TIMEOUT}s"
           echo "  - Window size: $WINDOW_SIZE"
-          echo "  - Selenium speed: $SELENIUM_SPEED"
-          echo "  - Implicit wait: ${IMPLICIT_WAIT}s"
           echo "  - Page load timeout: ${PAGE_LOAD_TIMEOUT}s"
-          echo "  - Scroll behavior: $SCROLL_BEHAVIOR"
           
           # Executar Robot Framework com configurações específicas por navegador
           set +e
@@ -350,17 +340,13 @@ jobs:
             --variable FORCE_WINDOW_SIZE:true \
             --variable SET_WINDOW_SIZE:$WINDOW_SIZE \
             --variable MAXIMIZE_BROWSER_WINDOW:false \
-            --variable SELENIUM_SPEED:$SELENIUM_SPEED \
             --variable CAPTURE_PAGE_SCREENSHOT_ON_FAILURE:true \
             --variable BROWSER_PREFIX:${{ matrix.browser }} \
             --variable SCREENSHOT_TIMEOUT:${SCREENSHOT_TIMEOUT} \
-            --variable IMPLICIT_WAIT:$IMPLICIT_WAIT \
             --variable PAGE_LOAD_TIMEOUT:$PAGE_LOAD_TIMEOUT \
             --variable SCROLL_INTO_VIEW:true \
             --variable EDGE_OPTIONS:"${EDGE_OPTIONS:-}" \
             --variable FIREFOX_OPTIONS:"${FIREFOX_OPTIONS:-}" \
-            --variable FIREFOX_BINARY:"${FIREFOX_BINARY:-}" \
-            --variable EDGE_BINARY:"${EDGE_BINARY:-}" \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
             --name "Relatório E2E - ${{ matrix.browser }}" \
