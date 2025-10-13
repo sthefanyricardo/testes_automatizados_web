@@ -6,8 +6,14 @@
 # Funcionalidades:
 # - ✅ Execução em múltiplos navegadores: Chrome, Firefox e Edge
 # - 🐧 Execução em Ubuntu com Robot Framework e Selenium
+# - 🚀 Instalação simplificada: apt install + webdriver-manager automático
 # - 📊 Relatórios HTML consolidados
-# - 🚀 Deploy automático no GitHub Pages
+# - 🌐 Deploy automático no GitHub Pages
+#
+# Abordagem Simplificada:
+# 1. Navegadores + Xvfb instalados via apt em um comando
+# 2. WebDrivers gerenciados automaticamente pelo webdriver-manager
+# 3. Validação automática completa (navegadores + Xvfb + webdriver-manager)
 
 name: E2E Tests - Selenium + Robot Framework
 run-name: Testes E2E (${{ github.ref_name }}) - ${{ github.actor }}
@@ -67,7 +73,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     
-    # ALTERNATIVA MODERNA: Service container para Xvfb (descomente se preferir)
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -90,11 +95,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           
-          # Instalar webdriver-manager (versão mais recente compatível)
-          pip install "webdriver-manager>=4.0.0,<5.0.0"
-          
-          # Instalar Selenium (versão LTS estável)
-          pip install "selenium>=4.15.0,<5.0.0"
+          # Instalar webdriver-manager e selenium (gerencia drivers automaticamente)
+          pip install webdriver-manager selenium
           
           echo "Instalando dependências específicas dos módulos..."
           INSTALLED_MODULES=()
@@ -145,42 +147,48 @@ jobs:
           pip list | grep -E "(robot|selenium|webdriver)" || echo "Nenhum pacote robot/selenium encontrado"
           echo "::endgroup::"
 
-      # Setup automático do Edge com action oficial
-      - name: Setup Microsoft Edge
-        if: matrix.browser == 'edge'
-        uses: browser-actions/setup-edge@v1
-        with:
-          edge-version: stable
-        
-      - name: Optimize Edge Configuration
-        if: matrix.browser == 'edge'
+      # 🌐 Instalação simplificada de navegadores e Xvfb
+      - name: Install Browsers and Xvfb
         run: |
-          echo "Configurando Edge para melhor performance..."
-          EDGE_VERSION=$(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)
-          echo "Edge instalado: $EDGE_VERSION"
+          echo "::group::🌐 Instalando navegadores e Xvfb"
+          sudo apt-get update
           
-          # Pre-download EdgeDriver para evitar timeout durante execução
-          echo "Pre-baixando EdgeDriver para evitar timeouts..."
-          python -c "
-          from selenium import webdriver
-          from selenium.webdriver.edge.service import Service
-          from webdriver_manager.microsoft import EdgeChromiumDriverManager
-          import os
+          # Adicionar repositórios necessários
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           
-          # Configurar timeout mais longo para download do driver
-          os.environ['WDM_TIMEOUT'] = '300'  # 5 minutos para download
+          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-edge.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
           
-          try:
-              driver_path = EdgeChromiumDriverManager().install()
-              print(f'EdgeDriver baixado com sucesso: {driver_path}')
-          except Exception as e:
-              print(f'Erro ao baixar EdgeDriver: {e}')
-              print('Continuando com configuração padrão...')
-          "
+          sudo apt-get update
+
+          # ✅ Instalar navegadores, Xvfb e dependências mínimas
+          sudo apt-get install -y --no-install-recommends google-chrome-stable firefox microsoft-edge-stable xvfb xauth
           
-          # Teste rápido do Edge
-          echo "Testando Edge headless com timeouts otimizados..."
-          timeout 30s microsoft-edge --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --version || echo "Edge testado OK"
+          echo "✅ Navegadores e Xvfb instalados com sucesso"
+          echo "::endgroup::"
+
+      # ✅ Validação completa
+      - name: Validate Installation
+        run: |
+          echo "::group::✅ Validando instalação completa"
+          echo "🌐 Navegadores:"
+          echo "  Chrome: $(google-chrome --version)"
+          echo "  Firefox: $(firefox --version)"
+          echo "  Edge: $(microsoft-edge-stable --version)"
+          echo ""
+          echo "🖥️ Display Virtual:"
+          echo "  Xvfb: $(Xvfb -help 2>&1 | head -1 || echo 'Erro ao verificar Xvfb')"
+          echo ""
+          echo "🔧 WebDriver Manager:"
+          python -c "import webdriver_manager; print(f'  WebDriver Manager: {webdriver_manager.__version__}')" 2>/dev/null || echo "  WebDriver Manager: Erro na importação"
+          python -c "from webdriver_manager.chrome import ChromeDriverManager; print('  ✅ Chrome WebDriver Manager OK')" 2>/dev/null || echo "  ❌ Chrome WebDriver Manager"
+          python -c "from webdriver_manager.firefox import GeckoDriverManager; print('  ✅ Firefox WebDriver Manager OK')" 2>/dev/null || echo "  ❌ Firefox WebDriver Manager"  
+          python -c "from webdriver_manager.microsoft import EdgeChromiumDriverManager; print('  ✅ Edge WebDriver Manager OK')" 2>/dev/null || echo "  ❌ Edge WebDriver Manager"
+          echo ""
+          echo "✅ Instalação completa validada com sucesso!"
+          echo "✅ WebDrivers serão baixados automaticamente durante os testes"
+          echo "::endgroup::"
 
       - name: Create results directory
         run: |
@@ -214,10 +222,17 @@ jobs:
           
           echo "=========================================="
           
-          # Ubuntu runners já têm Xvfb instalado - configurar com resolução expandida
+          # Xvfb foi instalado no step anterior - configurar com resolução expandida
           export DISPLAY=:99
           
           # Configuração do Xvfb - resolução extra large para Firefox
+          echo "Verificando se Xvfb já está rodando no display :99..."
+          if pgrep -f "Xvfb :99" > /dev/null; then
+            echo "Xvfb já está rodando no display :99, terminando processo anterior..."
+            pkill -f "Xvfb :99" || true
+            sleep 1
+          fi
+          
           if [[ "${{ matrix.browser }}" == "firefox" ]]; then
             echo "Firefox detectado - Configurando Xvfb com resolução extra expandida"
             Xvfb :99 -screen 0 2560x1600x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
@@ -228,6 +243,14 @@ jobs:
             Xvfb :99 -screen 0 1920x1400x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
             sleep 2
             echo "Display virtual configurado: $DISPLAY (1920x1400 - Padrão para Chrome/Edge)"
+          fi
+          
+          # Verificar se Xvfb iniciou corretamente
+          if pgrep -f "Xvfb :99" > /dev/null; then
+            echo "✅ Xvfb iniciado com sucesso no display :99"
+          else
+            echo "❌ Erro: Xvfb não conseguiu iniciar no display :99"
+            exit 1
           fi
 
       - name: Run E2E Tests
@@ -275,11 +298,12 @@ jobs:
             echo "Firefox: Forçando resolução EXTRA expandida para resolver viewport (1092, 762) out of bounds"
             WINDOW_SIZE="2048x1536"  # Resolução bem maior que 1920x1200
             
-            # Argumentos específicos do Firefox para garantir resolução correta
-            export FIREFOX_OPTIONS="--width=2048 --height=1536 --no-sandbox --disable-dev-shm-usage --disable-extensions"
+            # Argumentos específicos do Firefox (opções válidas apenas)
+            export FIREFOX_OPTIONS="--headless"
             echo "  - Firefox options: $FIREFOX_OPTIONS"
             echo "  - Window size forçado: $WINDOW_SIZE (EXTRA LARGE)"
             echo "  - Target fix: (1092, 762) agora deve caber dentro de (2048, 1536)"
+            echo "  - Nota: Tamanho da janela será definido via Robot Framework, não via argumentos CLI"
           fi
           
           echo "Configurações aplicadas:"
@@ -293,6 +317,7 @@ jobs:
           # Executar Robot Framework com configurações específicas por navegador
           set +e
           
+          echo "::group::🔧 Executando Robot Framework"
           robot \
             --name "Tests E2E - Robot Framework CI (${{ matrix.browser }})" \
             --outputdir ./tests-results-CI/${{ matrix.browser }} \
@@ -309,11 +334,7 @@ jobs:
             --variable SCREENSHOT_TIMEOUT:${SCREENSHOT_TIMEOUT} \
             --variable IMPLICIT_WAIT:$IMPLICIT_WAIT \
             --variable PAGE_LOAD_TIMEOUT:$PAGE_LOAD_TIMEOUT \
-            --variable SCROLL_BEHAVIOR:$SCROLL_BEHAVIOR \
             --variable SCROLL_INTO_VIEW:true \
-            --variable SCROLL_ELEMENT_INTO_VIEW:true \
-            --variable AUTO_SCROLL_BEHAVIOR:always \
-            --variable VIEWPORT_FIX:true \
             --variable EDGE_OPTIONS:"${EDGE_OPTIONS:-}" \
             --variable FIREFOX_OPTIONS:"${FIREFOX_OPTIONS:-}" \
             --loglevel INFO \
