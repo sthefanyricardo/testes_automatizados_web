@@ -50,12 +50,8 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        # Matriz simplificada - sempre lowercase, elimina conversão posterior
-        browser: ${{ 
-          github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'todos' 
-          ? fromJSON(format('["{0}"]', github.event.inputs.browser)) 
-          : fromJSON('["chrome", "firefox", "edge"]') 
-        }}
+        # Matriz simplificada - sempre lowercase, elimina conversão posterior  
+      browser: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'todos' && fromJSON(format('["{0}"]', github.event.inputs.browser))) || fromJSON('["chrome", "firefox", "edge"]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     
@@ -125,13 +121,13 @@ jobs:
 
       # 🚀 Setup automático do Edge com action oficial
       - name: Setup Microsoft Edge
-        if: matrix.browser == 'Edge'
+        if: matrix.browser == 'edge'
         uses: browser-actions/setup-edge@v1
         with:
           edge-version: stable
         
       - name: Verify Edge Installation
-        if: matrix.browser == 'Edge'
+        if: matrix.browser == 'edge'
         run: |
           echo "✅ Verificando instalação do Edge..."
           EDGE_VERSION=$(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)
