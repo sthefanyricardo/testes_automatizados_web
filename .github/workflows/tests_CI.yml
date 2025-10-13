@@ -329,10 +329,16 @@ jobs:
           # Configurações específicas do Firefox (forçar resolução extra expandida)
           if [ "$BROWSER" = "firefox" ]; then
             echo "Firefox: Forçando resolução EXTRA expandida para resolver viewport (1092, 762) out of bounds"
-            WINDOW_SIZE="2048x1536"  # Resolução bem maior que 1920x1200
+            WINDOW_SIZE="2560x1600"  # Resolução MUITO maior para evitar out of bounds
+            
+            # Firefox: apenas argumentos válidos (não aceita --width/--height)
+            # O tamanho será controlado via Robot Framework Set Window Size
+            FIREFOX_OPTIONS="--headless --new-instance --no-remote"
+            export FIREFOX_OPTIONS
             
             echo "  - webdriver-manager gerenciará GeckoDriver automaticamente"
-            echo "  - Window size expandido: $WINDOW_SIZE"
+            echo "  - Window size MEGA expandido: $WINDOW_SIZE (via Robot Framework)"
+            echo "  - Firefox arguments válidos: $FIREFOX_OPTIONS"
           fi
           
           echo "Configurações aplicadas:"
@@ -360,6 +366,9 @@ jobs:
             --variable PAGE_LOAD_TIMEOUT:$PAGE_LOAD_TIMEOUT \
             --variable SCROLL_INTO_VIEW:true \
             --variable EDGE_OPTIONS:"${EDGE_OPTIONS:-}" \
+            --variable FIREFOX_OPTIONS:"${FIREFOX_OPTIONS:-}" \
+            --variable SELENIUM_SPEED:"0.5" \
+            --variable IMPLICIT_WAIT:"15" \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
             --name "Relatório E2E - ${{ matrix.browser }}" \
