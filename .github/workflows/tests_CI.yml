@@ -169,42 +169,71 @@ jobs:
           echo "✅ Edge instalado. Verificação final:"
           echo "Edge: $(microsoft-edge --version)"
 
-        # Instalação otimizada do EdgeDriver
+        # Configuração do EdgeDriver via webdriver-manager
       - name: Install EdgeDriver
         if: matrix.browser == 'edge'
         run: |    
-          # 🎯 Instalar EdgeDriver diretamente via sistema
-          echo "Instalando EdgeDriver diretamente via sistema..."
+          echo "::group::🎯 Configurando EdgeDriver via webdriver-manager"
           
-          # Método 1: Tentar instalar via APT primeiro
-          sudo apt-get install -y msedgedriver
+          # EdgeDriver será gerenciado automaticamente pelo webdriver-manager durante os testes
+          # Aqui apenas verificamos se tudo está configurado corretamente
           
-          # Verificar se msedgedriver foi instalado corretamente
-          if msedgedriver --version >/dev/null 2>&1; then
-            echo "✅ EdgeDriver instalado com sucesso via APT"
-            msedgedriver --version
-          else
-            echo "⚠️ EdgeDriver via APT falhou. Executando fallback via Python..."
-            
-            # Método 2: Fallback via webdriver-manager (Python)
-            python -c "
-            import os
-            os.environ['WDM_TIMEOUT'] = '300'
-            
-            try:
-                from webdriver_manager.microsoft import EdgeChromiumDriverManager
-                driver_path = EdgeChromiumDriverManager().install()
-                print('✅ EdgeDriver baixado com sucesso via Python: ' + driver_path)
-            except Exception as e:
-                print('❌ Erro ao baixar EdgeDriver via Python: ' + str(e))
-                print('Continuando com configuração padrão...')
-            "
-          fi
+          echo "Verificando disponibilidade do webdriver-manager para Edge..."
+          python -c "
+          import sys
+          import os
+          from pathlib import Path
           
-          # Teste rápido do Edge
-          echo "Testando Edge headless com timeouts otimizados..."
-          timeout 30s microsoft-edge --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --version || echo "Edge testado OK"
+          # Configurar timeout generoso para download
+          os.environ['WDM_TIMEOUT'] = '300'
+          os.environ['WDM_PRINT_FIRST_LINE'] = 'False'
+          os.environ['WDM_LOG_LEVEL'] = '20'
           
+          def download_edge_driver():
+              '''Download EdgeDriver com validação robusta'''
+              try:
+                  from webdriver_manager.microsoft import EdgeChromiumDriverManager
+                  
+                  print('✅ webdriver-manager disponível')
+                  
+                  # Download com retry automático
+                  manager = EdgeChromiumDriverManager()
+                  driver_path = manager.install()
+                  
+                  # Validar download
+                  if not driver_path or not Path(driver_path).exists():
+                      print('⚠️ Download concluído mas arquivo não encontrado')
+                      return None
+                  
+                  print(f'✅ EdgeDriver baixado: {driver_path}')
+                  print(f'   Tamanho: {Path(driver_path).stat().st_size / 1024:.1f} KB')
+                  return driver_path
+                  
+              except ImportError as e:
+                  print(f'❌ webdriver-manager não instalado: {e}')
+                  sys.exit(1)  # Falha crítica
+                  
+              except TimeoutError:
+                  print('⏱️ Timeout no download')
+                  return None
+                  
+              except Exception as e:
+                  print(f'⚠️ Erro: {type(e).__name__}: {e}')
+                  return None
+          
+          # Executar download
+          result = download_edge_driver()
+          if result:
+              print('🚀 EdgeDriver pronto para uso nos testes')
+          else:
+              print('📋 EdgeDriver será baixado automaticamente durante os testes')
+          "
+          
+          # Teste rápido do Edge browser
+          echo "Testando Edge browser..."
+          timeout 15s microsoft-edge-stable --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --version || echo "Edge browser OK"
+          
+          echo "✅ EdgeDriver configurado para download automático"
           echo "::endgroup::"
 
       # ✅ Validação completa
