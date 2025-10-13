@@ -168,31 +168,35 @@ jobs:
           
           echo "✅ Edge instalado. Verificação final:"
           echo "Edge: $(microsoft-edge --version)"
-          
+
+        # Instalação otimizada do EdgeDriver
+      - name: Install EdgeDriver
+        if: matrix.browser == 'edge'
+        run: |    
           # 🎯 Instalar EdgeDriver diretamente via sistema
           echo "Instalando EdgeDriver diretamente via sistema..."
           
           # Método 1: Tentar instalar via APT primeiro
-          if sudo apt-get install -y msedgedriver; then
+          sudo apt-get install -y msedgedriver
+          
+          # Verificar se msedgedriver foi instalado corretamente
+          if msedgedriver --version >/dev/null 2>&1; then
             echo "✅ EdgeDriver instalado com sucesso via APT"
-            msedgedriver --version 2>/dev/null || echo "EdgeDriver instalado via sistema"
+            msedgedriver --version
           else
-            # Pre-download EdgeDriver para evitar timeout durante execução
-            echo "Pre-baixando EdgeDriver para evitar timeouts..."
-            python -c "
-            from selenium import webdriver
-            from selenium.webdriver.edge.service import Service
-            from webdriver_manager.microsoft import EdgeChromiumDriverManager
-            import os
+            echo "⚠️ EdgeDriver via APT falhou. Executando fallback via Python..."
             
-            # Configurar timeout mais longo para download do driver
-            os.environ['WDM_TIMEOUT'] = '300'  # 5 minutos para download
+            # Método 2: Fallback via webdriver-manager (Python)
+            python -c "
+            import os
+            os.environ['WDM_TIMEOUT'] = '300'
             
             try:
+                from webdriver_manager.microsoft import EdgeChromiumDriverManager
                 driver_path = EdgeChromiumDriverManager().install()
-                print(f'EdgeDriver baixado com sucesso: {driver_path}')
+                print('✅ EdgeDriver baixado com sucesso via Python: ' + driver_path)
             except Exception as e:
-                print(f'Erro ao baixar EdgeDriver: {e}')
+                print('❌ Erro ao baixar EdgeDriver via Python: ' + str(e))
                 print('Continuando com configuração padrão...')
             "
           fi
