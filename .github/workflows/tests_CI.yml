@@ -49,6 +49,7 @@ permissions:
 env:
   # 🐍 Configurações de Ambiente Python
   PYTHON_VERSION: "3.12"          # Versão do Python para executar os testes
+  NODE_VERSION: "22"              # Versão do Node.js para Robot Framework Reporter
   CACHE_VERSION: "v1"             # Versão do cache (incrementar para invalidar)
   
   # ⏱️ Configurações de Timeout (segundos) - Padrão para Chrome/Firefox
@@ -79,6 +80,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Cache pip dependencies
         uses: actions/cache@v4
@@ -609,6 +615,14 @@ jobs:
           echo "Pattern: $BASE_PATH/screenshots_*/"
           find $BASE_PATH -type d -name "screenshots_*" 2>/dev/null | wc -l | xargs echo "  Directories:"
         continue-on-error: true
+
+      - name: Robot Framework Reporter
+        uses: joonvena/robotframework-reporter-action@v2.5
+        if: always()
+        continue-on-error: true  # Não falhar o workflow se houver problemas de permissão
+        with:
+          gh_access_token: ${{ secrets.GITHUB_TOKEN }}
+          report_path: tests-results-CI/${{ matrix.browser }}
 
       - name: Upload Test Results and Evidence
         uses: actions/upload-artifact@v4
