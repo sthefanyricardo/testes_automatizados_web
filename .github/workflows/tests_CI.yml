@@ -619,6 +619,7 @@ jobs:
       - name: Robot Framework Reporter
         uses: joonvena/robotframework-reporter-action@v2.5
         if: always()
+        continue-on-error: true  # Não falhar o workflow se houver problemas de permissão
         with:
           gh_access_token: ${{ secrets.GITHUB_TOKEN }}
           report_path: tests-results-CI/${{ matrix.browser }}
