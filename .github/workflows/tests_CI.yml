@@ -45,6 +45,7 @@ env:
   CACHE_VERSION: "v1"
 
 jobs:
+  # Job principal de execução dos testes
   tests:
     strategy:
       fail-fast: false
@@ -55,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     
-    # 🚀 ALTERNATIVA MODERNA: Service container para Xvfb (descomente se preferir)
+    # ALTERNATIVA MODERNA: Service container para Xvfb (descomente se preferir)
     # services:
     #   xvfb:
     #     image: ghcr.io/browserless/base:latest
@@ -119,7 +120,7 @@ jobs:
           echo "Selenium: $(python -c 'import selenium; print(selenium.__version__)' 2>/dev/null || echo 'Não encontrado')"
           echo "SeleniumLibrary: $(python -c 'import SeleniumLibrary; print(SeleniumLibrary.__version__)' 2>/dev/null || echo 'Não encontrada')"
 
-      # 🚀 Setup automático do Edge com action oficial
+      # Setup automático do Edge com action oficial
       - name: Setup Microsoft Edge
         if: matrix.browser == 'edge'
         uses: browser-actions/setup-edge@v1
@@ -129,12 +130,12 @@ jobs:
       - name: Verify Edge Installation
         if: matrix.browser == 'edge'
         run: |
-          echo "✅ Verificando instalação do Edge..."
+          echo "Verificando instalação do Edge..."
           EDGE_VERSION=$(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)
           echo "Edge instalado: $EDGE_VERSION"
           
           echo ""
-          echo "🎯 EdgeDriver será gerenciado automaticamente pelo Selenium"
+          echo "EdgeDriver será gerenciado automaticamente pelo Selenium"
           echo "   Nenhuma configuração manual necessária!"
           
           # Verificar se Edge está funcionando
@@ -160,15 +161,15 @@ jobs:
           echo "=========================================="
           
           if command -v google-chrome &> /dev/null; then
-            echo "✅ Chrome: $(google-chrome --version)"
+            echo "Chrome: $(google-chrome --version)"
           fi
           
           if command -v firefox &> /dev/null; then
-            echo "✅ Firefox: $(firefox --version)"
+            echo "Firefox: $(firefox --version)"
           fi
           
           if command -v microsoft-edge &> /dev/null || command -v edge &> /dev/null; then
-            echo "✅ Edge: $(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)"
+            echo "Edge: $(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)"
           fi
           
           echo "=========================================="
@@ -178,11 +179,11 @@ jobs:
           # Usar Xvfb nativo do runner com otimizações
           Xvfb :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
           sleep 2
-          echo "✅ Display virtual otimizado: $DISPLAY (1920x1200, Xvfb nativo do runner)"
+          echo "Display virtual otimizado: $DISPLAY (1920x1200, Xvfb nativo do runner)"
 
       - name: Run E2E Tests
         run: |
-          echo "🚀 Executando testes para o navegador: ${{ matrix.browser }}"
+          echo "Executando testes para o navegador: ${{ matrix.browser }}"
           
           # Browser já vem em lowercase da matriz - sem conversão necessária
           BROWSER="${{ matrix.browser }}"
@@ -192,9 +193,9 @@ jobs:
           # Configurar display para execução headless
           export DISPLAY=:99
           
-          # 🔧 CONFIGURAÇÕES ESPECÍFICAS POR NAVEGADOR
+          # CONFIGURAÇÕES ESPECÍFICAS POR NAVEGADOR
           if [ "$BROWSER" = "firefox" ]; then
-            echo "🦊 FIREFOX - Configurações específicas para evitar MoveTargetOutOfBounds:"
+            echo "FIREFOX - Configurações específicas para evitar MoveTargetOutOfBounds:"
             echo "  - Window Size: 1920x1200 (viewport maior)"
             echo "  - Selenium Speed: 0.5s (mais lento para estabilidade)"
             echo "  - Implicit Wait: 15s (aumentado para Firefox)"
@@ -219,7 +220,7 @@ jobs:
           fi
           
           echo ""
-          echo "📊 Configurações aplicadas:"
+          echo "Configurações aplicadas:"
           echo "  - Screenshot timeout: 30s"
           echo "  - Window size: $WINDOW_SIZE"
           echo "  - Selenium speed: $SELENIUM_SPEED"
@@ -258,28 +259,28 @@ jobs:
           echo "Robot Framework finalizado com código: $ROBOT_EXIT_CODE"
           
           if [ $ROBOT_EXIT_CODE -eq 0 ]; then
-            echo "✅ PERFEITO! Todos os testes passaram!"
+            echo "PERFEITO! Todos os testes passaram!"
             exit 0
           elif [ $ROBOT_EXIT_CODE -le 250 ]; then
-            echo "⚠️ Alguns testes falharam, mas a execução foi bem-sucedida"
-            echo "📊 Relatórios gerados com sucesso para análise"
+            echo "Alguns testes falharam, mas a execução foi bem-sucedida"
+            echo "Relatórios gerados com sucesso para análise"
             exit 0
           else
-            echo "❌ Erro crítico na execução dos testes"
+            echo "Erro crítico na execução dos testes"
             exit 1
           fi
 
       - name: Capture Screenshots and Evidence
         if: always()
         run: |
-          echo "📸 Verificando evidências e screenshots gerados..."
+          echo "Verificando evidências e screenshots gerados..."
           RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
           BROWSER_LOWERCASE=$(echo "${{ matrix.browser }}" | tr '[:upper:]' '[:lower:]')
           SCREENSHOTS_DIR="$RESULTS_DIR/screenshots_$BROWSER_LOWERCASE"
           
-          echo "🔍 Verificando em múltiplos locais:"
-          echo "  📁 Diretório principal: $RESULTS_DIR"
-          echo "  📁 Subpasta de screenshots: $SCREENSHOTS_DIR"
+          echo "Verificando em múltiplos locais:"
+          echo "  Diretório principal: $RESULTS_DIR"
+          echo "  Subpasta de screenshots: $SCREENSHOTS_DIR"
           
           # Contar screenshots no diretório principal
           IMAGES_MAIN=$(find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f 2>/dev/null | wc -l)
@@ -292,96 +293,96 @@ jobs:
           
           TOTAL_IMAGES=$((IMAGES_MAIN + IMAGES_SUBDIR))
           
-          echo "📊 Resumo da coleta de evidências:"
+          echo "Resumo da coleta de evidências:"
           echo "  Screenshots no diretório principal: $IMAGES_MAIN"
           echo "  Screenshots na subpasta screenshots_$BROWSER_LOWERCASE/: $IMAGES_SUBDIR"
-          echo "  ✅ Total de screenshots: $TOTAL_IMAGES"
+          echo "  Total de screenshots: $TOTAL_IMAGES"
           
           if [ $IMAGES_MAIN -gt 0 ]; then
-            echo "  📸 Exemplos do diretório principal:"
+            echo "  Exemplos do diretório principal:"
             find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | head -3 | while read img; do
               echo "    - $(basename "$img")"
             done
           fi
           
           if [ $IMAGES_SUBDIR -gt 0 ]; then
-            echo "  ✨ Exemplos da subpasta screenshots_$BROWSER_LOWERCASE/:"
+            echo "  Exemplos da subpasta screenshots_$BROWSER_LOWERCASE/:"
             find "$SCREENSHOTS_DIR" -name "*.png" -type f | head -3 | while read img; do
               echo "    - $(basename "$img")"
             done
           fi
           
           if [ $TOTAL_IMAGES -eq 0 ]; then
-            echo "  ⚠️ Nenhum screenshot encontrado em ambos os locais"
+            echo "  Nenhum screenshot encontrado em ambos os locais"
           fi
           
           # Debug: Listar TUDO que existe no diretório de resultados
           echo ""
-          echo "🔍 DEBUG - Estrutura completa do diretório de resultados:"
+          echo "DEBUG - Estrutura completa do diretório de resultados:"
           if [ -d "$RESULTS_DIR" ]; then
             find "$RESULTS_DIR" -type f -name "*.png" 2>/dev/null | head -10 | while read img; do
-              echo "  📸 Encontrado: $img"
+              echo "  Encontrado: $img"
             done
             
             echo ""
-            echo "📁 Estrutura de diretórios:"
+            echo "Estrutura de diretórios:"
             find "$RESULTS_DIR" -type d 2>/dev/null | head -5 | while read dir; do
-              echo "  📂 $dir"
+              echo "  $dir"
             done
           else
-            echo "  ❌ Diretório $RESULTS_DIR não existe!"
+            echo "  Diretório $RESULTS_DIR não existe!"
           fi
         continue-on-error: true
 
       - name: Check Test Results
         if: always()
         run: |
-          echo "🔍 Verificando resultados dos testes para ${{ matrix.browser }}..."
+          echo "Verificando resultados dos testes para ${{ matrix.browser }}..."
           RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
           
           if [ -f "$RESULTS_DIR/output.xml" ]; then
-            echo "✅ Arquivo output.xml encontrado!"
-            echo "📁 Conteúdo do diretório de resultados:"
+            echo "Arquivo output.xml encontrado!"
+            echo "Conteúdo do diretório de resultados:"
             ls -la "$RESULTS_DIR/"
             echo ""
             
             echo "📄 Arquivos de relatório gerados:"
-            [ -f "$RESULTS_DIR/report.html" ] && echo "  ✅ report.html ($(stat -c%s "$RESULTS_DIR/report.html" 2>/dev/null || echo "?") bytes)"
-            [ -f "$RESULTS_DIR/log.html" ] && echo "  ✅ log.html ($(stat -c%s "$RESULTS_DIR/log.html" 2>/dev/null || echo "?") bytes)"
-            [ -f "$RESULTS_DIR/output.xml" ] && echo "  ✅ output.xml ($(stat -c%s "$RESULTS_DIR/output.xml" 2>/dev/null || echo "?") bytes)"
+            [ -f "$RESULTS_DIR/report.html" ] && echo "  report.html ($(stat -c%s "$RESULTS_DIR/report.html" 2>/dev/null || echo "?") bytes)"
+            [ -f "$RESULTS_DIR/log.html" ] && echo "  log.html ($(stat -c%s "$RESULTS_DIR/log.html" 2>/dev/null || echo "?") bytes)"
+            [ -f "$RESULTS_DIR/output.xml" ] && echo "  output.xml ($(stat -c%s "$RESULTS_DIR/output.xml" 2>/dev/null || echo "?") bytes)"
           else
-            echo "❌ Arquivo output.xml não encontrado!"
+            echo "Arquivo output.xml não encontrado!"
             echo "Conteúdo disponível no diretório:"
             ls -la "$RESULTS_DIR/" 2>/dev/null || echo "Diretório de resultados não existe"
           fi
 
       - name: Debug Upload Paths
         run: |
-          echo "🔍 DEBUG - Verificando o que será incluído no upload:"
+          echo "DEBUG - Verificando o que será incluído no upload:"
           BASE_PATH="tests-results-CI/${{ matrix.browser }}"
           
           echo ""
-          echo "📄 Arquivos essenciais:"
-          [ -f "$BASE_PATH/output.xml" ] && echo "  ✅ output.xml ($(stat -c%s "$BASE_PATH/output.xml" 2>/dev/null || echo "?") bytes)" || echo "  ❌ output.xml não encontrado"
-          [ -f "$BASE_PATH/report.html" ] && echo "  ✅ report.html ($(stat -c%s "$BASE_PATH/report.html" 2>/dev/null || echo "?") bytes)" || echo "  ❌ report.html não encontrado"
-          [ -f "$BASE_PATH/log.html" ] && echo "  ✅ log.html ($(stat -c%s "$BASE_PATH/log.html" 2>/dev/null || echo "?") bytes)" || echo "  ❌ log.html não encontrado"
+          echo "Arquivos essenciais:"
+          [ -f "$BASE_PATH/output.xml" ] && echo "  output.xml ($(stat -c%s "$BASE_PATH/output.xml" 2>/dev/null || echo "?") bytes)" || echo "  output.xml não encontrado"
+          [ -f "$BASE_PATH/report.html" ] && echo "  report.html ($(stat -c%s "$BASE_PATH/report.html" 2>/dev/null || echo "?") bytes)" || echo "  report.html não encontrado"
+          [ -f "$BASE_PATH/log.html" ] && echo "  log.html ($(stat -c%s "$BASE_PATH/log.html" 2>/dev/null || echo "?") bytes)" || echo "  log.html não encontrado"
           
           echo ""
-          echo "📸 Screenshots no diretório principal:"
-          find $BASE_PATH -maxdepth 1 -name "*.png" 2>/dev/null | head -5 | while read f; do echo "  📸 $f"; done || echo "  Nenhum PNG no diretório principal"
+          echo "Screenshots no diretório principal:"
+          find $BASE_PATH -maxdepth 1 -name "*.png" 2>/dev/null | head -5 | while read f; do echo "  $f"; done || echo "  Nenhum PNG no diretório principal"
           
           echo ""
-          echo "📸 Screenshots em subdiretórios screenshots_*:"
-          find $BASE_PATH -path "*/screenshots_*/*.png" 2>/dev/null | head -10 | while read f; do echo "  📸 $f"; done || echo "  Nenhum PNG em subdiretórios screenshots_*"
+          echo "Screenshots em subdiretórios screenshots_*:"
+          find $BASE_PATH -path "*/screenshots_*/*.png" 2>/dev/null | head -10 | while read f; do echo "  $f"; done || echo "  Nenhum PNG em subdiretórios screenshots_*"
           
           echo ""
-          echo "📁 Todos os subdiretórios screenshots_*:"
+          echo "Todos os subdiretórios screenshots_*:"
           find $BASE_PATH -type d -name "screenshots_*" 2>/dev/null | while read d; do 
-            echo "  📂 $d ($(find "$d" -name "*.png" 2>/dev/null | wc -l) PNGs)"
+            echo "  $d ($(find "$d" -name "*.png" 2>/dev/null | wc -l) PNGs)"
           done || echo "  Nenhum subdiretório screenshots_* encontrado"
           
           echo ""
-          echo "🎯 Simulando padrões de upload:"
+          echo "Simulando padrões de upload:"
           echo "Pattern: $BASE_PATH/*.png"
           find $BASE_PATH -maxdepth 1 -name "*.png" 2>/dev/null | wc -l | xargs echo "  Matches:"
           echo "Pattern: $BASE_PATH/screenshots_*/"
@@ -1116,13 +1117,14 @@ jobs:
         with:
           path: ./gh-pages
 
+  # Publicar resultados via GitHub Pages (se for uma execução a partir da branch main ou se o input browser for 'todos' e se é uma execução a partir da branch main) 
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     needs: publish-results
     runs-on: ubuntu-latest
-    if: github.ref_name == 'main' && github.event.inputs.browser == 'todos'
+    if: github.ref_name == 'main' || (github.ref_name == 'main' && github.event.inputs.browser == 'todos')
     permissions:
       contents: read
       pages: write
