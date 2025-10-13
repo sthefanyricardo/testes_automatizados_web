@@ -136,7 +136,7 @@ jobs:
           echo "::group::🌐 Browser Versions"
           google-chrome --version 2>/dev/null || echo "Chrome: não instalado"
           firefox --version 2>/dev/null || echo "Firefox: não instalado"
-          microsoft-edge --version 2>/dev/null || echo "Edge: não instalado"
+          microsoft-edge-stable --version 2>/dev/null || echo "Edge: não instalado"
           echo "::endgroup::"
           
           echo "::group::🐍 Python Environment"
@@ -169,72 +169,37 @@ jobs:
           echo "✅ Edge instalado. Verificação final:"
           echo "Edge: $(microsoft-edge --version)"
 
-        # Configuração do EdgeDriver via webdriver-manager
+        # Configuração manual do EdgeDriver com fallback robusto
       - name: Install EdgeDriver
         if: matrix.browser == 'edge'
-        run: |    
-          echo "::group::🎯 Configurando EdgeDriver via webdriver-manager"
-          
-          # EdgeDriver será gerenciado automaticamente pelo webdriver-manager durante os testes
-          # Aqui apenas verificamos se tudo está configurado corretamente
-          
-          echo "Verificando disponibilidade do webdriver-manager para Edge..."
-          python -c "
-          import sys
-          import os
-          from pathlib import Path
-          
-          # Configurar timeout generoso para download
-          os.environ['WDM_TIMEOUT'] = '300'
-          os.environ['WDM_PRINT_FIRST_LINE'] = 'False'
-          os.environ['WDM_LOG_LEVEL'] = '20'
-          
-          def download_edge_driver():
-              '''Download EdgeDriver com validação robusta'''
-              try:
-                  from webdriver_manager.microsoft import EdgeChromiumDriverManager
-                  
-                  print('✅ webdriver-manager disponível')
-                  
-                  # Download com retry automático
-                  manager = EdgeChromiumDriverManager()
-                  driver_path = manager.install()
-                  
-                  # Validar download
-                  if not driver_path or not Path(driver_path).exists():
-                      print('⚠️ Download concluído mas arquivo não encontrado')
-                      return None
-                  
-                  print(f'✅ EdgeDriver baixado: {driver_path}')
-                  print(f'   Tamanho: {Path(driver_path).stat().st_size / 1024:.1f} KB')
-                  return driver_path
-                  
-              except ImportError as e:
-                  print(f'❌ webdriver-manager não instalado: {e}')
-                  sys.exit(1)  # Falha crítica
-                  
-              except TimeoutError:
-                  print('⏱️ Timeout no download')
-                  return None
-                  
-              except Exception as e:
-                  print(f'⚠️ Erro: {type(e).__name__}: {e}')
-                  return None
-          
-          # Executar download
-          result = download_edge_driver()
-          if result:
-              print('🚀 EdgeDriver pronto para uso nos testes')
-          else:
-              print('📋 EdgeDriver será baixado automaticamente durante os testes')
-          "
-          
-          # Teste rápido do Edge browser
-          echo "Testando Edge browser..."
-          timeout 15s microsoft-edge-stable --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --version || echo "Edge browser OK"
-          
-          echo "✅ EdgeDriver configurado para download automático"
-          echo "::endgroup::"
+        run: |
+          set -e
+          # Descobre a versão do Edge instalada
+          EDGE_VERSION=$(microsoft-edge-stable --version | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1)
+          EDGE_MAJOR=$(echo $EDGE_VERSION | cut -d. -f1)
+          echo "Edge instalado: $EDGE_VERSION (major $EDGE_MAJOR)"
+
+          # Baixa a versão correspondente do EdgeDriver, se possível
+          DRIVER_URL="https://msedgedriver.azureedge.net/$EDGE_VERSION/edgedriver_linux64.zip"
+          FALLBACK_URL="https://msedgedriver.azureedge.net/LATEST_RELEASE_${EDGE_MAJOR}_LINUX"
+
+          echo "Tentando baixar EdgeDriver de $DRIVER_URL"
+          wget -nv "$DRIVER_URL" -O edgedriver.zip || (
+            echo "Falha no download direto, tentando fallback de $FALLBACK_URL"
+            LATEST=$(curl -s $FALLBACK_URL)
+            [ -n "$LATEST" ] && wget -nv "https://msedgedriver.azureedge.net/$LATEST/edgedriver_linux64.zip" -O edgedriver.zip
+          )
+
+          if [ ! -f edgedriver.zip ]; then
+            echo "❌ Falha ao baixar EdgeDriver. O pipeline não pode continuar."
+            exit 1
+          fi
+
+          unzip -o edgedriver.zip
+          chmod +x msedgedriver
+          sudo mv msedgedriver /usr/local/bin/
+          echo "EdgeDriver instalado em /usr/local/bin/msedgedriver"
+          msedgedriver --version || true
 
       # ✅ Validação completa
       - name: Validate Installation
@@ -291,8 +256,8 @@ jobs:
             echo "Firefox: $(firefox --version)"
           fi
           
-          if command -v microsoft-edge &> /dev/null || command -v edge &> /dev/null; then
-            echo "Edge: $(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)"
+          if command -v microsoft-edge-stable &> /dev/null || command -v edge &> /dev/null; then
+            echo "Edge: $(microsoft-edge-stable --version 2>/dev/null || edge --version 2>/dev/null)"
           fi
           
           echo "=========================================="
