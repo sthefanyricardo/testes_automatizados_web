@@ -270,68 +270,67 @@ jobs:
             exit 1
           fi
 
-      - name: Capture Screenshots and Evidence
+      - name: Organize Screenshots and Evidence
         if: always()
         run: |
-          echo "Verificando evidências e screenshots gerados..."
+          echo "Organizando evidências e screenshots gerados..."
           RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
-          BROWSER_LOWERCASE=$(echo "${{ matrix.browser }}" | tr '[:upper:]' '[:lower:]')
-          SCREENSHOTS_DIR="$RESULTS_DIR/screenshots_$BROWSER_LOWERCASE"
+          BROWSER="${{ matrix.browser }}"  # Já vem em lowercase da matriz
+          SCREENSHOTS_DIR="$RESULTS_DIR/screenshots_$BROWSER"
           
-          echo "Verificando em múltiplos locais:"
-          echo "  Diretório principal: $RESULTS_DIR"
-          echo "  Subpasta de screenshots: $SCREENSHOTS_DIR"
+          echo "Configuração:"
+          echo "  Browser: $BROWSER"
+          echo "  Diretório de resultados: $RESULTS_DIR"
+          echo "  Diretório de screenshots: $SCREENSHOTS_DIR"
           
-          # Contar screenshots no diretório principal
-          IMAGES_MAIN=$(find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f 2>/dev/null | wc -l)
+          # Criar diretório de screenshots se não existir
+          mkdir -p "$SCREENSHOTS_DIR"
           
-          # Contar screenshots na subpasta screenshots_${browser}
-          IMAGES_SUBDIR=0
-          if [ -d "$SCREENSHOTS_DIR" ]; then
-            IMAGES_SUBDIR=$(find "$SCREENSHOTS_DIR" -name "*.png" -type f 2>/dev/null | wc -l)
+          # Mover todos os PNGs soltos para o diretório de screenshots organizado
+          MOVED_COUNT=0
+          if find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
+            echo "Organizando screenshots soltos do diretório principal..."
+            find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | while read png_file; do
+              mv "$png_file" "$SCREENSHOTS_DIR/"
+              echo "  Movido: $(basename "$png_file") → screenshots_$BROWSER/"
+            done
+            MOVED_COUNT=$(find "$SCREENSHOTS_DIR" -name "*.png" -type f 2>/dev/null | wc -l)
           fi
           
-          TOTAL_IMAGES=$((IMAGES_MAIN + IMAGES_SUBDIR))
+          # Verificar screenshots em outros possíveis locais do Robot Framework
+          for possible_dir in "$RESULTS_DIR"/*screenshots* "$RESULTS_DIR"/selenium-screenshot-* "$RESULTS_DIR"/robot-screenshot-*; do
+            if [ -d "$possible_dir" ] && [ "$possible_dir" != "$SCREENSHOTS_DIR" ]; then
+              if find "$possible_dir" -name "*.png" -type f | grep -q .; then
+                echo "Consolidando screenshots de: $possible_dir"
+                find "$possible_dir" -name "*.png" -type f -exec mv {} "$SCREENSHOTS_DIR/" \;
+              fi
+            fi
+          done
           
-          echo "Resumo da coleta de evidências:"
-          echo "  Screenshots no diretório principal: $IMAGES_MAIN"
-          echo "  Screenshots na subpasta screenshots_$BROWSER_LOWERCASE/: $IMAGES_SUBDIR"
-          echo "  Total de screenshots: $TOTAL_IMAGES"
+          # Contar screenshots finais
+          FINAL_COUNT=$(find "$SCREENSHOTS_DIR" -name "*.png" -type f 2>/dev/null | wc -l)
           
-          if [ $IMAGES_MAIN -gt 0 ]; then
-            echo "  Exemplos do diretório principal:"
-            find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | head -3 | while read img; do
+          echo "Resumo da organização:"
+          echo "  Screenshots organizados: $FINAL_COUNT"
+          echo "  Localização final: $SCREENSHOTS_DIR"
+          
+          if [ $FINAL_COUNT -gt 0 ]; then
+            echo "  Exemplos organizados:"
+            find "$SCREENSHOTS_DIR" -name "*.png" -type f | head -5 | while read img; do
               echo "    - $(basename "$img")"
-            done
-          fi
-          
-          if [ $IMAGES_SUBDIR -gt 0 ]; then
-            echo "  Exemplos da subpasta screenshots_$BROWSER_LOWERCASE/:"
-            find "$SCREENSHOTS_DIR" -name "*.png" -type f | head -3 | while read img; do
-              echo "    - $(basename "$img")"
-            done
-          fi
-          
-          if [ $TOTAL_IMAGES -eq 0 ]; then
-            echo "  Nenhum screenshot encontrado em ambos os locais"
-          fi
-          
-          # Debug: Listar TUDO que existe no diretório de resultados
-          
-          echo "DEBUG - Estrutura completa do diretório de resultados:"
-          if [ -d "$RESULTS_DIR" ]; then
-            find "$RESULTS_DIR" -type f -name "*.png" 2>/dev/null | head -10 | while read img; do
-              echo "  Encontrado: $img"
-            done
-            
-            
-            echo "Estrutura de diretórios:"
-            find "$RESULTS_DIR" -type d 2>/dev/null | head -5 | while read dir; do
-              echo "  $dir"
             done
           else
-            echo "  Diretório $RESULTS_DIR não existe!"
+            echo "  Aviso: Nenhum screenshot encontrado para organizar"
+            # Criar pelo menos um arquivo de evidência para manter a estrutura
+            touch "$SCREENSHOTS_DIR/no_screenshots_generated.txt"
+            echo "Nenhum screenshot foi gerado durante os testes." > "$SCREENSHOTS_DIR/no_screenshots_generated.txt"
           fi
+          
+          # Debug: Estrutura final
+          echo "Estrutura final do diretório de resultados:"
+          find "$RESULTS_DIR" -type f | head -10 | while read file; do
+            echo "  $file"
+          done
         continue-on-error: true
 
       - name: Check Test Results
@@ -344,7 +343,6 @@ jobs:
             echo "Arquivo output.xml encontrado!"
             echo "Conteúdo do diretório de resultados:"
             ls -la "$RESULTS_DIR/"
-            
             
             echo "Arquivos de relatório gerados:"
             [ -f "$RESULTS_DIR/report.html" ] && echo "  report.html ($(stat -c%s "$RESULTS_DIR/report.html" 2>/dev/null || echo "?") bytes)"
@@ -384,7 +382,7 @@ jobs:
           find $BASE_PATH -type d -name "screenshots_*" 2>/dev/null | wc -l | xargs echo "  Directories:"
         continue-on-error: true
 
-      - name: Upload Test Results (Essential Files Only)
+      - name: Upload Test Results and Evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -393,8 +391,7 @@ jobs:
             tests-results-CI/${{ matrix.browser }}/output.xml
             tests-results-CI/${{ matrix.browser }}/report.html
             tests-results-CI/${{ matrix.browser }}/log.html
-            tests-results-CI/${{ matrix.browser }}/*.png
-            tests-results-CI/${{ matrix.browser }}/screenshots_*/
+            tests-results-CI/${{ matrix.browser }}/screenshots_${{ matrix.browser }}/
           retention-days: 7
           if-no-files-found: warn
 
@@ -427,6 +424,44 @@ jobs:
         with:
           path: ./all-results
 
+      - name: Debug Downloaded Artifacts
+        run: |
+          echo "Verificando artifacts baixados:"
+          if [ -d "./all-results" ]; then
+            find ./all-results -type f | head -20 | while read f; do
+              echo "  $f"
+            done
+            
+            echo "Resumo por browser:"
+            for browser_dir in ./all-results/test-results-*; do
+              if [ -d "$browser_dir" ]; then
+                browser=$(basename "$browser_dir" | sed 's/test-results-//')
+                echo "  Browser: $browser"
+                echo "    Output.xml: $([ -f "$browser_dir/output.xml" ] && echo "✓" || echo "✗")"
+                echo "    Report.html: $([ -f "$browser_dir/report.html" ] && echo "✓" || echo "✗")"
+                echo "    Log.html: $([ -f "$browser_dir/log.html" ] && echo "✓" || echo "✗")"
+                
+                # Contar screenshots
+                screenshot_count=0
+                if find "$browser_dir" -name "*.png" -type f | grep -q .; then
+                  screenshot_count=$(find "$browser_dir" -name "*.png" -type f | wc -l)
+                fi
+                echo "    Screenshots: $screenshot_count"
+                
+                # Mostrar estrutura de diretórios
+                if find "$browser_dir" -type d | grep -v "^$browser_dir$" | head -3 | grep -q .; then
+                  echo "    Subdiretórios:"
+                  find "$browser_dir" -type d | grep -v "^$browser_dir$" | head -3 | while read subdir; do
+                    echo "      $(basename "$subdir")"
+                  done
+                fi
+              fi
+            done
+          else
+            echo "  Diretório ./all-results não encontrado!"
+          fi
+        continue-on-error: true
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
         continue-on-error: true
@@ -437,13 +472,13 @@ jobs:
           mkdir -p ./gh-pages
           mkdir -p ./gh-pages/relatorio-consolidado
           
-          echo "ESTRATÉGIA OTIMIZADA SEM DUPLICAÇÃO:"
-          echo "1. Organização direta em estrutura screenshots_* final"
-          echo "2. Cada imagem copiada apenas uma vez por destino"
-          echo "3. Zero imagens soltas no diretório raiz"
-          echo "4. Estrutura preservada para Set Screenshot Directory"
-          echo "5. Máxima eficiência de armazenamento"
-          echo "6. GitHub Pages totalmente compatível"
+          echo "✅ Resumo da organização final para os arquivos de imagens/screenshots:"
+          echo "- Cada imagem existe apenas 2x: consolidado + individual"
+          echo "- Estrutura screenshots_* preservada em todos os relatórios"
+          echo "- Assets organizados sem redundância!"
+          echo "- Zero imagens soltas no diretório raiz"
+          echo "- Máxima eficiência de armazenamento"
+          echo "- GitHub Pages totalmente compatível"
         continue-on-error: true
 
       - name: Create consolidated report with rebot
@@ -472,42 +507,65 @@ jobs:
             echo "ESTRATÉGIA OTIMIZADA: Organização direta em estrutura screenshots_*..."
             mkdir -p ./gh-pages/relatorio-consolidado
             
-            # Criar pastas screenshots_* no destino final
-            for browser in Chrome Firefox Edge; do
-              BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
-              mkdir -p "./gh-pages/relatorio-consolidado/screenshots_$BROWSER_LOWERCASE"
+            # Criar pastas screenshots_* no destino final (nomenclatura lowercase)
+            for browser in chrome firefox edge; do
+              mkdir -p "./gh-pages/relatorio-consolidado/screenshots_$browser"
+              echo "Criado diretório: ./gh-pages/relatorio-consolidado/screenshots_$browser"
             done
             
             TOTAL_ORGANIZED=0
-            for browser in Chrome Firefox Edge; do
+            # Os artifacts agora vêm com nomes em lowercase: chrome, firefox, edge
+            for browser in chrome firefox edge; do
               BROWSER_DIR="./all-results/test-results-$browser"
-              BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
-              DEST_SCREENSHOTS="./gh-pages/relatorio-consolidado/screenshots_$BROWSER_LOWERCASE"
+              DEST_SCREENSHOTS="./gh-pages/relatorio-consolidado/screenshots_$browser"
+              
+              echo "Processando browser: $browser"
+              echo "  Procurando em: $BROWSER_DIR"
+              echo "  Destino: $DEST_SCREENSHOTS"
               
               if [ -d "$BROWSER_DIR" ]; then
                 PNG_COUNT=0
                 
-                # Copiar imagens do diretório principal DIRETAMENTE para a pasta final
+                # Debug: Verificar estrutura do artifact baixado
+                echo "  Estrutura do artifact:"
+                find "$BROWSER_DIR" -type f | head -5 | while read f; do
+                  echo "    $f"
+                done
+                
+                # Copiar imagens do diretório screenshots_browser organizado
+                SCREENSHOTS_SRC="$BROWSER_DIR/screenshots_$browser"
+                if [ -d "$SCREENSHOTS_SRC" ] && find "$SCREENSHOTS_SRC" -name "*.png" -type f | grep -q .; then
+                  SCREENSHOTS_COUNT=$(find "$SCREENSHOTS_SRC" -name "*.png" -type f | wc -l)
+                  find "$SCREENSHOTS_SRC" -name "*.png" -type f -exec cp {} "$DEST_SCREENSHOTS/" \;
+                  PNG_COUNT=$((PNG_COUNT + SCREENSHOTS_COUNT))
+                  echo "  $SCREENSHOTS_COUNT imagens de screenshots_$browser → screenshots_$browser/"
+                fi
+                
+                # Fallback: Copiar qualquer PNG solto no diretório principal
                 if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
                   MAIN_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
                   find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "$DEST_SCREENSHOTS/" \;
                   PNG_COUNT=$((PNG_COUNT + MAIN_COUNT))
-                  echo " $MAIN_COUNT imagens principais do $browser → screenshots_$BROWSER_LOWERCASE/"
+                  echo "  $MAIN_COUNT imagens soltas do diretório principal → screenshots_$browser/"
                 fi
                 
-                # Copiar imagens das pastas screenshots_* DIRETAMENTE para a pasta final
+                # Copiar outros possíveis diretórios de screenshots
                 find "$BROWSER_DIR" -type d -name "screenshots_*" | while read screenshot_dir; do
-                  if [ -d "$screenshot_dir" ] && find "$screenshot_dir" -name "*.png" -type f | grep -q .; then
-                    SUBDIR_COUNT=$(find "$screenshot_dir" -name "*.png" -type f | wc -l)
-                    find "$screenshot_dir" -name "*.png" -type f -exec cp {} "$DEST_SCREENSHOTS/" \;
-                    echo " $SUBDIR_COUNT imagens de $(basename "$screenshot_dir") → screenshots_$BROWSER_LOWERCASE/"
+                  if [ -d "$screenshot_dir" ] && [ "$screenshot_dir" != "$SCREENSHOTS_SRC" ]; then
+                    if find "$screenshot_dir" -name "*.png" -type f | grep -q .; then
+                      SUBDIR_COUNT=$(find "$screenshot_dir" -name "*.png" -type f | wc -l)
+                      find "$screenshot_dir" -name "*.png" -type f -exec cp {} "$DEST_SCREENSHOTS/" \;
+                      echo "  $SUBDIR_COUNT imagens de $(basename "$screenshot_dir") → screenshots_$browser/"
+                    fi
                   fi
                 done
                 
-                if [ $PNG_COUNT -gt 0 ]; then
-                  TOTAL_ORGANIZED=$((TOTAL_ORGANIZED + PNG_COUNT))
-                  echo " $browser: $PNG_COUNT imagens organizadas (sem duplicação)"
-                fi
+                # Atualizar contadores
+                FINAL_COUNT=$(find "$DEST_SCREENSHOTS" -name "*.png" -type f 2>/dev/null | wc -l)
+                TOTAL_ORGANIZED=$((TOTAL_ORGANIZED + FINAL_COUNT))
+                echo "  $browser: $FINAL_COUNT imagens organizadas no total"
+              else
+                echo "  Diretório $BROWSER_DIR não encontrado"
               fi
             done
             
@@ -517,11 +575,11 @@ jobs:
             
             # Para rebot, criar links simbólicos temporários das imagens para o diretório de execução
             echo "Criando links temporários para execução do rebot..."
-            for browser in Chrome Firefox Edge; do
-              BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
-              SRC_DIR="./gh-pages/relatorio-consolidado/screenshots_$BROWSER_LOWERCASE"
+            for browser in chrome firefox edge; do
+              SRC_DIR="./gh-pages/relatorio-consolidado/screenshots_$browser"
               if [ -d "$SRC_DIR" ] && find "$SRC_DIR" -name "*.png" -type f | grep -q .; then
-                find "$SRC_DIR" -name "*.png" -type f -exec ln -sf "../relatorio-consolidado/screenshots_$BROWSER_LOWERCASE/{}" "./gh-pages/{}" \; 2>/dev/null || \
+                echo "  Criando links para screenshots_$browser ($(find "$SRC_DIR" -name "*.png" -type f | wc -l) imagens)"
+                find "$SRC_DIR" -name "*.png" -type f -exec ln -sf "../relatorio-consolidado/screenshots_$browser/{}" "./gh-pages/{}" \; 2>/dev/null || \
                 find "$SRC_DIR" -name "*.png" -type f -exec cp {} "./gh-pages/" \;
               fi
             done
@@ -561,9 +619,10 @@ jobs:
         run: |
           echo "Organizando assets finais sem duplicação..."
           
-          # Criar estrutura de pastas para relatórios individuais
-          for browser in Chrome Firefox Edge; do
-            mkdir -p "./gh-pages/execucao-${browser,,}"
+          # Criar estrutura de pastas para relatórios individuais (lowercase)
+          for browser in chrome firefox edge; do
+            mkdir -p "./gh-pages/execucao-$browser"
+            echo "Criado diretório: ./gh-pages/execucao-$browser"
           done
           
           # Mover arquivos consolidados para pasta dedicada (já organizados no step anterior)
@@ -586,49 +645,59 @@ jobs:
           
           # Verificar estrutura de imagens consolidadas (já criada)
           echo "Verificando estrutura de imagens consolidadas:"
-          for browser in Chrome Firefox Edge; do
-            BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
-            SCREENSHOTS_DIR="./gh-pages/relatorio-consolidado/screenshots_$BROWSER_LOWERCASE"
+          for browser in chrome firefox edge; do
+            SCREENSHOTS_DIR="./gh-pages/relatorio-consolidado/screenshots_$browser"
             if [ -d "$SCREENSHOTS_DIR" ]; then
               IMG_COUNT=$(find "$SCREENSHOTS_DIR" -name "*.png" -type f | wc -l)
-              echo "   screenshots_$BROWSER_LOWERCASE/: $IMG_COUNT imagens"
+              echo "   screenshots_$browser/: $IMG_COUNT imagens"
             fi
           done
           
-          # Organizar relatórios individuais por navegador (estrutura screenshots_* otimizada)
+          # Organizar relatórios individuais por navegador (nomenclatura corrigida)
           echo "Organizando relatórios individuais por navegador..."
-          for browser in Chrome Firefox Edge; do
+          for browser in chrome firefox edge; do
             BROWSER_DIR="./all-results/test-results-$browser"
-            FOLDER_NAME="execucao-${browser,,}"
-            BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
+            FOLDER_NAME="execucao-$browser"
             
             if [ -d "$BROWSER_DIR" ]; then
-              echo "  Processando $browser..."
+              echo "  Processando $browser ($BROWSER_DIR → $FOLDER_NAME)..."
               
-              # Copiar arquivos HTML/XML
-              [ -f "$BROWSER_DIR/report.html" ] && cp "$BROWSER_DIR/report.html" "./gh-pages/$FOLDER_NAME/"
-              [ -f "$BROWSER_DIR/log.html" ] && cp "$BROWSER_DIR/log.html" "./gh-pages/$FOLDER_NAME/"
-              [ -f "$BROWSER_DIR/output.xml" ] && cp "$BROWSER_DIR/output.xml" "./gh-pages/$FOLDER_NAME/"
+              # Copiar arquivos HTML/XML individuais
+              if [ -f "$BROWSER_DIR/report.html" ]; then
+                cp "$BROWSER_DIR/report.html" "./gh-pages/$FOLDER_NAME/"
+                echo "    ✓ report.html copiado"
+              fi
               
-              # OTIMIZAÇÃO: Criar estrutura screenshots_* para relatórios individuais
-              mkdir -p "./gh-pages/$FOLDER_NAME/screenshots_$BROWSER_LOWERCASE"
+              if [ -f "$BROWSER_DIR/log.html" ]; then
+                cp "$BROWSER_DIR/log.html" "./gh-pages/$FOLDER_NAME/"
+                echo "    ✓ log.html copiado"
+              fi
+              
+              if [ -f "$BROWSER_DIR/output.xml" ]; then
+                cp "$BROWSER_DIR/output.xml" "./gh-pages/$FOLDER_NAME/"
+                echo "    ✓ output.xml copiado"
+              fi
+              
+              # Criar estrutura screenshots_* para relatórios individuais
+              mkdir -p "./gh-pages/$FOLDER_NAME/screenshots_$browser"
               
               INDIVIDUAL_COUNT=0
               
-              # Copiar imagens das pastas screenshots_* originais
-              find "$BROWSER_DIR" -type d -name "screenshots_*" | while read screenshot_dir; do
-                if [ -d "$screenshot_dir" ] && find "$screenshot_dir" -name "*.png" -type f | grep -q .; then
-                  SUBDIR_COUNT=$(find "$screenshot_dir" -name "*.png" -type f | wc -l)
-                  find "$screenshot_dir" -name "*.png" -type f -exec cp {} "./gh-pages/$FOLDER_NAME/screenshots_$BROWSER_LOWERCASE/" \;
-                  echo "    $SUBDIR_COUNT imagens de $(basename "$screenshot_dir") → $FOLDER_NAME/screenshots_$BROWSER_LOWERCASE/"
-                fi
-              done
+              # Copiar imagens das pastas screenshots_* organizadas
+              SCREENSHOTS_SRC="$BROWSER_DIR/screenshots_$browser"
+              if [ -d "$SCREENSHOTS_SRC" ] && find "$SCREENSHOTS_SRC" -name "*.png" -type f | grep -q .; then
+                SCREENSHOTS_COUNT=$(find "$SCREENSHOTS_SRC" -name "*.png" -type f | wc -l)
+                find "$SCREENSHOTS_SRC" -name "*.png" -type f -exec cp {} "./gh-pages/$FOLDER_NAME/screenshots_$browser/" \;
+                INDIVIDUAL_COUNT=$((INDIVIDUAL_COUNT + SCREENSHOTS_COUNT))
+                echo "    ✓ $SCREENSHOTS_COUNT imagens copiadas para screenshots_$browser/"
+              fi
               
-              # Copiar imagens do diretório principal para a pasta screenshots_* individual
+              # Fallback: Copiar qualquer PNG solto no diretório principal
               if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
                 MAIN_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
-                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "./gh-pages/$FOLDER_NAME/screenshots_$BROWSER_LOWERCASE/" \;
-                echo "    $MAIN_COUNT imagens principais → $FOLDER_NAME/screenshots_$BROWSER_LOWERCASE/"
+                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "./gh-pages/$FOLDER_NAME/screenshots_$browser/" \;
+                INDIVIDUAL_COUNT=$((INDIVIDUAL_COUNT + MAIN_COUNT))
+                echo "    ✓ $MAIN_COUNT imagens soltas copiadas para screenshots_$browser/"
                 INDIVIDUAL_COUNT=$((INDIVIDUAL_COUNT + MAIN_COUNT))
               fi
               
