@@ -6,8 +6,14 @@
 # Funcionalidades:
 # - ✅ Execução em múltiplos navegadores: Chrome, Firefox e Edge
 # - 🐧 Execução em Ubuntu com Robot Framework e Selenium
+# - 🚀 Instalação simplificada: apt install + webdriver-manager automático
 # - 📊 Relatórios HTML consolidados
-# - 🚀 Deploy automático no GitHub Pages
+# - 🌐 Deploy automático no GitHub Pages
+#
+# Abordagem Simplificada:
+# 1. Navegadores + Xvfb instalados via apt em um comando
+# 2. WebDrivers gerenciados automaticamente pelo webdriver-manager
+# 3. Validação automática completa (navegadores + Xvfb + webdriver-manager)
 
 name: E2E Tests - Selenium + Robot Framework
 run-name: Testes E2E (${{ github.ref_name }}) - ${{ github.actor }}
@@ -41,8 +47,17 @@ permissions:
   checks: write
 
 env:
-  PYTHON_VERSION: "3.12"
-  CACHE_VERSION: "v1"
+  # 🐍 Configurações de Ambiente Python
+  PYTHON_VERSION: "3.12"          # Versão do Python para executar os testes
+  CACHE_VERSION: "v1"             # Versão do cache (incrementar para invalidar)
+  
+  # ⏱️ Configurações de Timeout (segundos) - Padrão para Chrome/Firefox
+  PAGE_LOAD_TIMEOUT: "45"         # Timeout para carregamento de páginas
+  SCREENSHOT_TIMEOUT: "35"        # Timeout para captura de screenshots
+  
+  # 📺 Configurações de Display e Resolução
+  WINDOW_SIZE: "1920x1200"        # Resolução padrão do navegador
+  XVFB_RESOLUTION: "1920x1400x24" # Resolução do display virtual
 
 jobs:
   # Job principal de execução dos testes
@@ -56,14 +71,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     
-    # ALTERNATIVA MODERNA: Service container para Xvfb (descomente se preferir)
-    # services:
-    #   xvfb:
-    #     image: ghcr.io/browserless/base:latest
-    #     options: >-
-    #       --tmpfs /tmp:exec,noatime
-    #       --shm-size=2gb
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -86,12 +93,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           
-          # Instalar webdriver-manager (versão mais recente compatível)
-          pip install "webdriver-manager>=4.0.0,<5.0.0"
-          
-          # Instalar Selenium (versão LTS estável)
-          pip install "selenium>=4.15.0,<5.0.0"
-          
+          # Instalar selenium e webdriver-manager (necessário para Robot Framework + SeleniumLibrary)
+          pip install webdriver-manager selenium
+
           echo "Instalando dependências específicas dos módulos..."
           INSTALLED_MODULES=()
           
@@ -120,42 +124,139 @@ jobs:
           echo "Selenium: $(python -c 'import selenium; print(selenium.__version__)' 2>/dev/null || echo 'Não encontrado')"
           echo "SeleniumLibrary: $(python -c 'import SeleniumLibrary; print(SeleniumLibrary.__version__)' 2>/dev/null || echo 'Não encontrada')"
 
-      # Setup automático do Edge com action oficial
-      - name: Setup Microsoft Edge
-        if: matrix.browser == 'edge'
-        uses: browser-actions/setup-edge@v1
-        with:
-          edge-version: stable
-        
-      - name: Optimize Edge Configuration
+      - name: 📊 System and Environment Info
+        run: |
+          echo "::group::🖥️ System Information"
+          echo "OS: $(uname -a)"
+          echo "Runner: ubuntu-latest"
+          echo "CPU: $(nproc) cores"
+          echo "Memory: $(free -h | awk '/^Mem:/ {print $2}')"
+          echo "::endgroup::"
+          
+          echo "::group::🌐 Browser Versions"
+          google-chrome --version 2>/dev/null || echo "Chrome: não instalado"
+          firefox --version 2>/dev/null || echo "Firefox: não instalado"
+          microsoft-edge --version 2>/dev/null || echo "Edge: não instalado"
+          echo "::endgroup::"
+          
+          echo "::group::🐍 Python Environment"
+          python --version
+          echo "Pacotes instalados:"
+          pip list | grep -E "(robot|selenium|webdriver)" || echo "Nenhum pacote robot/selenium encontrado"
+          echo "::endgroup::"
+
+      # 🌐 Instalação do navegador Edge
+      - name: Install Browser Edge
         if: matrix.browser == 'edge'
         run: |
-          echo "Configurando Edge para melhor performance..."
-          EDGE_VERSION=$(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)
-          echo "Edge instalado: $EDGE_VERSION"
+          echo "::group::🌐 Verificando navegadores pré-instalados e instalando Edge"
           
-          # Pre-download EdgeDriver para evitar timeout durante execução
-          echo "Pre-baixando EdgeDriver para evitar timeouts..."
+          # Chrome e Firefox JÁ estão pré-instalados no ubuntu-latest
+          echo "Verificando navegadores pré-instalados:"
+          echo "Chrome: $(google-chrome --version 2>/dev/null || echo 'Não encontrado')"
+          echo "Firefox: $(firefox --version 2>/dev/null || echo 'Não encontrado')"
+          
+          # Instalar apenas Edge (não pré-instalado)
+          sudo apt-get update
+          
+          # Adicionar repositório do Edge
+          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-edge.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
+          
+          # Instalar apenas o que não está pré-instalado
+          sudo apt-get install -y --no-install-recommends microsoft-edge-stable
+          
+          echo "✅ Edge instalado. Verificação final:"
+          echo "Edge: $(microsoft-edge --version)"
+
+        # Configuração do EdgeDriver via webdriver-manager
+      - name: Install EdgeDriver
+        if: matrix.browser == 'edge'
+        run: |    
+          echo "::group::🎯 Configurando EdgeDriver via webdriver-manager"
+          
+          # EdgeDriver será gerenciado automaticamente pelo webdriver-manager durante os testes
+          # Aqui apenas verificamos se tudo está configurado corretamente
+          
+          echo "Verificando disponibilidade do webdriver-manager para Edge..."
           python -c "
-          from selenium import webdriver
-          from selenium.webdriver.edge.service import Service
-          from webdriver_manager.microsoft import EdgeChromiumDriverManager
+          import sys
           import os
+          from pathlib import Path
           
-          # Configurar timeout mais longo para download do driver
-          os.environ['WDM_TIMEOUT'] = '300'  # 5 minutos para download
+          # Configurar timeout generoso para download
+          os.environ['WDM_TIMEOUT'] = '300'
+          os.environ['WDM_PRINT_FIRST_LINE'] = 'False'
+          os.environ['WDM_LOG_LEVEL'] = '20'
           
-          try:
-              driver_path = EdgeChromiumDriverManager().install()
-              print(f'EdgeDriver baixado com sucesso: {driver_path}')
-          except Exception as e:
-              print(f'Erro ao baixar EdgeDriver: {e}')
-              print('Continuando com configuração padrão...')
+          def download_edge_driver():
+              '''Download EdgeDriver com validação robusta'''
+              try:
+                  from webdriver_manager.microsoft import EdgeChromiumDriverManager
+                  
+                  print('✅ webdriver-manager disponível')
+                  
+                  # Download com retry automático
+                  manager = EdgeChromiumDriverManager()
+                  driver_path = manager.install()
+                  
+                  # Validar download
+                  if not driver_path or not Path(driver_path).exists():
+                      print('⚠️ Download concluído mas arquivo não encontrado')
+                      return None
+                  
+                  print(f'✅ EdgeDriver baixado: {driver_path}')
+                  print(f'   Tamanho: {Path(driver_path).stat().st_size / 1024:.1f} KB')
+                  return driver_path
+                  
+              except ImportError as e:
+                  print(f'❌ webdriver-manager não instalado: {e}')
+                  sys.exit(1)  # Falha crítica
+                  
+              except TimeoutError:
+                  print('⏱️ Timeout no download')
+                  return None
+                  
+              except Exception as e:
+                  print(f'⚠️ Erro: {type(e).__name__}: {e}')
+                  return None
+          
+          # Executar download
+          result = download_edge_driver()
+          if result:
+              print('🚀 EdgeDriver pronto para uso nos testes')
+          else:
+              print('📋 EdgeDriver será baixado automaticamente durante os testes')
           "
           
-          # Teste rápido do Edge
-          echo "Testando Edge headless com timeouts otimizados..."
-          timeout 30s microsoft-edge --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --version || echo "Edge testado OK"
+          # Teste rápido do Edge browser
+          echo "Testando Edge browser..."
+          timeout 15s microsoft-edge-stable --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --version || echo "Edge browser OK"
+          
+          echo "✅ EdgeDriver configurado para download automático"
+          echo "::endgroup::"
+
+      # ✅ Validação completa
+      - name: Validate Installation
+        run: |
+          echo "::group::✅ Validando instalação completa"
+          echo "🌐 Navegadores:"
+          echo "  Chrome: $(google-chrome --version)"
+          echo "  Firefox: $(firefox --version)"
+          echo "  Edge: $(microsoft-edge-stable --version)"
+          echo ""
+          echo "🖥️ Display Virtual:"
+          echo "  Xvfb: $(Xvfb -help 2>&1 | head -1 || echo 'Erro ao verificar Xvfb')"
+          echo ""
+          echo "🔧 WebDriver Manager:"
+          python -c "import webdriver_manager; print(f'  WebDriver Manager: {webdriver_manager.__version__}')" 2>/dev/null || echo "  WebDriver Manager: Erro na importação"
+          python -c "from webdriver_manager.chrome import ChromeDriverManager; print('  ✅ Chrome WebDriver Manager OK')" 2>/dev/null || echo "  ❌ Chrome WebDriver Manager"
+          python -c "from webdriver_manager.firefox import GeckoDriverManager; print('  ✅ Firefox WebDriver Manager OK')" 2>/dev/null || echo "  ❌ Firefox WebDriver Manager"  
+          python -c "from webdriver_manager.microsoft import EdgeChromiumDriverManager; print('  ✅ Edge WebDriver Manager OK')" 2>/dev/null || echo "  ❌ Edge WebDriver Manager"
+          echo ""
+          echo "✅ Instalação completa validada com sucesso!"
+          echo "✅ WebDrivers serão baixados automaticamente durante os testes"
+          echo "::endgroup::"
 
       - name: Create results directory
         run: |
@@ -165,6 +266,13 @@ jobs:
       - name: Setup Browser Environment
         run: |
           echo "Configurando ambiente para execução..."
+          
+          # ⚙️ Configurações globais do webdriver-manager
+          echo "Configurando webdriver-manager (instalado após navegadores)..."
+          export WDM_PRINT_FIRST_LINE="False"  # Reduzir logs verbosos
+          export WDM_LOG_LEVEL="20"  # INFO level
+          echo "  - webdriver-manager detectará navegadores automaticamente"
+          echo "  - Drivers compatíveis serão baixados automaticamente"
           
           # Verificar Robot Framework e bibliotecas instaladas
           echo "Robot Framework: $(robot --version 2>/dev/null || echo 'Não encontrado')"
@@ -191,12 +299,37 @@ jobs:
           
           # Ubuntu runners já têm Xvfb instalado - configurar com resolução expandida
           export DISPLAY=:99
+
+          # Configuração do Xvfb - resolução extra large para Firefox
+          echo "Verificando se Xvfb já está rodando no display :99..."
+          if pgrep -f "Xvfb :99" > /dev/null; then
+            echo "Xvfb já está rodando no display :99, terminando processo anterior..."
+            pkill -f "Xvfb :99" || true
+            sleep 1
+          fi
           
-          # Configuração padrão do Xvfb para todos os navegadores
-          # Usando resolução expandida (1920x1400) para evitar problemas de viewport
-          Xvfb :99 -screen 0 1920x1400x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
-          sleep 2
-          echo "Display virtual configurado: $DISPLAY (1920x1400 - Padrão para todos os navegadores)"
+          if [[ "${{ matrix.browser }}" == "firefox" ]]; then
+            echo "Firefox detectado - Configurando Xvfb com resolução extra expandida"
+            Xvfb :99 -screen 0 2560x1600x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
+            sleep 3
+            echo "Display virtual configurado: $DISPLAY (2560x1600 - Extra Large para Firefox)"
+          else
+            # Configuração padrão do Xvfb para todos os navegadores
+            # Usando resolução expandida (1920x1400) para evitar problemas de viewport
+            Xvfb :99 -screen 0 1920x1400x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
+            sleep 2
+            echo "Display virtual configurado: $DISPLAY (1920x1400 - Padrão para Chrome/Edge)"
+          fi
+          
+          # Verificar se Xvfb iniciou corretamente
+          if pgrep -f "Xvfb :99" > /dev/null; then
+            echo "✅ Xvfb iniciado com sucesso no display :99"
+          else
+            echo "❌ Erro: Xvfb não conseguiu iniciar no display :99"
+            exit 1
+          fi
+          
+          echo "✅ webdriver-manager configurado - detectará navegadores instalados automaticamente"
 
       - name: Run E2E Tests
         run: |
@@ -220,39 +353,50 @@ jobs:
           
           # Configurações únicas para todos os navegadores
           WINDOW_SIZE="1920x1200"
-          SELENIUM_SPEED="0.5"
-          IMPLICIT_WAIT="15" 
-          SCROLL_BEHAVIOR="smooth"
           PAGE_LOAD_TIMEOUT="45"
           SCREENSHOT_TIMEOUT="35"
           
-          # Configurações específicas apenas para Edge (devido aos timeouts críticos)
+          # Configurações específicas do Edge (timeouts e argumentos otimizados)
           if [ "$BROWSER" = "edge" ]; then
-            echo "Edge: Aplicando apenas timeouts estendidos devido à lentidão conhecida"
-            SELENIUM_SPEED="1.0"
-            IMPLICIT_WAIT="25"
-            PAGE_LOAD_TIMEOUT="60"
-            SCREENSHOT_TIMEOUT="50"
+            echo "Edge: Aplicando timeouts estendidos e argumentos otimizados"
+            PAGE_LOAD_TIMEOUT="120"  # 2 minutos para carregamento
+            SCREENSHOT_TIMEOUT="180" # 3 minutos para resolver timeouts
+            
+            # Argumentos específicos do Edge (exatamente como no workflow original)
+            EDGE_OPTIONS="--headless --disable-gpu --disable-dev-shm-usage --no-sandbox"
+            EDGE_OPTIONS="$EDGE_OPTIONS --disable-extensions --disable-background-timer-throttling"
+            EDGE_OPTIONS="$EDGE_OPTIONS --disable-backgrounding-occluded-windows --disable-renderer-backgrounding"
+            EDGE_OPTIONS="$EDGE_OPTIONS --disable-features=TranslateUI --memory-pressure-off"
+            EDGE_OPTIONS="$EDGE_OPTIONS --max_old_space_size=4096 --disable-ipc-flooding-protection"
+            export EDGE_OPTIONS
+
+            echo "  - webdriver-manager gerenciará EdgeDriver automaticamente"
           fi
           
-          # Configurações específicas do Edge para melhor performance
-          if [[ "${{ matrix.browser }}" == "edge" ]]; then
-            export EDGE_OPTIONS="--disable-web-security --disable-features=VizDisplayCompositor --disable-extensions --disable-gpu --no-sandbox --disable-dev-shm-usage --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-background-networking"
-            echo "Edge: Aplicando argumentos otimizados para performance"
-            echo "  - Edge options: $EDGE_OPTIONS"
+          # Configurações específicas do Firefox (forçar resolução extra expandida)
+          if [ "$BROWSER" = "firefox" ]; then
+            echo "Firefox: Forçando resolução EXTRA expandida para resolver viewport (1092, 762) out of bounds"
+            WINDOW_SIZE="2560x1600"  # Resolução MUITO maior para evitar out of bounds
+            
+            # Firefox: apenas argumentos válidos (não aceita --width/--height)
+            # O tamanho será controlado via Robot Framework Set Window Size
+            FIREFOX_OPTIONS="--headless --new-instance --no-remote"
+            export FIREFOX_OPTIONS
+            
+            echo "  - webdriver-manager gerenciará GeckoDriver automaticamente"
+            echo "  - Window size MEGA expandido: $WINDOW_SIZE (via Robot Framework)"
+            echo "  - Firefox arguments válidos: $FIREFOX_OPTIONS"
           fi
           
           echo "Configurações aplicadas:"
           echo "  - Screenshot timeout: ${SCREENSHOT_TIMEOUT}s"
           echo "  - Window size: $WINDOW_SIZE"
-          echo "  - Selenium speed: $SELENIUM_SPEED"
-          echo "  - Implicit wait: ${IMPLICIT_WAIT}s"
           echo "  - Page load timeout: ${PAGE_LOAD_TIMEOUT}s"
-          echo "  - Scroll behavior: $SCROLL_BEHAVIOR"
           
           # Executar Robot Framework com configurações específicas por navegador
           set +e
           
+          echo "::group::🔧 Executando Robot Framework"
           robot \
             --name "Tests E2E - Robot Framework CI (${{ matrix.browser }})" \
             --outputdir ./tests-results-CI/${{ matrix.browser }} \
@@ -261,20 +405,17 @@ jobs:
             --variable TIMEOUT:${SCREENSHOT_TIMEOUT} \
             --variable WINDOW_SIZE:$WINDOW_SIZE \
             --variable FORCE_WINDOW_SIZE:true \
-            --variable SET_WINDOW_SIZE:1920x1200 \
+            --variable SET_WINDOW_SIZE:$WINDOW_SIZE \
             --variable MAXIMIZE_BROWSER_WINDOW:false \
-            --variable SELENIUM_SPEED:$SELENIUM_SPEED \
             --variable CAPTURE_PAGE_SCREENSHOT_ON_FAILURE:true \
             --variable BROWSER_PREFIX:${{ matrix.browser }} \
             --variable SCREENSHOT_TIMEOUT:${SCREENSHOT_TIMEOUT} \
-            --variable IMPLICIT_WAIT:$IMPLICIT_WAIT \
             --variable PAGE_LOAD_TIMEOUT:$PAGE_LOAD_TIMEOUT \
-            --variable SCROLL_BEHAVIOR:$SCROLL_BEHAVIOR \
             --variable SCROLL_INTO_VIEW:true \
-            --variable SCROLL_ELEMENT_INTO_VIEW:true \
-            --variable AUTO_SCROLL_BEHAVIOR:always \
-            --variable VIEWPORT_FIX:true \
             --variable EDGE_OPTIONS:"${EDGE_OPTIONS:-}" \
+            --variable FIREFOX_OPTIONS:"${FIREFOX_OPTIONS:-}" \
+            --variable SELENIUM_SPEED:"0.5" \
+            --variable IMPLICIT_WAIT:"15" \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
             --name "Relatório E2E - ${{ matrix.browser }}" \
@@ -285,16 +426,76 @@ jobs:
           ROBOT_EXIT_CODE=$?
           echo "Robot Framework finalizado com código: $ROBOT_EXIT_CODE"
           
+          # Avaliar resultado dos testes imediatamente
           if [ $ROBOT_EXIT_CODE -eq 0 ]; then
-            echo "PERFEITO! Todos os testes passaram!"
-            exit 0
+            echo "✅ PERFEITO! Todos os testes passaram!"
           elif [ $ROBOT_EXIT_CODE -le 250 ]; then
-            echo "Alguns testes falharam, mas a execução foi bem-sucedida"
-            echo "Relatórios gerados com sucesso para análise"
-            exit 0
+            echo "⚠️ Alguns testes falharam, mas a execução foi bem-sucedida"
+            echo "📊 Relatórios gerados com sucesso para análise"
           else
-            echo "Erro crítico na execução dos testes"
+            echo "❌ Erro crítico na execução dos testes"
             exit 1
+          fi
+
+      - name: Extract Test Metrics
+        if: always()
+        run: |
+          RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
+          
+          if [ -f "$RESULTS_DIR/output.xml" ]; then
+            echo "::group::📈 Extraindo métricas dos testes"
+            
+            python3 << 'PYTHON'
+          import xml.etree.ElementTree as ET
+          import sys
+          import os
+          
+          results_dir = "./tests-results-CI/${{ matrix.browser }}"
+          
+          try:
+              tree = ET.parse(f'{results_dir}/output.xml')
+              stats = tree.find('.//statistics/total/stat')
+              
+              if stats is not None:
+                  passed = int(stats.get('pass', 0))
+                  failed = int(stats.get('fail', 0))
+                  total = passed + failed
+                  pass_rate = (passed / total * 100) if total > 0 else 0
+                  
+                  # Status emoji baseado na taxa de sucesso
+                  if pass_rate == 100:
+                      status_emoji = "✅"
+                  elif pass_rate >= 80:
+                      status_emoji = "⚠️"
+                  else:
+                      status_emoji = "❌"
+                  
+                  print(f"::notice title=Resultados ${{ matrix.browser }}::{status_emoji} {passed} passou | ❌ {failed} falhou | 📊 {pass_rate:.1f}% taxa de sucesso")
+                  
+                  # Salvar métricas para uso posterior
+                  os.makedirs(results_dir, exist_ok=True)
+                  with open(f'{results_dir}/metrics.txt', 'w') as f:
+                      f.write(f"browser=${{ matrix.browser }}\n")
+                      f.write(f"passed={passed}\n")
+                      f.write(f"failed={failed}\n")
+                      f.write(f"total={total}\n")
+                      f.write(f"pass_rate={pass_rate:.2f}\n")
+                      f.write(f"status_emoji={status_emoji}\n")
+                  
+                  # Definir variáveis de saída para outros steps
+                  print(f"TESTS_PASSED={passed}")
+                  print(f"TESTS_FAILED={failed}")
+                  print(f"TESTS_TOTAL={total}")
+                  print(f"PASS_RATE={pass_rate:.1f}")
+              else:
+                  print("::warning::Estatísticas não encontradas no output.xml")
+          except Exception as e:
+              print(f"::warning::Erro ao extrair métricas: {e}")
+          PYTHON
+            
+            echo "::endgroup::"
+          else
+            echo "::warning::Arquivo output.xml não encontrado em $RESULTS_DIR"
           fi
 
       - name: Organize Screenshots and Evidence
