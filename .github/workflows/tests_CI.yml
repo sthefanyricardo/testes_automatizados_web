@@ -41,8 +41,19 @@ permissions:
   checks: write
 
 env:
-  PYTHON_VERSION: "3.12"
-  CACHE_VERSION: "v1"
+  # 🐍 Configurações de Ambiente Python
+  PYTHON_VERSION: "3.12"          # Versão do Python para executar os testes
+  CACHE_VERSION: "v1"             # Versão do cache (incrementar para invalidar)
+  
+  # ⏱️ Configurações de Timeout (segundos) - Padrão para Chrome/Firefox
+  SELENIUM_SPEED: "0.5"           # Delay entre comandos Selenium
+  IMPLICIT_WAIT: "15"             # Timeout padrão para elementos
+  PAGE_LOAD_TIMEOUT: "45"         # Timeout para carregamento de páginas
+  SCREENSHOT_TIMEOUT: "35"        # Timeout para captura de screenshots
+  
+  # 📺 Configurações de Display e Resolução
+  WINDOW_SIZE: "1920x1200"        # Resolução padrão do navegador
+  XVFB_RESOLUTION: "1920x1400x24" # Resolução do display virtual
 
 jobs:
   # Job principal de execução dos testes
@@ -57,13 +68,6 @@ jobs:
     timeout-minutes: 30
     
     # ALTERNATIVA MODERNA: Service container para Xvfb (descomente se preferir)
-    # services:
-    #   xvfb:
-    #     image: ghcr.io/browserless/base:latest
-    #     options: >-
-    #       --tmpfs /tmp:exec,noatime
-    #       --shm-size=2gb
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -119,6 +123,27 @@ jobs:
           echo "Robot Framework: $(robot --version 2>/dev/null || echo 'Não encontrado')"
           echo "Selenium: $(python -c 'import selenium; print(selenium.__version__)' 2>/dev/null || echo 'Não encontrado')"
           echo "SeleniumLibrary: $(python -c 'import SeleniumLibrary; print(SeleniumLibrary.__version__)' 2>/dev/null || echo 'Não encontrada')"
+
+      - name: 📊 System and Environment Info
+        run: |
+          echo "::group::🖥️ System Information"
+          echo "OS: $(uname -a)"
+          echo "Runner: ubuntu-latest"
+          echo "CPU: $(nproc) cores"
+          echo "Memory: $(free -h | awk '/^Mem:/ {print $2}')"
+          echo "::endgroup::"
+          
+          echo "::group::🌐 Browser Versions"
+          google-chrome --version 2>/dev/null || echo "Chrome: não instalado"
+          firefox --version 2>/dev/null || echo "Firefox: não instalado"
+          microsoft-edge --version 2>/dev/null || echo "Edge: não instalado"
+          echo "::endgroup::"
+          
+          echo "::group::🐍 Python Environment"
+          python --version
+          echo "Pacotes instalados:"
+          pip list | grep -E "(robot|selenium|webdriver)" || echo "Nenhum pacote robot/selenium encontrado"
+          echo "::endgroup::"
 
       # Setup automático do Edge com action oficial
       - name: Setup Microsoft Edge
@@ -226,19 +251,15 @@ jobs:
           PAGE_LOAD_TIMEOUT="45"
           SCREENSHOT_TIMEOUT="35"
           
-          # Configurações específicas apenas para Edge (devido aos timeouts críticos)
+          # Configurações específicas do Edge (timeouts e argumentos otimizados)
           if [ "$BROWSER" = "edge" ]; then
-            echo "Edge: Aplicando apenas timeouts estendidos devido à lentidão conhecida"
+            echo "Edge: Aplicando timeouts estendidos e argumentos otimizados"
             SELENIUM_SPEED="1.0"
             IMPLICIT_WAIT="25"
             PAGE_LOAD_TIMEOUT="60"
             SCREENSHOT_TIMEOUT="50"
-          fi
-          
-          # Configurações específicas do Edge para melhor performance
-          if [[ "${{ matrix.browser }}" == "edge" ]]; then
+            
             export EDGE_OPTIONS="--disable-web-security --disable-features=VizDisplayCompositor --disable-extensions --disable-gpu --no-sandbox --disable-dev-shm-usage --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-background-networking"
-            echo "Edge: Aplicando argumentos otimizados para performance"
             echo "  - Edge options: $EDGE_OPTIONS"
           fi
           
@@ -284,7 +305,70 @@ jobs:
           
           ROBOT_EXIT_CODE=$?
           echo "Robot Framework finalizado com código: $ROBOT_EXIT_CODE"
+
+      - name: 📊 Extract Test Metrics
+        if: always()
+        run: |
+          RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
           
+          if [ -f "$RESULTS_DIR/output.xml" ]; then
+            echo "::group::📈 Extraindo métricas dos testes"
+            
+            python3 << 'PYTHON'
+          import xml.etree.ElementTree as ET
+          import sys
+          import os
+          
+          results_dir = "./tests-results-CI/${{ matrix.browser }}"
+          
+          try:
+              tree = ET.parse(f'{results_dir}/output.xml')
+              stats = tree.find('.//statistics/total/stat')
+              
+              if stats is not None:
+                  passed = int(stats.get('pass', 0))
+                  failed = int(stats.get('fail', 0))
+                  total = passed + failed
+                  pass_rate = (passed / total * 100) if total > 0 else 0
+                  
+                  # Status emoji baseado na taxa de sucesso
+                  if pass_rate == 100:
+                      status_emoji = "✅"
+                  elif pass_rate >= 80:
+                      status_emoji = "⚠️"
+                  else:
+                      status_emoji = "❌"
+                  
+                  print(f"::notice title=Resultados ${{ matrix.browser }}::{status_emoji} {passed} passou | ❌ {failed} falhou | 📊 {pass_rate:.1f}% taxa de sucesso")
+                  
+                  # Salvar métricas para uso posterior
+                  os.makedirs(results_dir, exist_ok=True)
+                  with open(f'{results_dir}/metrics.txt', 'w') as f:
+                      f.write(f"browser=${{ matrix.browser }}\n")
+                      f.write(f"passed={passed}\n")
+                      f.write(f"failed={failed}\n")
+                      f.write(f"total={total}\n")
+                      f.write(f"pass_rate={pass_rate:.2f}\n")
+                      f.write(f"status_emoji={status_emoji}\n")
+                  
+                  # Definir variáveis de saída para outros steps
+                  print(f"TESTS_PASSED={passed}")
+                  print(f"TESTS_FAILED={failed}")
+                  print(f"TESTS_TOTAL={total}")
+                  print(f"PASS_RATE={pass_rate:.1f}")
+              else:
+                  print("::warning::Estatísticas não encontradas no output.xml")
+          except Exception as e:
+              print(f"::warning::Erro ao extrair métricas: {e}")
+          PYTHON
+            
+            echo "::endgroup::"
+          else
+            echo "::warning::Arquivo output.xml não encontrado em $RESULTS_DIR"
+          fi
+
+      - name: ✅ Evaluate Test Results
+        run: |
           if [ $ROBOT_EXIT_CODE -eq 0 ]; then
             echo "PERFEITO! Todos os testes passaram!"
             exit 0
