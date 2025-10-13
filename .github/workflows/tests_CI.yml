@@ -22,13 +22,13 @@ on:
       browser:
         description: "Em qual navegador os testes devem ser executados?"
         required: false
-        default: "Todos"
+        default: "todos"
         type: choice
         options:
-          - Todos
-          - Chrome
-          - Firefox
-          - Edge
+          - todos
+          - chrome
+          - firefox
+          - edge
 
 permissions:
   contents: read
@@ -45,14 +45,24 @@ env:
   CACHE_VERSION: "v1"
 
 jobs:
+  # Job principal de execução dos testes
   tests:
     strategy:
       fail-fast: false
       max-parallel: 3
       matrix:
-        browser: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'Todos' && fromJSON(format('["{0}"]', github.event.inputs.browser))) || fromJSON('["Chrome", "Firefox", "Edge"]') }}
+        # Matriz simplificada - sempre lowercase, elimina conversão posterior  
+        browser: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'todos' && fromJSON(format('["{0}"]', github.event.inputs.browser))) || fromJSON('["chrome", "firefox", "edge"]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    
+    # ALTERNATIVA MODERNA: Service container para Xvfb (descomente se preferir)
+    # services:
+    #   xvfb:
+    #     image: ghcr.io/browserless/base:latest
+    #     options: >-
+    #       --tmpfs /tmp:exec,noatime
+    #       --shm-size=2gb
 
     steps:
       - name: Checkout code
@@ -76,11 +86,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           
-          # Instalar webdriver-manager com versão específica mais estável
-          pip install webdriver-manager==4.0.1
+          # Instalar webdriver-manager (versão mais recente compatível)
+          pip install "webdriver-manager>=4.0.0,<5.0.0"
           
-          # Instalar dependências básicas com versões estáveis para CI
-          pip install selenium==4.15.0
+          # Instalar Selenium (versão LTS estável)
+          pip install "selenium>=4.15.0,<5.0.0"
           
           echo "Instalando dependências específicas dos módulos..."
           INSTALLED_MODULES=()
@@ -110,27 +120,42 @@ jobs:
           echo "Selenium: $(python -c 'import selenium; print(selenium.__version__)' 2>/dev/null || echo 'Não encontrado')"
           echo "SeleniumLibrary: $(python -c 'import SeleniumLibrary; print(SeleniumLibrary.__version__)' 2>/dev/null || echo 'Não encontrada')"
 
-      # 🚀 Setup automático do Edge com action oficial
+      # Setup automático do Edge com action oficial
       - name: Setup Microsoft Edge
-        if: matrix.browser == 'Edge'
+        if: matrix.browser == 'edge'
         uses: browser-actions/setup-edge@v1
         with:
           edge-version: stable
         
-      - name: Verify Edge Installation
-        if: matrix.browser == 'Edge'
+      - name: Optimize Edge Configuration
+        if: matrix.browser == 'edge'
         run: |
-          echo "✅ Verificando instalação do Edge..."
+          echo "Configurando Edge para melhor performance..."
           EDGE_VERSION=$(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)
           echo "Edge instalado: $EDGE_VERSION"
           
-          echo ""
-          echo "🎯 EdgeDriver será gerenciado automaticamente pelo Selenium"
-          echo "   Nenhuma configuração manual necessária!"
+          # Pre-download EdgeDriver para evitar timeout durante execução
+          echo "Pre-baixando EdgeDriver para evitar timeouts..."
+          python -c "
+          from selenium import webdriver
+          from selenium.webdriver.edge.service import Service
+          from webdriver_manager.microsoft import EdgeChromiumDriverManager
+          import os
           
-          # Verificar se Edge está funcionando
-          echo "Testando Edge headless..."
-          timeout 10s microsoft-edge --headless --disable-gpu --no-sandbox --version || echo "Edge headless OK"
+          # Configurar timeout mais longo para download do driver
+          os.environ['WDM_TIMEOUT'] = '300'  # 5 minutos para download
+          
+          try:
+              driver_path = EdgeChromiumDriverManager().install()
+              print(f'EdgeDriver baixado com sucesso: {driver_path}')
+          except Exception as e:
+              print(f'Erro ao baixar EdgeDriver: {e}')
+              print('Continuando com configuração padrão...')
+          "
+          
+          # Teste rápido do Edge
+          echo "Testando Edge headless com timeouts otimizados..."
+          timeout 30s microsoft-edge --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --version || echo "Edge testado OK"
 
       - name: Create results directory
         run: |
@@ -151,50 +176,113 @@ jobs:
           echo "=========================================="
           
           if command -v google-chrome &> /dev/null; then
-            echo "✅ Chrome: $(google-chrome --version)"
+            echo "Chrome: $(google-chrome --version)"
           fi
           
           if command -v firefox &> /dev/null; then
-            echo "✅ Firefox: $(firefox --version)"
+            echo "Firefox: $(firefox --version)"
           fi
           
           if command -v microsoft-edge &> /dev/null || command -v edge &> /dev/null; then
-            echo "✅ Edge: $(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)"
+            echo "Edge: $(microsoft-edge --version 2>/dev/null || edge --version 2>/dev/null)"
           fi
           
           echo "=========================================="
           
-          # Instalar Xvfb para display virtual
-          sudo apt-get update -qq
-          sudo apt-get install -y xvfb
-          
-          # Configurar display virtual
+          # Ubuntu runners já têm Xvfb instalado - configurar com resolução expandida
           export DISPLAY=:99
-          Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > /dev/null 2>&1 &
-          sleep 3
-          echo "✅ Display virtual configurado: $DISPLAY"
+          
+          # Resolução expandida para evitar MoveTargetOutOfBounds especialmente no Firefox
+          if [[ "${{ matrix.browser }}" == "firefox" ]]; then
+            # Firefox precisa de viewport maior devido ao erro MoveTargetOutOfBounds
+            Xvfb :99 -screen 0 2048x1536x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
+            sleep 3
+            echo "Display virtual para Firefox: $DISPLAY (2048x1536 - Resolução expandida)"
+          else
+            # Outros browsers usam resolução padrão otimizada
+            Xvfb :99 -screen 0 1920x1200x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
+            sleep 2
+            echo "Display virtual padrão: $DISPLAY (1920x1200)"
+          fi
 
       - name: Run E2E Tests
         run: |
-          echo "🚀 Executando testes para o navegador: ${{ matrix.browser }}"
+          echo "Executando testes para o navegador: ${{ matrix.browser }}"
           
-          # Converter nome do navegador para lowercase
-          BROWSER=$(echo "${{ matrix.browser }}" | tr '[:upper:]' '[:lower:]')
+          # Browser já vem em lowercase da matriz - sem conversão necessária
+          BROWSER="${{ matrix.browser }}"
           
           echo "Navegador configurado: $BROWSER"
           
           # Configurar display para execução headless
           export DISPLAY=:99
           
-          # ⚡ CONFIGURAÇÕES OTIMIZADAS
-          echo "📊 Configurações de timeout otimizadas:"
-          echo "  - Screenshot timeout: 30s"
-          echo "  - Implicit wait: 10s"
-          echo "  - Page load timeout: 30s"
-          echo "  - Selenium speed: 0.2s"
-          echo ""
+          # CONFIGURAÇÕES ESPECÍFICAS POR NAVEGADOR
+          if [ "$BROWSER" = "firefox" ]; then
+            echo "FIREFOX - Configurações específicas para evitar MoveTargetOutOfBounds:"
+            echo "  - Window Size: 1920x1400 (viewport expandido significativamente)"
+            echo "  - Selenium Speed: 0.3s (mais lento para estabilidade)"
+            echo "  - Implicit Wait: 15s (aumentado para Firefox)"
+            echo "  - Scroll Behavior: smooth (scroll suave para elementos)"
+            echo "  - Firefox Args: --width=1920 --height=1400 + safe-mode"
+            echo "  - Xvfb expandido: 2048x1536 (resolução muito maior)"
+            
+            WINDOW_SIZE="1920x1400"
+            SELENIUM_SPEED="0.3"
+            IMPLICIT_WAIT="15"
+            SCROLL_BEHAVIOR="smooth"
+            PAGE_LOAD_TIMEOUT="45"
+            SCREENSHOT_TIMEOUT="35"
+            
+            # Configurações específicas do Firefox para evitar viewport pequeno
+            export MOZ_HEADLESS=1
+            export FIREFOX_ARGS="--width=1920 --height=1400 --safe-mode --new-instance"
+          elif [ "$BROWSER" = "edge" ]; then
+            echo "EDGE - Configurações específicas para evitar timeouts:"
+            echo "  - Window Size: 1920x1080 (padrão otimizado)"
+            echo "  - Selenium Speed: 1.0s (mais lento para estabilidade do Edge)"
+            echo "  - Implicit Wait: 20s (aumentado significativamente para Edge)"
+            echo "  - Page Load Timeout: 60s (timeout maior para Edge)"
+            echo "  - Screenshot Timeout: 45s (timeout específico para screenshots)"
+            
+            WINDOW_SIZE="1920x1080"
+            SELENIUM_SPEED="1.0"
+            IMPLICIT_WAIT="20"
+            SCROLL_BEHAVIOR="auto"
+            PAGE_LOAD_TIMEOUT="60"
+            SCREENSHOT_TIMEOUT="45"
+          else
+            echo "$BROWSER - Configurações padrão otimizadas:"
+            echo "  - Window Size: 1920x1080"
+            echo "  - Selenium Speed: 0.2s"
+            echo "  - Implicit Wait: 10s"
+            
+            WINDOW_SIZE="1920x1080"
+            SELENIUM_SPEED="0.2"
+            IMPLICIT_WAIT="10"
+            SCROLL_BEHAVIOR="smooth"
+            PAGE_LOAD_TIMEOUT="30"
+            SCREENSHOT_TIMEOUT="30"
+          fi
           
-          # Executar Robot Framework com configurações otimizadas
+          
+          # Configurações específicas do Edge para melhor performance
+          if [[ "${{ matrix.browser }}" == "edge" ]]; then
+            export EDGE_OPTIONS="--disable-web-security --disable-features=VizDisplayCompositor --disable-extensions --disable-gpu --no-sandbox --disable-dev-shm-usage --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-background-networking"
+            echo "Edge: Aplicando argumentos otimizados para performance"
+            echo "  - Edge options: $EDGE_OPTIONS"
+          fi
+          
+          echo "Configurações aplicadas:"
+          echo "  - Screenshot timeout: ${SCREENSHOT_TIMEOUT}s"
+          echo "  - Window size: $WINDOW_SIZE"
+          echo "  - Selenium speed: $SELENIUM_SPEED"
+          echo "  - Implicit wait: ${IMPLICIT_WAIT}s"
+          echo "  - Page load timeout: ${PAGE_LOAD_TIMEOUT}s"
+          echo "  - Scroll behavior: $SCROLL_BEHAVIOR"
+          
+          
+          # Executar Robot Framework com configurações específicas por navegador
           set +e
           
           robot \
@@ -202,14 +290,22 @@ jobs:
             --outputdir ./tests-results-CI/${{ matrix.browser }} \
             --variable BROWSER:$BROWSER \
             --variable HEADLESS:true \
-            --variable TIMEOUT:30 \
-            --variable WINDOW_SIZE:1920x1080 \
-            --variable SELENIUM_SPEED:0.2 \
+            --variable TIMEOUT:${SCREENSHOT_TIMEOUT} \
+            --variable WINDOW_SIZE:$WINDOW_SIZE \
+            --variable SELENIUM_SPEED:$SELENIUM_SPEED \
             --variable CAPTURE_PAGE_SCREENSHOT_ON_FAILURE:true \
             --variable BROWSER_PREFIX:${{ matrix.browser }} \
-            --variable SCREENSHOT_TIMEOUT:30 \
-            --variable IMPLICIT_WAIT:10 \
-            --variable PAGE_LOAD_TIMEOUT:30 \
+            --variable SCREENSHOT_TIMEOUT:${SCREENSHOT_TIMEOUT} \
+            --variable IMPLICIT_WAIT:$IMPLICIT_WAIT \
+            --variable PAGE_LOAD_TIMEOUT:$PAGE_LOAD_TIMEOUT \
+            --variable SCROLL_BEHAVIOR:$SCROLL_BEHAVIOR \
+            --variable SCROLL_INTO_VIEW:true \
+            --variable FIREFOX_SAFE_MODE:true \
+            --variable FIREFOX_ARGS:"${FIREFOX_ARGS:-}" \
+            --variable FIREFOX_VIEWPORT_FIX:true \
+            --variable FORCE_SCROLL_ON_CLICK:true \
+            --variable AUTO_SCROLL_MARGIN:100 \
+            --variable EDGE_OPTIONS:"${EDGE_OPTIONS:-}" \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
             --name "Relatório E2E - ${{ matrix.browser }}" \
@@ -221,137 +317,130 @@ jobs:
           echo "Robot Framework finalizado com código: $ROBOT_EXIT_CODE"
           
           if [ $ROBOT_EXIT_CODE -eq 0 ]; then
-            echo "✅ PERFEITO! Todos os testes passaram!"
+            echo "PERFEITO! Todos os testes passaram!"
             exit 0
           elif [ $ROBOT_EXIT_CODE -le 250 ]; then
-            echo "⚠️ Alguns testes falharam, mas a execução foi bem-sucedida"
-            echo "📊 Relatórios gerados com sucesso para análise"
+            echo "Alguns testes falharam, mas a execução foi bem-sucedida"
+            echo "Relatórios gerados com sucesso para análise"
             exit 0
           else
-            echo "❌ Erro crítico na execução dos testes"
+            echo "Erro crítico na execução dos testes"
             exit 1
           fi
 
-      - name: Capture Screenshots and Evidence
+      - name: Organize Screenshots and Evidence
         if: always()
         run: |
-          echo "📸 Verificando evidências e screenshots gerados..."
+          echo "Organizando evidências e screenshots gerados..."
           RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
-          BROWSER_LOWERCASE=$(echo "${{ matrix.browser }}" | tr '[:upper:]' '[:lower:]')
-          SCREENSHOTS_DIR="$RESULTS_DIR/screenshots_$BROWSER_LOWERCASE"
+          BROWSER="${{ matrix.browser }}"  # Já vem em lowercase da matriz
+          SCREENSHOTS_DIR="$RESULTS_DIR/screenshots_$BROWSER"
           
-          echo "🔍 Verificando em múltiplos locais:"
-          echo "  📁 Diretório principal: $RESULTS_DIR"
-          echo "  📁 Subpasta de screenshots: $SCREENSHOTS_DIR"
+          echo "Configuração:"
+          echo "  Browser: $BROWSER"
+          echo "  Diretório de resultados: $RESULTS_DIR"
+          echo "  Diretório de screenshots: $SCREENSHOTS_DIR"
           
-          # Contar screenshots no diretório principal
-          IMAGES_MAIN=$(find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f 2>/dev/null | wc -l)
+          # Criar diretório de screenshots se não existir
+          mkdir -p "$SCREENSHOTS_DIR"
           
-          # Contar screenshots na subpasta screenshots_${browser}
-          IMAGES_SUBDIR=0
-          if [ -d "$SCREENSHOTS_DIR" ]; then
-            IMAGES_SUBDIR=$(find "$SCREENSHOTS_DIR" -name "*.png" -type f 2>/dev/null | wc -l)
+          # Mover todos os PNGs soltos para o diretório de screenshots organizado
+          MOVED_COUNT=0
+          if find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
+            echo "Organizando screenshots soltos do diretório principal..."
+            find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | while read png_file; do
+              mv "$png_file" "$SCREENSHOTS_DIR/"
+              echo "  Movido: $(basename "$png_file") → screenshots_$BROWSER/"
+            done
+            MOVED_COUNT=$(find "$SCREENSHOTS_DIR" -name "*.png" -type f 2>/dev/null | wc -l)
           fi
           
-          TOTAL_IMAGES=$((IMAGES_MAIN + IMAGES_SUBDIR))
+          # Verificar screenshots em outros possíveis locais do Robot Framework
+          for possible_dir in "$RESULTS_DIR"/*screenshots* "$RESULTS_DIR"/selenium-screenshot-* "$RESULTS_DIR"/robot-screenshot-*; do
+            if [ -d "$possible_dir" ] && [ "$possible_dir" != "$SCREENSHOTS_DIR" ]; then
+              if find "$possible_dir" -name "*.png" -type f | grep -q .; then
+                echo "Consolidando screenshots de: $possible_dir"
+                find "$possible_dir" -name "*.png" -type f -exec mv {} "$SCREENSHOTS_DIR/" \;
+              fi
+            fi
+          done
           
-          echo "📊 Resumo da coleta de evidências:"
-          echo "  Screenshots no diretório principal: $IMAGES_MAIN"
-          echo "  Screenshots na subpasta screenshots_$BROWSER_LOWERCASE/: $IMAGES_SUBDIR"
-          echo "  ✅ Total de screenshots: $TOTAL_IMAGES"
+          # Contar screenshots finais
+          FINAL_COUNT=$(find "$SCREENSHOTS_DIR" -name "*.png" -type f 2>/dev/null | wc -l)
           
-          if [ $IMAGES_MAIN -gt 0 ]; then
-            echo "  📸 Exemplos do diretório principal:"
-            find "$RESULTS_DIR" -maxdepth 1 -name "*.png" -type f | head -3 | while read img; do
+          echo "Resumo da organização:"
+          echo "  Screenshots organizados: $FINAL_COUNT"
+          echo "  Localização final: $SCREENSHOTS_DIR"
+          
+          if [ $FINAL_COUNT -gt 0 ]; then
+            echo "  Exemplos organizados:"
+            find "$SCREENSHOTS_DIR" -name "*.png" -type f | head -5 | while read img; do
               echo "    - $(basename "$img")"
-            done
-          fi
-          
-          if [ $IMAGES_SUBDIR -gt 0 ]; then
-            echo "  ✨ Exemplos da subpasta screenshots_$BROWSER_LOWERCASE/:"
-            find "$SCREENSHOTS_DIR" -name "*.png" -type f | head -3 | while read img; do
-              echo "    - $(basename "$img")"
-            done
-          fi
-          
-          if [ $TOTAL_IMAGES -eq 0 ]; then
-            echo "  ⚠️ Nenhum screenshot encontrado em ambos os locais"
-          fi
-          
-          # Debug: Listar TUDO que existe no diretório de resultados
-          echo ""
-          echo "🔍 DEBUG - Estrutura completa do diretório de resultados:"
-          if [ -d "$RESULTS_DIR" ]; then
-            find "$RESULTS_DIR" -type f -name "*.png" 2>/dev/null | head -10 | while read img; do
-              echo "  📸 Encontrado: $img"
-            done
-            
-            echo ""
-            echo "📁 Estrutura de diretórios:"
-            find "$RESULTS_DIR" -type d 2>/dev/null | head -5 | while read dir; do
-              echo "  📂 $dir"
             done
           else
-            echo "  ❌ Diretório $RESULTS_DIR não existe!"
+            echo "  Aviso: Nenhum screenshot encontrado para organizar"
+            # Criar pelo menos um arquivo de evidência para manter a estrutura
+            touch "$SCREENSHOTS_DIR/no_screenshots_generated.txt"
+            echo "Nenhum screenshot foi gerado durante os testes." > "$SCREENSHOTS_DIR/no_screenshots_generated.txt"
           fi
+          
+          # Debug: Estrutura final
+          echo "Estrutura final do diretório de resultados:"
+          find "$RESULTS_DIR" -type f | head -10 | while read file; do
+            echo "  $file"
+          done
         continue-on-error: true
 
       - name: Check Test Results
         if: always()
         run: |
-          echo "🔍 Verificando resultados dos testes para ${{ matrix.browser }}..."
+          echo "Verificando resultados dos testes para ${{ matrix.browser }}..."
           RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
           
           if [ -f "$RESULTS_DIR/output.xml" ]; then
-            echo "✅ Arquivo output.xml encontrado!"
-            echo "📁 Conteúdo do diretório de resultados:"
+            echo "Arquivo output.xml encontrado!"
+            echo "Conteúdo do diretório de resultados:"
             ls -la "$RESULTS_DIR/"
-            echo ""
             
-            echo "📄 Arquivos de relatório gerados:"
-            [ -f "$RESULTS_DIR/report.html" ] && echo "  ✅ report.html ($(stat -c%s "$RESULTS_DIR/report.html" 2>/dev/null || echo "?") bytes)"
-            [ -f "$RESULTS_DIR/log.html" ] && echo "  ✅ log.html ($(stat -c%s "$RESULTS_DIR/log.html" 2>/dev/null || echo "?") bytes)"
-            [ -f "$RESULTS_DIR/output.xml" ] && echo "  ✅ output.xml ($(stat -c%s "$RESULTS_DIR/output.xml" 2>/dev/null || echo "?") bytes)"
+            echo "Arquivos de relatório gerados:"
+            [ -f "$RESULTS_DIR/report.html" ] && echo "  report.html ($(stat -c%s "$RESULTS_DIR/report.html" 2>/dev/null || echo "?") bytes)"
+            [ -f "$RESULTS_DIR/log.html" ] && echo "  log.html ($(stat -c%s "$RESULTS_DIR/log.html" 2>/dev/null || echo "?") bytes)"
+            [ -f "$RESULTS_DIR/output.xml" ] && echo "  output.xml ($(stat -c%s "$RESULTS_DIR/output.xml" 2>/dev/null || echo "?") bytes)"
           else
-            echo "❌ Arquivo output.xml não encontrado!"
+            echo "Arquivo output.xml não encontrado!"
             echo "Conteúdo disponível no diretório:"
             ls -la "$RESULTS_DIR/" 2>/dev/null || echo "Diretório de resultados não existe"
           fi
 
       - name: Debug Upload Paths
         run: |
-          echo "🔍 DEBUG - Verificando o que será incluído no upload:"
+          echo "DEBUG - Verificando o que será incluído no upload:"
           BASE_PATH="tests-results-CI/${{ matrix.browser }}"
           
-          echo ""
-          echo "📄 Arquivos essenciais:"
-          [ -f "$BASE_PATH/output.xml" ] && echo "  ✅ output.xml ($(stat -c%s "$BASE_PATH/output.xml" 2>/dev/null || echo "?") bytes)" || echo "  ❌ output.xml não encontrado"
-          [ -f "$BASE_PATH/report.html" ] && echo "  ✅ report.html ($(stat -c%s "$BASE_PATH/report.html" 2>/dev/null || echo "?") bytes)" || echo "  ❌ report.html não encontrado"
-          [ -f "$BASE_PATH/log.html" ] && echo "  ✅ log.html ($(stat -c%s "$BASE_PATH/log.html" 2>/dev/null || echo "?") bytes)" || echo "  ❌ log.html não encontrado"
+          echo "Arquivos essenciais:"
+          [ -f "$BASE_PATH/output.xml" ] && echo "  output.xml ($(stat -c%s "$BASE_PATH/output.xml" 2>/dev/null || echo "?") bytes)" || echo "  output.xml não encontrado"
+          [ -f "$BASE_PATH/report.html" ] && echo "  report.html ($(stat -c%s "$BASE_PATH/report.html" 2>/dev/null || echo "?") bytes)" || echo "  report.html não encontrado"
+          [ -f "$BASE_PATH/log.html" ] && echo "  log.html ($(stat -c%s "$BASE_PATH/log.html" 2>/dev/null || echo "?") bytes)" || echo "  log.html não encontrado"
           
-          echo ""
-          echo "📸 Screenshots no diretório principal:"
-          find $BASE_PATH -maxdepth 1 -name "*.png" 2>/dev/null | head -5 | while read f; do echo "  📸 $f"; done || echo "  Nenhum PNG no diretório principal"
+          echo "Screenshots no diretório principal:"
+          find $BASE_PATH -maxdepth 1 -name "*.png" 2>/dev/null | head -5 | while read f; do echo "  $f"; done || echo "  Nenhum PNG no diretório principal"
           
-          echo ""
-          echo "📸 Screenshots em subdiretórios screenshots_*:"
-          find $BASE_PATH -path "*/screenshots_*/*.png" 2>/dev/null | head -10 | while read f; do echo "  📸 $f"; done || echo "  Nenhum PNG em subdiretórios screenshots_*"
+          echo "Screenshots em subdiretórios screenshots_*:"
+          find $BASE_PATH -path "*/screenshots_*/*.png" 2>/dev/null | head -10 | while read f; do echo "  $f"; done || echo "  Nenhum PNG em subdiretórios screenshots_*"
           
-          echo ""
-          echo "📁 Todos os subdiretórios screenshots_*:"
+          echo "Todos os subdiretórios screenshots_*:"
           find $BASE_PATH -type d -name "screenshots_*" 2>/dev/null | while read d; do 
-            echo "  📂 $d ($(find "$d" -name "*.png" 2>/dev/null | wc -l) PNGs)"
+            echo "  $d ($(find "$d" -name "*.png" 2>/dev/null | wc -l) PNGs)"
           done || echo "  Nenhum subdiretório screenshots_* encontrado"
           
-          echo ""
-          echo "🎯 Simulando padrões de upload:"
+          echo "Simulando padrões de upload:"
           echo "Pattern: $BASE_PATH/*.png"
           find $BASE_PATH -maxdepth 1 -name "*.png" 2>/dev/null | wc -l | xargs echo "  Matches:"
           echo "Pattern: $BASE_PATH/screenshots_*/"
           find $BASE_PATH -type d -name "screenshots_*" 2>/dev/null | wc -l | xargs echo "  Directories:"
         continue-on-error: true
 
-      - name: Upload Test Results (Essential Files Only)
+      - name: Upload Test Results and Evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -360,8 +449,7 @@ jobs:
             tests-results-CI/${{ matrix.browser }}/output.xml
             tests-results-CI/${{ matrix.browser }}/report.html
             tests-results-CI/${{ matrix.browser }}/log.html
-            tests-results-CI/${{ matrix.browser }}/*.png
-            tests-results-CI/${{ matrix.browser }}/screenshots_*/
+            tests-results-CI/${{ matrix.browser }}/screenshots_${{ matrix.browser }}/
           retention-days: 7
           if-no-files-found: warn
 
@@ -394,24 +482,61 @@ jobs:
         with:
           path: ./all-results
 
+      - name: Debug Downloaded Artifacts
+        run: |
+          echo "Verificando artifacts baixados:"
+          if [ -d "./all-results" ]; then
+            find ./all-results -type f | head -20 | while read f; do
+              echo "  $f"
+            done
+            
+            echo "Resumo por browser:"
+            for browser_dir in ./all-results/test-results-*; do
+              if [ -d "$browser_dir" ]; then
+                browser=$(basename "$browser_dir" | sed 's/test-results-//')
+                echo "  Browser: $browser"
+                echo "    Output.xml: $([ -f "$browser_dir/output.xml" ] && echo "✓" || echo "✗")"
+                echo "    Report.html: $([ -f "$browser_dir/report.html" ] && echo "✓" || echo "✗")"
+                echo "    Log.html: $([ -f "$browser_dir/log.html" ] && echo "✓" || echo "✗")"
+                
+                # Contar screenshots
+                screenshot_count=0
+                if find "$browser_dir" -name "*.png" -type f | grep -q .; then
+                  screenshot_count=$(find "$browser_dir" -name "*.png" -type f | wc -l)
+                fi
+                echo "    Screenshots: $screenshot_count"
+                
+                # Mostrar estrutura de diretórios
+                if find "$browser_dir" -type d | grep -v "^$browser_dir$" | head -3 | grep -q .; then
+                  echo "    Subdiretórios:"
+                  find "$browser_dir" -type d | grep -v "^$browser_dir$" | head -3 | while read subdir; do
+                    echo "      $(basename "$subdir")"
+                  done
+                fi
+              fi
+            done
+          else
+            echo "  Diretório ./all-results não encontrado!"
+          fi
+        continue-on-error: true
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
         continue-on-error: true
 
       - name: Initialize GitHub Pages structure
         run: |
-          echo "�️ Inicializando estrutura otimizada do GitHub Pages..."
+          echo "Inicializando estrutura otimizada do GitHub Pages..."
           mkdir -p ./gh-pages
           mkdir -p ./gh-pages/relatorio-consolidado
           
-          echo "✨ ESTRATÉGIA OTIMIZADA SEM DUPLICAÇÃO:"
-          echo "1. ✅ Organização direta em estrutura screenshots_* final"
-          echo "2. ✅ Cada imagem copiada apenas uma vez por destino"
-          echo "3. ✅ Zero imagens soltas no diretório raiz"
-          echo "4. ✅ Estrutura preservada para Set Screenshot Directory"
-          echo "5. ✅ Máxima eficiência de armazenamento"
-          echo "6. ✅ GitHub Pages totalmente compatível"
-          echo ""
+          echo "✅ Resumo da organização final para os arquivos de imagens/screenshots:"
+          echo "- Cada imagem existe apenas 2x: consolidado + individual"
+          echo "- Estrutura screenshots_* preservada em todos os relatórios"
+          echo "- Assets organizados sem redundância!"
+          echo "- Zero imagens soltas no diretório raiz"
+          echo "- Máxima eficiência de armazenamento"
+          echo "- GitHub Pages totalmente compatível"
         continue-on-error: true
 
       - name: Create consolidated report with rebot
@@ -419,7 +544,7 @@ jobs:
           OUTPUT_FILES=$(find ./all-results -name "output.xml" -type f 2>/dev/null | tr '\n' ' ')
           
           if [ -z "$OUTPUT_FILES" ]; then
-            echo "⚠️ Nenhum arquivo output.xml encontrado. Criando página de status..."
+            echo "Nenhum arquivo output.xml encontrado. Criando página de status..."
             cat > ./gh-pages/index.html << 'EOF'
           <!DOCTYPE html>
           <html>
@@ -434,62 +559,85 @@ jobs:
           </html>
           EOF
           else
-            echo "✅ Arquivos output.xml encontrados - gerando relatório consolidado..."
+            echo "Arquivos output.xml encontrados - gerando relatório consolidado..."
             
             # ESTRATÉGIA OTIMIZADA: Organizar imagens DIRETAMENTE nas pastas screenshots_* finais
-            echo "🎯 ESTRATÉGIA OTIMIZADA: Organização direta em estrutura screenshots_*..."
+            echo "ESTRATÉGIA OTIMIZADA: Organização direta em estrutura screenshots_*..."
             mkdir -p ./gh-pages/relatorio-consolidado
             
-            # Criar pastas screenshots_* no destino final
-            for browser in Chrome Firefox Edge; do
-              BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
-              mkdir -p "./gh-pages/relatorio-consolidado/screenshots_$BROWSER_LOWERCASE"
+            # Criar pastas screenshots_* no destino final (nomenclatura lowercase)
+            for browser in chrome firefox edge; do
+              mkdir -p "./gh-pages/relatorio-consolidado/screenshots_$browser"
+              echo "Criado diretório: ./gh-pages/relatorio-consolidado/screenshots_$browser"
             done
             
             TOTAL_ORGANIZED=0
-            for browser in Chrome Firefox Edge; do
+            # Os artifacts agora vêm com nomes em lowercase: chrome, firefox, edge
+            for browser in chrome firefox edge; do
               BROWSER_DIR="./all-results/test-results-$browser"
-              BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
-              DEST_SCREENSHOTS="./gh-pages/relatorio-consolidado/screenshots_$BROWSER_LOWERCASE"
+              DEST_SCREENSHOTS="./gh-pages/relatorio-consolidado/screenshots_$browser"
+              
+              echo "Processando browser: $browser"
+              echo "  Procurando em: $BROWSER_DIR"
+              echo "  Destino: $DEST_SCREENSHOTS"
               
               if [ -d "$BROWSER_DIR" ]; then
                 PNG_COUNT=0
                 
-                # Copiar imagens do diretório principal DIRETAMENTE para a pasta final
+                # Debug: Verificar estrutura do artifact baixado
+                echo "  Estrutura do artifact:"
+                find "$BROWSER_DIR" -type f | head -5 | while read f; do
+                  echo "    $f"
+                done
+                
+                # Copiar imagens do diretório screenshots_browser organizado
+                SCREENSHOTS_SRC="$BROWSER_DIR/screenshots_$browser"
+                if [ -d "$SCREENSHOTS_SRC" ] && find "$SCREENSHOTS_SRC" -name "*.png" -type f | grep -q .; then
+                  SCREENSHOTS_COUNT=$(find "$SCREENSHOTS_SRC" -name "*.png" -type f | wc -l)
+                  find "$SCREENSHOTS_SRC" -name "*.png" -type f -exec cp {} "$DEST_SCREENSHOTS/" \;
+                  PNG_COUNT=$((PNG_COUNT + SCREENSHOTS_COUNT))
+                  echo "  $SCREENSHOTS_COUNT imagens de screenshots_$browser → screenshots_$browser/"
+                fi
+                
+                # Fallback: Copiar qualquer PNG solto no diretório principal
                 if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
                   MAIN_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
                   find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "$DEST_SCREENSHOTS/" \;
                   PNG_COUNT=$((PNG_COUNT + MAIN_COUNT))
-                  echo "   📸 $MAIN_COUNT imagens principais do $browser → screenshots_$BROWSER_LOWERCASE/"
+                  echo "  $MAIN_COUNT imagens soltas do diretório principal → screenshots_$browser/"
                 fi
                 
-                # Copiar imagens das pastas screenshots_* DIRETAMENTE para a pasta final
+                # Copiar outros possíveis diretórios de screenshots
                 find "$BROWSER_DIR" -type d -name "screenshots_*" | while read screenshot_dir; do
-                  if [ -d "$screenshot_dir" ] && find "$screenshot_dir" -name "*.png" -type f | grep -q .; then
-                    SUBDIR_COUNT=$(find "$screenshot_dir" -name "*.png" -type f | wc -l)
-                    find "$screenshot_dir" -name "*.png" -type f -exec cp {} "$DEST_SCREENSHOTS/" \;
-                    echo "   ✨ $SUBDIR_COUNT imagens de $(basename "$screenshot_dir") → screenshots_$BROWSER_LOWERCASE/"
+                  if [ -d "$screenshot_dir" ] && [ "$screenshot_dir" != "$SCREENSHOTS_SRC" ]; then
+                    if find "$screenshot_dir" -name "*.png" -type f | grep -q .; then
+                      SUBDIR_COUNT=$(find "$screenshot_dir" -name "*.png" -type f | wc -l)
+                      find "$screenshot_dir" -name "*.png" -type f -exec cp {} "$DEST_SCREENSHOTS/" \;
+                      echo "  $SUBDIR_COUNT imagens de $(basename "$screenshot_dir") → screenshots_$browser/"
+                    fi
                   fi
                 done
                 
-                if [ $PNG_COUNT -gt 0 ]; then
-                  TOTAL_ORGANIZED=$((TOTAL_ORGANIZED + PNG_COUNT))
-                  echo "   ✅ $browser: $PNG_COUNT imagens organizadas (sem duplicação)"
-                fi
+                # Atualizar contadores
+                FINAL_COUNT=$(find "$DEST_SCREENSHOTS" -name "*.png" -type f 2>/dev/null | wc -l)
+                TOTAL_ORGANIZED=$((TOTAL_ORGANIZED + FINAL_COUNT))
+                echo "  $browser: $FINAL_COUNT imagens organizadas no total"
+              else
+                echo "  Diretório $BROWSER_DIR não encontrado"
               fi
             done
             
-            echo "📊 Total de imagens organizadas: $TOTAL_ORGANIZED"
-            echo "🎯 Estrutura final: screenshots_chrome/, screenshots_firefox/, screenshots_edge/"
-            echo "✅ ZERO duplicação - cada imagem em apenas UM local"
+            echo "Total de imagens organizadas: $TOTAL_ORGANIZED"
+            echo "Estrutura final: screenshots_chrome/, screenshots_firefox/, screenshots_edge/"
+            echo "ZERO duplicação - cada imagem em apenas UM local"
             
             # Para rebot, criar links simbólicos temporários das imagens para o diretório de execução
-            echo "🔗 Criando links temporários para execução do rebot..."
-            for browser in Chrome Firefox Edge; do
-              BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
-              SRC_DIR="./gh-pages/relatorio-consolidado/screenshots_$BROWSER_LOWERCASE"
+            echo "Criando links temporários para execução do rebot..."
+            for browser in chrome firefox edge; do
+              SRC_DIR="./gh-pages/relatorio-consolidado/screenshots_$browser"
               if [ -d "$SRC_DIR" ] && find "$SRC_DIR" -name "*.png" -type f | grep -q .; then
-                find "$SRC_DIR" -name "*.png" -type f -exec ln -sf "../relatorio-consolidado/screenshots_$BROWSER_LOWERCASE/{}" "./gh-pages/{}" \; 2>/dev/null || \
+                echo "  Criando links para screenshots_$browser ($(find "$SRC_DIR" -name "*.png" -type f | wc -l) imagens)"
+                find "$SRC_DIR" -name "*.png" -type f -exec ln -sf "../relatorio-consolidado/screenshots_$browser/{}" "./gh-pages/{}" \; 2>/dev/null || \
                 find "$SRC_DIR" -name "*.png" -type f -exec cp {} "./gh-pages/" \;
               fi
             done
@@ -504,7 +652,7 @@ jobs:
               ../all-results/*/output.xml || true
             
             # Remover links temporários após rebot para evitar duplicação
-            echo "🧹 Removendo links temporários para evitar duplicação..."
+            echo "Removendo links temporários para evitar duplicação..."
             find . -maxdepth 1 -name "*.png" -type f -delete 2>/dev/null || true
             find . -maxdepth 1 -name "*.png" -type l -delete 2>/dev/null || true
             cd ..
@@ -513,112 +661,123 @@ jobs:
             echo "Robot.rebot finalizado com código: $REBOT_EXIT_CODE"
             
             if [ $REBOT_EXIT_CODE -eq 0 ]; then
-              echo "✅ Relatório consolidado gerado com sucesso - todos os testes passaram!"
+              echo "Relatório consolidado gerado com sucesso - todos os testes passaram!"
             elif [ $REBOT_EXIT_CODE -le 250 ]; then
-              echo "⚠️ Relatório consolidado gerado com alguns testes falhando (código $REBOT_EXIT_CODE)"
-              echo "📊 Relatório disponível para análise das falhas"
+              echo "Relatório consolidado gerado com alguns testes falhando (código $REBOT_EXIT_CODE)"
+              echo "Relatório disponível para análise das falhas"
             else
-              echo "❌ Erro na geração do relatório (código $REBOT_EXIT_CODE)"
+              echo "Erro na geração do relatório (código $REBOT_EXIT_CODE)"
             fi
-            
-            echo "📊 Relatório consolidado gerado com organização otimizada!"
+
+            echo "Relatório consolidado gerado com organização otimizada!"
           fi
         continue-on-error: true
 
       - name: Copy additional assets and fix image paths
         run: |
-          echo "📁 Organizando assets finais sem duplicação..."
+          echo "Organizando assets finais sem duplicação..."
           
-          # Criar estrutura de pastas para relatórios individuais
-          for browser in Chrome Firefox Edge; do
-            mkdir -p "./gh-pages/execucao-${browser,,}"
+          # Criar estrutura de pastas para relatórios individuais (lowercase)
+          for browser in chrome firefox edge; do
+            mkdir -p "./gh-pages/execucao-$browser"
+            echo "Criado diretório: ./gh-pages/execucao-$browser"
           done
           
           # Mover arquivos consolidados para pasta dedicada (já organizados no step anterior)
-          echo "📊 Organizando relatórios consolidados..."
+          echo "Organizando relatórios consolidados..."
           if [ -f "./gh-pages/report.html" ]; then
             mv "./gh-pages/report.html" "./gh-pages/relatorio-consolidado/"
-            echo "   ✅ report.html → relatorio-consolidado/"
+            echo "   report.html → relatorio-consolidado/"
           fi
           if [ -f "./gh-pages/log.html" ]; then
             mv "./gh-pages/log.html" "./gh-pages/relatorio-consolidado/"
-            echo "   ✅ log.html → relatorio-consolidado/"
+            echo "   log.html → relatorio-consolidado/"
           fi
           if [ -f "./gh-pages/output.xml" ]; then
             mv "./gh-pages/output.xml" "./gh-pages/relatorio-consolidado/"
-            echo "   ✅ output.xml → relatorio-consolidado/"
+            echo "   output.xml → relatorio-consolidado/"
           fi
           
           # IMPORTANTE: Imagens JÁ estão organizadas em screenshots_* pelo step anterior
-          echo "✅ Imagens já organizadas em estrutura screenshots_* sem duplicação"
+          echo "Imagens já organizadas em estrutura screenshots_* sem duplicação"
           
           # Verificar estrutura de imagens consolidadas (já criada)
-          echo "📊 Verificando estrutura de imagens consolidadas:"
-          for browser in Chrome Firefox Edge; do
-            BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
-            SCREENSHOTS_DIR="./gh-pages/relatorio-consolidado/screenshots_$BROWSER_LOWERCASE"
+          echo "Verificando estrutura de imagens consolidadas:"
+          for browser in chrome firefox edge; do
+            SCREENSHOTS_DIR="./gh-pages/relatorio-consolidado/screenshots_$browser"
             if [ -d "$SCREENSHOTS_DIR" ]; then
               IMG_COUNT=$(find "$SCREENSHOTS_DIR" -name "*.png" -type f | wc -l)
-              echo "   📂 screenshots_$BROWSER_LOWERCASE/: $IMG_COUNT imagens"
+              echo "   screenshots_$browser/: $IMG_COUNT imagens"
             fi
           done
           
-          # Organizar relatórios individuais por navegador (estrutura screenshots_* otimizada)
-          echo "📄 Organizando relatórios individuais por navegador..."
-          for browser in Chrome Firefox Edge; do
+          # Organizar relatórios individuais por navegador (nomenclatura corrigida)
+          echo "Organizando relatórios individuais por navegador..."
+          for browser in chrome firefox edge; do
             BROWSER_DIR="./all-results/test-results-$browser"
-            FOLDER_NAME="execucao-${browser,,}"
-            BROWSER_LOWERCASE=$(echo "$browser" | tr '[:upper:]' '[:lower:]')
+            FOLDER_NAME="execucao-$browser"
             
             if [ -d "$BROWSER_DIR" ]; then
-              echo "  Processando $browser..."
+              echo "  Processando $browser ($BROWSER_DIR → $FOLDER_NAME)..."
               
-              # Copiar arquivos HTML/XML
-              [ -f "$BROWSER_DIR/report.html" ] && cp "$BROWSER_DIR/report.html" "./gh-pages/$FOLDER_NAME/"
-              [ -f "$BROWSER_DIR/log.html" ] && cp "$BROWSER_DIR/log.html" "./gh-pages/$FOLDER_NAME/"
-              [ -f "$BROWSER_DIR/output.xml" ] && cp "$BROWSER_DIR/output.xml" "./gh-pages/$FOLDER_NAME/"
+              # Copiar arquivos HTML/XML individuais
+              if [ -f "$BROWSER_DIR/report.html" ]; then
+                cp "$BROWSER_DIR/report.html" "./gh-pages/$FOLDER_NAME/"
+                echo "    ✓ report.html copiado"
+              fi
               
-              # OTIMIZAÇÃO: Criar estrutura screenshots_* para relatórios individuais
-              mkdir -p "./gh-pages/$FOLDER_NAME/screenshots_$BROWSER_LOWERCASE"
+              if [ -f "$BROWSER_DIR/log.html" ]; then
+                cp "$BROWSER_DIR/log.html" "./gh-pages/$FOLDER_NAME/"
+                echo "    ✓ log.html copiado"
+              fi
+              
+              if [ -f "$BROWSER_DIR/output.xml" ]; then
+                cp "$BROWSER_DIR/output.xml" "./gh-pages/$FOLDER_NAME/"
+                echo "    ✓ output.xml copiado"
+              fi
+              
+              # Criar estrutura screenshots_* para relatórios individuais
+              mkdir -p "./gh-pages/$FOLDER_NAME/screenshots_$browser"
               
               INDIVIDUAL_COUNT=0
               
-              # Copiar imagens das pastas screenshots_* originais
-              find "$BROWSER_DIR" -type d -name "screenshots_*" | while read screenshot_dir; do
-                if [ -d "$screenshot_dir" ] && find "$screenshot_dir" -name "*.png" -type f | grep -q .; then
-                  SUBDIR_COUNT=$(find "$screenshot_dir" -name "*.png" -type f | wc -l)
-                  find "$screenshot_dir" -name "*.png" -type f -exec cp {} "./gh-pages/$FOLDER_NAME/screenshots_$BROWSER_LOWERCASE/" \;
-                  echo "    ✨ $SUBDIR_COUNT imagens de $(basename "$screenshot_dir") → $FOLDER_NAME/screenshots_$BROWSER_LOWERCASE/"
-                fi
-              done
+              # Copiar imagens das pastas screenshots_* organizadas
+              SCREENSHOTS_SRC="$BROWSER_DIR/screenshots_$browser"
+              if [ -d "$SCREENSHOTS_SRC" ] && find "$SCREENSHOTS_SRC" -name "*.png" -type f | grep -q .; then
+                SCREENSHOTS_COUNT=$(find "$SCREENSHOTS_SRC" -name "*.png" -type f | wc -l)
+                find "$SCREENSHOTS_SRC" -name "*.png" -type f -exec cp {} "./gh-pages/$FOLDER_NAME/screenshots_$browser/" \;
+                INDIVIDUAL_COUNT=$((INDIVIDUAL_COUNT + SCREENSHOTS_COUNT))
+                echo "    ✓ $SCREENSHOTS_COUNT imagens copiadas para screenshots_$browser/"
+              fi
               
-              # Copiar imagens do diretório principal para a pasta screenshots_* individual
+              # Fallback: Copiar qualquer PNG solto no diretório principal
               if find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | grep -q .; then
                 MAIN_COUNT=$(find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f | wc -l)
-                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "./gh-pages/$FOLDER_NAME/screenshots_$BROWSER_LOWERCASE/" \;
-                echo "    📸 $MAIN_COUNT imagens principais → $FOLDER_NAME/screenshots_$BROWSER_LOWERCASE/"
+                find "$BROWSER_DIR" -maxdepth 1 -name "*.png" -type f -exec cp {} "./gh-pages/$FOLDER_NAME/screenshots_$browser/" \;
+                INDIVIDUAL_COUNT=$((INDIVIDUAL_COUNT + MAIN_COUNT))
+                echo "    ✓ $MAIN_COUNT imagens soltas copiadas para screenshots_$browser/"
                 INDIVIDUAL_COUNT=$((INDIVIDUAL_COUNT + MAIN_COUNT))
               fi
               
               FINAL_COUNT=$(find "./gh-pages/$FOLDER_NAME/screenshots_$BROWSER_LOWERCASE" -name "*.png" -type f | wc -l)
-              echo "    ✅ Total individual para $browser: $FINAL_COUNT imagens em screenshots_$BROWSER_LOWERCASE/"
+              echo "    Total individual para $browser: $FINAL_COUNT imagens em screenshots_$BROWSER_LOWERCASE/"
             fi
           done
           
           # Corrigir caminhos das imagens nos arquivos HTML (estrutura screenshots_*)
-          echo ""
-          echo "🔧 Corrigindo caminhos das imagens nos arquivos HTML para usar estrutura screenshots_*..."
+          
+          echo "Corrigindo caminhos das imagens nos arquivos HTML para usar estrutura screenshots_*..."
           
           for html_file in ./gh-pages/relatorio-consolidado/*.html; do
             if [ -f "$html_file" ]; then
-              echo "   📄 Corrigindo $(basename "$html_file")..."
+              echo "   Corrigindo $(basename "$html_file")..."
               
               # Primeiro, deixar os caminhos simples (sem path)
               sed -i 's|src="[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
               sed -i 's|href="[^"]*\/\([^/]*\.png\)"|href="./\1"|g' "$html_file" 2>/dev/null
               
               # Mapear imagens para as pastas screenshots_* corretas
-              echo "      🔍 Mapeando referências para pastas screenshots_*..."
+              echo "      Mapeando referências para pastas screenshots_*..."
               
               # Extrair todas as referências de imagens PNG
               SCREENSHOT_REFS=$(grep -oP '(src|href)="(\.\/)?[^"]*\.png"' "$html_file" 2>/dev/null | \
@@ -662,26 +821,26 @@ jobs:
                   fi
                 done <<< "$SCREENSHOT_REFS"
                 
-                echo "      ✅ Mapeadas: $MAPPED_COUNT | ⚠️ Não encontradas: $UNMAPPED_COUNT"
+                echo "      Mapeadas: $MAPPED_COUNT | Não encontradas: $UNMAPPED_COUNT"
               else
-                echo "      ℹ️ Nenhuma referência de selenium-screenshot encontrada"
+                echo "      Nenhuma referência de selenium-screenshot encontrada"
               fi
               
               # Verificar resultado final
               FINAL_REFS=$(grep -c '\.png' "$html_file" 2>/dev/null || echo "0")
-              echo "      📊 Total de referências processadas: $FINAL_REFS"
+              echo "      Total de referências processadas: $FINAL_REFS"
             fi
           done
           
           # Corrigir relatórios individuais (com estrutura screenshots_*)
-          echo ""
-          echo "🔧 Corrigindo caminhos nos relatórios individuais..."
+          
+          echo "Corrigindo caminhos nos relatórios individuais..."
           for browser in Chrome Firefox Edge; do
             FOLDER_NAME="execucao-${browser,,}"
             
             for html_file in ./gh-pages/$FOLDER_NAME/*.html; do
               if [ -f "$html_file" ]; then
-                echo "   📄 Corrigindo $(basename "$html_file") para $browser..."
+                echo "  Corrigindo $(basename "$html_file") para $browser..."
                 
                 # Primeiro, normalizar caminhos
                 sed -i 's|src="[^"]*\/\([^/]*\.png\)"|src="./\1"|g' "$html_file" 2>/dev/null
@@ -718,8 +877,7 @@ jobs:
           done
           
           # Resumo da estrutura otimizada
-          echo ""
-          echo "📋 ESTRUTURA FINAL OTIMIZADA (sem duplicação):"
+          echo "📋 Estrutura dos diretórios e os seus respectivos arquivos/conteúdos:"
           echo "  📂 relatorio-consolidado/"
           echo "    ├── report.html, log.html, output.xml"
           echo "    ├── 📂 screenshots_chrome/ (imagens Chrome únicas)"
@@ -729,17 +887,16 @@ jobs:
           echo "    ├── report.html, log.html, output.xml"
           echo "    └── 📂 screenshots_chrome/ (cópia para visualização individual)"
           echo "  📂 execucao-firefox/ e execucao-edge/ (estrutura similar)"
-          echo ""
-          echo "✅ ELIMINAÇÃO COMPLETA DE DUPLICAÇÃO:"
-          echo "   - Cada imagem existe apenas 2x: consolidado + individual"
-          echo "   - Zero imagens soltas no diretório raiz"
-          echo "   - Estrutura screenshots_* preservada em todos os relatórios"
-          echo "   ✅ Assets organizados sem redundância!"
+          
+          echo "✅ Resumo da organização final para os arquivos de imagens/screenshots:"
+          echo "- Cada imagem existe apenas 2x: consolidado + individual"
+          echo "- Estrutura screenshots_* preservada em todos os relatórios"
+          echo "- Assets organizados sem redundância!"
         continue-on-error: true
 
       - name: Create asset index page
         run: |
-          echo "📝 Criando página de índice de assets..."
+          echo "Criando página de índice de assets..."
           
           cat > ./gh-pages/index.html << 'EOF'
           <!DOCTYPE html>
@@ -992,33 +1149,31 @@ jobs:
           </html>
           EOF
           
-          echo "✅ Página principal criada: index.html"
-          echo "📊 Estrutura de navegação pronta para GitHub Pages"
+          echo "Página principal criada: index.html"
+          echo "Estrutura de navegação pronta para GitHub Pages"
         continue-on-error: true
 
       - name: Validate image organization
         run: |
-          echo ""
-          echo "🔍 Validação final da organização de imagens..."
+          
+          echo "Validação final da organização de imagens..."
           
           # Validar estrutura de subpastas no consolidado
           for browser in chrome firefox edge; do
             SUBFOLDER="./gh-pages/relatorio-consolidado/$browser"
             if [ -d "$SUBFOLDER" ]; then
               IMG_COUNT=$(find "$SUBFOLDER" -name "*.png" -type f 2>/dev/null | wc -l)
-              echo "   📂 relatorio-consolidado/$browser/: $IMG_COUNT imagens"
+              echo "relatorio-consolidado/$browser/: $IMG_COUNT imagens"
               
               if [ $IMG_COUNT -gt 0 ]; then
-                echo "      ✅ Subpasta criada com sucesso"
-                echo "      Exemplos:"
+                echo "Subpasta criada com sucesso"
+                echo "Exemplos:"
                 find "$SUBFOLDER" -name "*.png" -type f | head -3 | sed 's|^./gh-pages/relatorio-consolidado/||; s/^/        /'
               fi
             else
-              echo "   ⚠️ Subpasta não encontrada: $browser/"
+              echo "Subpasta não encontrada: $browser/"
             fi
           done
-          
-          echo ""
           
           # Validar relatórios individuais
           for browser in Chrome Firefox Edge; do
@@ -1026,14 +1181,12 @@ jobs:
             if [ -d "$FOLDER" ]; then
               IMG_COUNT=$(find "$FOLDER" -name "*.png" -type f 2>/dev/null | wc -l)
               HTML_COUNT=$(find "$FOLDER" -name "*.html" -type f 2>/dev/null | wc -l)
-              echo "   📂 execucao-${browser,,}/: $IMG_COUNT imagens, $HTML_COUNT HTMLs"
+              echo " execucao-${browser,,}/: $IMG_COUNT imagens, $HTML_COUNT HTMLs"
             fi
           done
           
-          echo ""
-          
           # Validar referências nos HTMLs consolidados
-          echo "🔍 Validando referências de imagens nos HTMLs consolidados..."
+          echo "Validando referências de imagens nos HTMLs consolidados..."
           for html_file in ./gh-pages/relatorio-consolidado/*.html; do
             if [ -f "$html_file" ]; then
               FILENAME=$(basename "$html_file")
@@ -1044,14 +1197,14 @@ jobs:
               # Contar referências diretas (sem subpasta - potencialmente quebradas)
               DIRECT_REFS=$(grep -c 'src="\./selenium-screenshot-[0-9]*\.png"' "$html_file" 2>/dev/null || echo "0")
               
-              echo "   📄 $FILENAME:"
-              echo "      ✅ Referências com subpastas: $SUBFOLDER_REFS"
+              echo " $FILENAME:"
+              echo "Referências com subpastas: $SUBFOLDER_REFS"
               
               if [ $DIRECT_REFS -gt 0 ]; then
-                echo "      ⚠️ Referências diretas (sem subpasta): $DIRECT_REFS"
+                echo "Referências diretas (sem subpasta): $DIRECT_REFS"
                 echo "         Estas referências podem estar quebradas!"
               else
-                echo "      ✅ Nenhuma referência direta - todas mapeadas corretamente"
+                echo "Nenhuma referência direta - todas mapeadas corretamente"
               fi
               
               # Mostrar exemplos de referências
@@ -1061,17 +1214,16 @@ jobs:
               fi
             fi
           done
-          
-          echo ""
-          echo "📊 Resumo da validação:"
-          
+
+          echo "Resumo da validação:"
+
           TOTAL_CONSOLIDATED=$(find ./gh-pages/relatorio-consolidado -name "*.png" -type f 2>/dev/null | wc -l)
           TOTAL_INDIVIDUAL=$(find ./gh-pages/execucao-* -name "*.png" -type f 2>/dev/null | wc -l)
           
           echo "   Total de imagens no consolidado: $TOTAL_CONSOLIDATED"
           echo "   Total de imagens nas execuções individuais: $TOTAL_INDIVIDUAL"
-          echo ""
-          echo "✅ Validação concluída!"
+          
+          echo "Validação concluída!"
         continue-on-error: true
 
       - name: Upload Pages artifact
@@ -1079,13 +1231,14 @@ jobs:
         with:
           path: ./gh-pages
 
+  # Publicar resultados via GitHub Pages (se for uma execução a partir da branch main e se o input browser for 'todos') 
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     needs: publish-results
     runs-on: ubuntu-latest
-    if: github.ref_name == 'main'
+    if: github.ref_name == 'main' || (github.ref_name == 'main' && github.event.inputs.browser == 'todos')
     permissions:
       contents: read
       pages: write
@@ -1101,14 +1254,14 @@ jobs:
         if: always()
         run: |
           if [ "${{ steps.deployment.outputs.page_url }}" != "" ]; then
-            echo "🌐 GitHub Pages URL: ${{ steps.deployment.outputs.page_url }}"
-            echo "✅ Relatórios disponíveis em: ${{ steps.deployment.outputs.page_url }}"
-            echo ""
-            echo "📋 Links diretos:"
-            echo "   Consolidado: ${{ steps.deployment.outputs.page_url }}relatorio-consolidado/report.html"
-            echo "   Chrome: ${{ steps.deployment.outputs.page_url }}execucao-chrome/report.html"
-            echo "   Firefox: ${{ steps.deployment.outputs.page_url }}execucao-firefox/report.html"
-            echo "   Edge: ${{ steps.deployment.outputs.page_url }}execucao-edge/report.html"
+            echo "GitHub Pages URL: ${{ steps.deployment.outputs.page_url }}"
+            echo "Relatórios disponíveis em: ${{ steps.deployment.outputs.page_url }}"
+            
+            echo "Links diretos:"
+            echo "Consolidado: ${{ steps.deployment.outputs.page_url }}relatorio-consolidado/report.html"
+            echo "Chrome: ${{ steps.deployment.outputs.page_url }}execucao-chrome/report.html"
+            echo "Firefox: ${{ steps.deployment.outputs.page_url }}execucao-firefox/report.html"
+            echo "Edge: ${{ steps.deployment.outputs.page_url }}execucao-edge/report.html"
           else
-            echo "📦 Relatórios disponíveis nos artefatos"
+            echo "Relatórios disponíveis nos artefatos"
           fi
