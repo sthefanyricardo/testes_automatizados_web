@@ -169,11 +169,12 @@ jobs:
           echo "✅ Edge instalado. Verificação final:"
           echo "Edge: $(microsoft-edge --version)"
 
-        # Configuração manual do EdgeDriver com fallback robusto
+        # EdgeDriver com múltiplas estratégias de fallback
       - name: Install EdgeDriver
         if: matrix.browser == 'edge'
         run: |
-          set -e
+          echo "🔄 Instalando EdgeDriver com estratégias de fallback robustas..."
+          
           # Descobre a versão do Edge instalada
           EDGE_VERSION=$(microsoft-edge-stable --version | grep -oP '\d+\.\d+\.\d+\.\d+' | head -1)
           EDGE_MAJOR=$(echo $EDGE_VERSION | cut -d. -f1)
