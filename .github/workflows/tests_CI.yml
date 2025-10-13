@@ -93,8 +93,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           
-          # Instalar selenium (necessário para Robot Framework + SeleniumLibrary)
-          pip install selenium
+          # Instalar selenium e webdriver-manager (necessário para Robot Framework + SeleniumLibrary)
+          pip install webdriver-manager selenium
 
           echo "Instalando dependências específicas dos módulos..."
           INSTALLED_MODULES=()
@@ -145,8 +145,9 @@ jobs:
           pip list | grep -E "(robot|selenium|webdriver)" || echo "Nenhum pacote robot/selenium encontrado"
           echo "::endgroup::"
 
-      # 🌐 Instalação otimizada de navegadores (apenas Edge + Xvfb)
-      - name: Install Edge and Xvfb
+      # 🌐 Instalação do navegador Edge
+      - name: Install Browser Edge
+        if: matrix.browser == 'edge'
         run: |
           echo "::group::🌐 Verificando navegadores pré-instalados e instalando Edge"
           
@@ -155,8 +156,7 @@ jobs:
           echo "Chrome: $(google-chrome --version 2>/dev/null || echo 'Não encontrado')"
           echo "Firefox: $(firefox --version 2>/dev/null || echo 'Não encontrado')"
           
-          # Instalar apenas Edge (não pré-instalado) + Xvfb
-          echo "Instalando apenas Edge e Xvfb..."
+          # Instalar apenas Edge (não pré-instalado)
           sudo apt-get update
           
           # Adicionar repositório do Edge
@@ -164,22 +164,10 @@ jobs:
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
           
           # Instalar apenas o que não está pré-instalado
-          sudo apt-get install -y --no-install-recommends microsoft-edge-stable xvfb xauth
+          sudo apt-get install -y --no-install-recommends microsoft-edge-stable
           
-          echo "✅ Edge e Xvfb instalados. Verificação final:"
-          echo "Chrome: $(google-chrome --version)"
-          echo "Firefox: $(firefox --version)" 
+          echo "✅ Edge instalado. Verificação final:"
           echo "Edge: $(microsoft-edge --version)"
-
-          # 🧹 LIMPAR drivers conflitantes do sistema ANTES do webdriver-manager
-          echo "Removendo drivers conflitantes do sistema para evitar mistura Chrome/Edge..."
-          sudo rm -f /usr/bin/chromedriver /usr/bin/geckodriver /usr/bin/msedgedriver 2>/dev/null || true
-          sudo rm -f /usr/local/bin/chromedriver /usr/local/bin/geckodriver /usr/local/bin/msedgedriver 2>/dev/null || true
-          echo "✅ Drivers do sistema removidos - webdriver-manager terá controle total"
-
-          # 🐍 Instalar webdriver-manager após instalação do navegador Edge
-          pip install webdriver-manager
-          echo "✅ webdriver-manager instalado - drivers serão gerenciados automaticamente"
           
           # 🎯 Instalar EdgeDriver diretamente via sistema
           echo "Instalando EdgeDriver diretamente via sistema..."
@@ -189,19 +177,17 @@ jobs:
             echo "✅ EdgeDriver instalado com sucesso via APT"
             msedgedriver --version 2>/dev/null || echo "EdgeDriver instalado via sistema"
           else
-            echo "APT EdgeDriver não disponível, usando método alternativo Python..."
-            
-            # Método 2: Pre-download EdgeDriver para evitar timeout durante execução
+            # Pre-download EdgeDriver para evitar timeout durante execução
             echo "Pre-baixando EdgeDriver para evitar timeouts..."
             python -c "
             from selenium import webdriver
             from selenium.webdriver.edge.service import Service
             from webdriver_manager.microsoft import EdgeChromiumDriverManager
             import os
-
+            
             # Configurar timeout mais longo para download do driver
             os.environ['WDM_TIMEOUT'] = '300'  # 5 minutos para download
-
+            
             try:
                 driver_path = EdgeChromiumDriverManager().install()
                 print(f'EdgeDriver baixado com sucesso: {driver_path}')
@@ -278,9 +264,9 @@ jobs:
           
           echo "=========================================="
           
-          # Xvfb foi instalado no step anterior - configurar com resolução expandida
+          # Ubuntu runners já têm Xvfb instalado - configurar com resolução expandida
           export DISPLAY=:99
-          
+
           # Configuração do Xvfb - resolução extra large para Firefox
           echo "Verificando se Xvfb já está rodando no display :99..."
           if pgrep -f "Xvfb :99" > /dev/null; then
@@ -295,7 +281,8 @@ jobs:
             sleep 3
             echo "Display virtual configurado: $DISPLAY (2560x1600 - Extra Large para Firefox)"
           else
-            echo "Configurando Xvfb com resolução padrão expandida"
+            # Configuração padrão do Xvfb para todos os navegadores
+            # Usando resolução expandida (1920x1400) para evitar problemas de viewport
             Xvfb :99 -screen 0 1920x1400x24 -ac +extension GLX +render -noreset -nolisten tcp > /dev/null 2>&1 &
             sleep 2
             echo "Display virtual configurado: $DISPLAY (1920x1400 - Padrão para Chrome/Edge)"
