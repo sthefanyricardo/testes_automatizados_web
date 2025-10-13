@@ -51,7 +51,7 @@ jobs:
       max-parallel: 3
       matrix:
         # Matriz simplificada - sempre lowercase, elimina conversão posterior  
-      browser: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'todos' && fromJSON(format('["{0}"]', github.event.inputs.browser))) || fromJSON('["chrome", "firefox", "edge"]') }}
+        browser: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.browser != 'todos' && fromJSON(format('["{0}"]', github.event.inputs.browser))) || fromJSON('["chrome", "firefox", "edge"]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     
