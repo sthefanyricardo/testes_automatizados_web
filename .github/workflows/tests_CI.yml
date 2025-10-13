@@ -188,6 +188,40 @@ jobs:
           pip install webdriver-manager
           echo "✅ webdriver-manager instalado - drivers serão gerenciados automaticamente"
           
+          # 🎯 Instalar EdgeDriver diretamente via sistema (mais simples e confiável)
+          echo "Instalando EdgeDriver diretamente via sistema..."
+          
+          # Método 1: Tentar instalar via APT primeiro
+          if sudo apt-get install -y msedgedriver; then
+            echo "✅ EdgeDriver instalado com sucesso via APT"
+            msedgedriver --version 2>/dev/null || echo "EdgeDriver instalado via sistema"
+          else
+            echo "APT EdgeDriver não disponível, usando método alternativo Python..."
+            
+            # Método 2: Pre-download EdgeDriver para evitar timeout durante execução
+            echo "Pre-baixando EdgeDriver para evitar timeouts..."
+            python -c "
+          from selenium import webdriver
+          from selenium.webdriver.edge.service import Service
+          from webdriver_manager.microsoft import EdgeChromiumDriverManager
+          import os
+          
+          # Configurar timeout mais longo para download do driver
+          os.environ['WDM_TIMEOUT'] = '300'  # 5 minutos para download
+          
+          try:
+              driver_path = EdgeChromiumDriverManager().install()
+              print(f'EdgeDriver baixado com sucesso: {driver_path}')
+          except Exception as e:
+              print(f'Erro ao baixar EdgeDriver: {e}')
+              print('Continuando com configuração padrão...')
+          "
+          fi
+          
+          # Teste rápido do Edge
+          echo "Testando Edge headless com timeouts otimizados..."
+          timeout 30s microsoft-edge --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --version || echo "Edge testado OK"
+          
           echo "::endgroup::"
 
       # ✅ Validação completa
@@ -315,9 +349,9 @@ jobs:
             PAGE_LOAD_TIMEOUT="120"  # 2 minutos para carregamento
             SCREENSHOT_TIMEOUT="180" # 3 minutos para resolver timeouts
             
-            # Argumentos de performance e estabilidade do Edge
-            EDGE_OPTIONS="--disable-gpu --disable-dev-shm-usage --no-sandbox --disable-extensions"
-            EDGE_OPTIONS="$EDGE_OPTIONS --disable-plugins --disable-background-timer-throttling"
+            # Argumentos específicos do Edge (exatamente como no workflow original)
+            EDGE_OPTIONS="--headless --disable-gpu --disable-dev-shm-usage --no-sandbox"
+            EDGE_OPTIONS="$EDGE_OPTIONS --disable-extensions --disable-background-timer-throttling"
             EDGE_OPTIONS="$EDGE_OPTIONS --disable-backgrounding-occluded-windows --disable-renderer-backgrounding"
             EDGE_OPTIONS="$EDGE_OPTIONS --disable-features=TranslateUI --memory-pressure-off"
             EDGE_OPTIONS="$EDGE_OPTIONS --max_old_space_size=4096 --disable-ipc-flooding-protection"
