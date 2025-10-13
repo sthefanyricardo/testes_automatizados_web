@@ -325,8 +325,19 @@ jobs:
           
           ROBOT_EXIT_CODE=$?
           echo "Robot Framework finalizado com código: $ROBOT_EXIT_CODE"
+          
+          # Avaliar resultado dos testes imediatamente
+          if [ $ROBOT_EXIT_CODE -eq 0 ]; then
+            echo "✅ PERFEITO! Todos os testes passaram!"
+          elif [ $ROBOT_EXIT_CODE -le 250 ]; then
+            echo "⚠️ Alguns testes falharam, mas a execução foi bem-sucedida"
+            echo "📊 Relatórios gerados com sucesso para análise"
+          else
+            echo "❌ Erro crítico na execução dos testes"
+            exit 1
+          fi
 
-      - name: 📊 Extract Test Metrics
+      - name: Extract Test Metrics
         if: always()
         run: |
           RESULTS_DIR="./tests-results-CI/${{ matrix.browser }}"
@@ -385,20 +396,6 @@ jobs:
             echo "::endgroup::"
           else
             echo "::warning::Arquivo output.xml não encontrado em $RESULTS_DIR"
-          fi
-
-      - name: ✅ Evaluate Test Results
-        run: |
-          if [ $ROBOT_EXIT_CODE -eq 0 ]; then
-            echo "PERFEITO! Todos os testes passaram!"
-            exit 0
-          elif [ $ROBOT_EXIT_CODE -le 250 ]; then
-            echo "Alguns testes falharam, mas a execução foi bem-sucedida"
-            echo "Relatórios gerados com sucesso para análise"
-            exit 0
-          else
-            echo "Erro crítico na execução dos testes"
-            exit 1
           fi
 
       - name: Organize Screenshots and Evidence
