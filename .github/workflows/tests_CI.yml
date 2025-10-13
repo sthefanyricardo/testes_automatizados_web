@@ -198,10 +198,10 @@ jobs:
             from selenium.webdriver.edge.service import Service
             from webdriver_manager.microsoft import EdgeChromiumDriverManager
             import os
-            
+
             # Configurar timeout mais longo para download do driver
             os.environ['WDM_TIMEOUT'] = '300'  # 5 minutos para download
-            
+
             try:
                 driver_path = EdgeChromiumDriverManager().install()
                 print(f'EdgeDriver baixado com sucesso: {driver_path}')
