@@ -234,23 +234,6 @@ jobs:
             PAGE_LOAD_TIMEOUT="60"
             SCREENSHOT_TIMEOUT="50"
           fi
-            SCROLL_BEHAVIOR="auto"
-            PAGE_LOAD_TIMEOUT="60"
-            SCREENSHOT_TIMEOUT="45"
-          else
-            echo "$BROWSER - Configurações padrão otimizadas:"
-            echo "  - Window Size: 1920x1080"
-            echo "  - Selenium Speed: 0.2s"
-            echo "  - Implicit Wait: 10s"
-            
-            WINDOW_SIZE="1920x1080"
-            SELENIUM_SPEED="0.2"
-            IMPLICIT_WAIT="10"
-            SCROLL_BEHAVIOR="smooth"
-            PAGE_LOAD_TIMEOUT="30"
-            SCREENSHOT_TIMEOUT="30"
-          fi
-          
           
           # Configurações específicas do Edge para melhor performance
           if [[ "${{ matrix.browser }}" == "edge" ]]; then
@@ -266,7 +249,6 @@ jobs:
           echo "  - Implicit wait: ${IMPLICIT_WAIT}s"
           echo "  - Page load timeout: ${PAGE_LOAD_TIMEOUT}s"
           echo "  - Scroll behavior: $SCROLL_BEHAVIOR"
-          
           
           # Executar Robot Framework com configurações específicas por navegador
           set +e
