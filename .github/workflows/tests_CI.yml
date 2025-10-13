@@ -95,9 +95,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           
-          # Instalar webdriver-manager e selenium (gerencia drivers automaticamente)
-          pip install webdriver-manager selenium
-          
+          # Instalar selenium (necessário para Robot Framework + SeleniumLibrary)
+          pip install selenium
+
           echo "Instalando dependências específicas dos módulos..."
           INSTALLED_MODULES=()
           
@@ -147,25 +147,43 @@ jobs:
           pip list | grep -E "(robot|selenium|webdriver)" || echo "Nenhum pacote robot/selenium encontrado"
           echo "::endgroup::"
 
-      # 🌐 Instalação simplificada de navegadores e Xvfb
+      # 🌐 Instalação de navegadores com correção para Firefox
       - name: Install Browsers and Xvfb
         run: |
           echo "::group::🌐 Instalando navegadores e Xvfb"
           sudo apt-get update
+          
+          # Remover snap do Firefox para evitar conflitos
+          sudo snap remove firefox 2>/dev/null || echo "Firefox snap não estava instalado"
           
           # Adicionar repositórios necessários
           wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
           sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           
           curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-edge.gpg
-          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.mozilla.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
+          
+          # Adicionar repositório oficial do Mozilla para Firefox (não snap)
+          sudo add-apt-repository -y ppa:mozillateam/ppa
+          echo 'Package: firefox*' | sudo tee /etc/apt/preferences.d/mozilla-firefox > /dev/null
+          echo 'Pin: release o=LP-PPA-mozillateam' | sudo tee -a /etc/apt/preferences.d/mozilla-firefox > /dev/null
+          echo 'Pin-Priority: 1001' | sudo tee -a /etc/apt/preferences.d/mozilla-firefox > /dev/null
           
           sudo apt-get update
 
-          # ✅ Instalar navegadores, Xvfb e dependências mínimas
+          # ✅ Instalar navegadores (Firefox via PPA), Xvfb e dependências
           sudo apt-get install -y --no-install-recommends google-chrome-stable firefox microsoft-edge-stable xvfb xauth
           
+          # Verificar instalação do Firefox
+          which firefox
+          firefox --version
+          
           echo "✅ Navegadores e Xvfb instalados com sucesso"
+
+          # 🐍 Instalar webdriver-manager APÓS instalação dos navegadores
+          pip install webdriver-manager
+          echo "✅ webdriver-manager instalado - drivers serão gerenciados automaticamente"
+          
           echo "::endgroup::"
 
       # ✅ Validação completa
@@ -198,6 +216,13 @@ jobs:
       - name: Setup Browser Environment
         run: |
           echo "Configurando ambiente para execução..."
+          
+          # ⚙️ Configurações globais do webdriver-manager
+          echo "Configurando webdriver-manager (instalado após navegadores)..."
+          export WDM_PRINT_FIRST_LINE="False"  # Reduzir logs verbosos
+          export WDM_LOG_LEVEL="20"  # INFO level
+          echo "  - webdriver-manager detectará navegadores automaticamente"
+          echo "  - Drivers compatíveis serão baixados automaticamente"
           
           # Verificar Robot Framework e bibliotecas instaladas
           echo "Robot Framework: $(robot --version 2>/dev/null || echo 'Não encontrado')"
@@ -252,6 +277,8 @@ jobs:
             echo "❌ Erro: Xvfb não conseguiu iniciar no display :99"
             exit 1
           fi
+          
+          echo "✅ webdriver-manager configurado - detectará navegadores instalados automaticamente"
 
       - name: Run E2E Tests
         run: |
@@ -289,8 +316,7 @@ jobs:
             PAGE_LOAD_TIMEOUT="60"
             SCREENSHOT_TIMEOUT="50"
             
-            export EDGE_OPTIONS="--disable-web-security --disable-features=VizDisplayCompositor --disable-extensions --disable-gpu --no-sandbox --disable-dev-shm-usage --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows --disable-background-networking"
-            echo "  - Edge options: $EDGE_OPTIONS"
+            echo "  - webdriver-manager gerenciará EdgeDriver automaticamente"
           fi
           
           # Configurações específicas do Firefox (forçar resolução extra expandida)
@@ -298,12 +324,8 @@ jobs:
             echo "Firefox: Forçando resolução EXTRA expandida para resolver viewport (1092, 762) out of bounds"
             WINDOW_SIZE="2048x1536"  # Resolução bem maior que 1920x1200
             
-            # Argumentos específicos do Firefox (opções válidas apenas)
-            export FIREFOX_OPTIONS="--headless"
-            echo "  - Firefox options: $FIREFOX_OPTIONS"
-            echo "  - Window size forçado: $WINDOW_SIZE (EXTRA LARGE)"
-            echo "  - Target fix: (1092, 762) agora deve caber dentro de (2048, 1536)"
-            echo "  - Nota: Tamanho da janela será definido via Robot Framework, não via argumentos CLI"
+            echo "  - webdriver-manager gerenciará GeckoDriver automaticamente"
+            echo "  - Window size expandido: $WINDOW_SIZE"
           fi
           
           echo "Configurações aplicadas:"
@@ -337,6 +359,8 @@ jobs:
             --variable SCROLL_INTO_VIEW:true \
             --variable EDGE_OPTIONS:"${EDGE_OPTIONS:-}" \
             --variable FIREFOX_OPTIONS:"${FIREFOX_OPTIONS:-}" \
+            --variable FIREFOX_BINARY:"${FIREFOX_BINARY:-}" \
+            --variable EDGE_BINARY:"${EDGE_BINARY:-}" \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
             --name "Relatório E2E - ${{ matrix.browser }}" \
