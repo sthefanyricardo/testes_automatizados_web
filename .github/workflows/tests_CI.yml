@@ -159,7 +159,7 @@ jobs:
           sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           
           curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-edge.gpg
-          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.mozilla.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
           
           # Adicionar repositório oficial do Mozilla para Firefox (não snap)
           sudo add-apt-repository -y ppa:mozillateam/ppa
@@ -177,6 +177,12 @@ jobs:
           firefox --version
           
           echo "✅ Navegadores e Xvfb instalados com sucesso"
+
+          # 🧹 LIMPAR drivers conflitantes do sistema ANTES do webdriver-manager
+          echo "Removendo drivers conflitantes do sistema para evitar mistura Chrome/Edge..."
+          sudo rm -f /usr/bin/chromedriver /usr/bin/geckodriver /usr/bin/msedgedriver 2>/dev/null || true
+          sudo rm -f /usr/local/bin/chromedriver /usr/local/bin/geckodriver /usr/local/bin/msedgedriver 2>/dev/null || true
+          echo "✅ Drivers do sistema removidos - webdriver-manager terá controle total"
 
           # 🐍 Instalar webdriver-manager APÓS instalação dos navegadores
           pip install webdriver-manager
@@ -306,9 +312,17 @@ jobs:
           # Configurações específicas do Edge (timeouts e argumentos otimizados)
           if [ "$BROWSER" = "edge" ]; then
             echo "Edge: Aplicando timeouts estendidos e argumentos otimizados"
-            PAGE_LOAD_TIMEOUT="60"
-            SCREENSHOT_TIMEOUT="50"
+            PAGE_LOAD_TIMEOUT="120"  # 2 minutos para carregamento
+            SCREENSHOT_TIMEOUT="180" # 3 minutos para resolver timeouts
             
+            # Argumentos de performance e estabilidade do Edge
+            EDGE_OPTIONS="--disable-gpu --disable-dev-shm-usage --no-sandbox --disable-extensions"
+            EDGE_OPTIONS="$EDGE_OPTIONS --disable-plugins --disable-background-timer-throttling"
+            EDGE_OPTIONS="$EDGE_OPTIONS --disable-backgrounding-occluded-windows --disable-renderer-backgrounding"
+            EDGE_OPTIONS="$EDGE_OPTIONS --disable-features=TranslateUI --memory-pressure-off"
+            EDGE_OPTIONS="$EDGE_OPTIONS --max_old_space_size=4096 --disable-ipc-flooding-protection"
+            export EDGE_OPTIONS
+
             echo "  - webdriver-manager gerenciará EdgeDriver automaticamente"
           fi
           
@@ -346,7 +360,6 @@ jobs:
             --variable PAGE_LOAD_TIMEOUT:$PAGE_LOAD_TIMEOUT \
             --variable SCROLL_INTO_VIEW:true \
             --variable EDGE_OPTIONS:"${EDGE_OPTIONS:-}" \
-            --variable FIREFOX_OPTIONS:"${FIREFOX_OPTIONS:-}" \
             --loglevel INFO \
             --reporttitle "Relatório E2E - ${{ matrix.browser }}" \
             --name "Relatório E2E - ${{ matrix.browser }}" \
