@@ -616,14 +616,6 @@ jobs:
           find $BASE_PATH -type d -name "screenshots_*" 2>/dev/null | wc -l | xargs echo "  Directories:"
         continue-on-error: true
 
-      - name: Robot Framework Reporter
-        uses: joonvena/robotframework-reporter-action@v2.5
-        if: always()
-        continue-on-error: true  # Não falhar o workflow se houver problemas de permissão
-        with:
-          gh_access_token: ${{ secrets.GITHUB_TOKEN }}
-          report_path: tests-results-CI/${{ matrix.browser }}
-
       - name: Upload Test Results and Evidence
         uses: actions/upload-artifact@v4
         if: always()
@@ -636,6 +628,14 @@ jobs:
             tests-results-CI/${{ matrix.browser }}/screenshots_${{ matrix.browser }}/
           retention-days: 7
           if-no-files-found: warn
+      
+      - name: Robot Framework Reporter
+        uses: joonvena/robotframework-reporter-action@v2.5
+        if: always()
+        continue-on-error: true  # Não falhar o workflow se houver problemas de permissão
+        with:
+          gh_access_token: ${{ secrets.GITHUB_TOKEN }}
+          report_path: tests-results-CI/${{ matrix.browser }}
 
   # Job para consolidar resultados e publicar no GitHub Pages
   publish-results:
